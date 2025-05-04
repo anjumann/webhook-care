@@ -1,43 +1,70 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RequestList } from "@/components/request-list";
-import { Copy } from "lucide-react";
-import { CopyButton } from "@/components/copy-button";
+import { EndpointList } from "@/endpoints/endpoint-list";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { createOrGetUser } from "@/dashboard/action";
 
-interface EndpointDetailsPageProps {
+interface DashboardPageProps {
   params: {
-    ulid: string;
-    name: string;
+    userId: string;
   };
 }
 
-export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps) {
-  const { ulid, name } = params;
-  const webhookUrl = `/api/webhook/${ulid}/${name}`;
+export default async function DashboardPage({ params }: DashboardPageProps) {
+  const { userId } = await params;
+
+  const userResponse = await createOrGetUser({ userId });
+
+  if ('error' in userResponse) {
+    return <div>Error: {userResponse.error}</div>;
+  }
 
   return (
-    <main className="container py-6 space-y-8">
+    <main className="container py-6 space-y-8 ">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{name}</h1>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Monitor and configure your webhook endpoint
+            Manage your webhook endpoints and view request logs
           </p>
         </div>
-        <CopyButton text={webhookUrl} />
+        <Button asChild>
+          <Link href={`/dashboard/${userId}/endpoint/create`}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Endpoint
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Requests
+              Total Endpoints
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {userResponse._count?.endpoints}
+            </div>
             <p className="text-xs text-muted-foreground">
-              All time
+              Across all endpoints
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Active Endpoints
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {userResponse.endpoints.length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Currently receiving requests
             </p>
           </CardContent>
         </Card>
@@ -52,6 +79,9 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <p className="text-xs text-muted-foreground">
               Last 24 hours
             </p>
+            <p className="text-xs text-muted-foreground">
+              To be implemented
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -65,18 +95,8 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <p className="text-xs text-muted-foreground">
               Last 24 hours
             </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Last Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Never</div>
             <p className="text-xs text-muted-foreground">
-              No requests yet
+              To be implemented
             </p>
           </CardContent>
         </Card>
@@ -84,13 +104,15 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Request Log</CardTitle>
+          <CardTitle>Endpoints</CardTitle>
           <CardDescription>
-            Recent webhook requests received by this endpoint
+            List of all your webhook endpoints
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <RequestList endpointId={name} />
+          {userId && (
+            <EndpointList userId={userId} />
+          )}
         </CardContent>
       </Card>
     </main>

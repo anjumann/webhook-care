@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { generateULID } from "@/lib/utils";
+import GetStartedBtn from "@/home/get-started-btn";
 
 export default function Home() {
+
   return (
     <main className="flex min-h-screen flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-4 text-center gap-8">
@@ -16,14 +16,9 @@ export default function Home() {
             Inspect payloads, customize responses, and debug in real-time.
           </p>
         </div>
-        
+
         <div className="flex gap-4">
-          <Link href={`/dashboard/${generateULID()}`}>
-            <Button size="lg">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <GetStartedBtn />
           <Link href="/docs">
             <Button variant="outline" size="lg">
               Documentation

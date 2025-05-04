@@ -1,32 +1,41 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const createEndpointSchema = z.object({
-  name: z.string().min(1).max(50).regex(/^[a-zA-Z0-9-_]+$/),
-  ulid: z.string().length(26),
-});
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, ulid } = createEndpointSchema.parse(body);
+    const { userId, name, description } = body;
+
+    if (!userId || !name) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Transform endpoint name for consistency
+    const transformedName = name
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9_-]/g, '')
+      .trim();
 
     const endpoint = await prisma.endpoint.create({
       data: {
-        name,
-        ulid,
-        status: "active",
+        name: transformedName,
+        description,
+        user: {
+          connect: {
+            userId,
+          },
+        },
       },
     });
 
     return NextResponse.json(endpoint, { status: 201 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
-    }
+    console.error("Error creating endpoint:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to create endpoint" },
       { status: 500 }
     );
   }
@@ -35,18 +44,15 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const ulid = searchParams.get("ulid");
+    const userId = searchParams.get("userId");
 
-    if (!ulid) {
-      return NextResponse.json(
-        { error: "ULID is required" },
-        { status: 400 }
-      );
+    if (!userId) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
     const endpoints = await prisma.endpoint.findMany({
       where: {
-        ulid,
+        userId, 
       },
       orderBy: {
         createdAt: "desc",
@@ -56,8 +62,10 @@ export async function GET(request: Request) {
     return NextResponse.json(endpoints);
   } catch (error) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
       { status: 500 }
     );
   }
-} 
+}

@@ -10,52 +10,40 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, ExternalLink } from "lucide-react";
+import { Copy, ExternalLink, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { deleteEndpoint, useEndpoints } from "./api/endpoints";
 
-interface EndpointListProps {
-  ulid: string;
-}
-
-interface Endpoint {
+export interface Endpoint {
   id: string;
   name: string;
-  url: string;
-  createdAt: string;
-  lastActivity: string;
+  description?: string | null;
   status: string;
+  createdAt: string;
+  updatedAt: string;
+  lastActivity: string;
   requestCount: number;
+  userId: string;
 }
 
-// This will be replaced with real data from the API
-const MOCK_ENDPOINTS: Endpoint[] = [
-  {
-    id: "1",
-    name: "test-endpoint",
-    url: "/webhook/test-endpoint",
-    createdAt: "2024-05-02T00:21:11.000Z",
-    lastActivity: "2024-05-02T00:21:11.000Z",
-    status: "active",
-    requestCount: 0,
-  },
-];
 
-export function EndpointList({ ulid }: EndpointListProps) {
-  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
-  
-  useEffect(() => {
-    // In the future, this will fetch from the API
-    setEndpoints(MOCK_ENDPOINTS);
-  }, []);
+interface EndpointListProps {
+  userId: string;
+  endpoints?: Endpoint[] | null;
+}
 
-  const copyEndpointUrl = async (url: string) => {
-    const fullUrl = `${window.location.origin}/api/webhook/${ulid}${url}`;
+
+export function EndpointList({ userId }: EndpointListProps) {
+
+  const copyEndpointUrl = async (endpointName: string) => {
+    const fullUrl = `${window.location.origin}/api/webhook/${userId}/${endpointName}`;
     await navigator.clipboard.writeText(fullUrl);
   };
 
-  if (endpoints.length === 0) {
+  const { endpoints, isLoading, mutate } = useEndpoints(userId);
+
+  if (!userId) {
     return (
       <div className="text-center py-6 text-muted-foreground">
         No endpoints created yet
@@ -73,15 +61,21 @@ export function EndpointList({ ulid }: EndpointListProps) {
             <TableHead>Requests</TableHead>
             <TableHead>Last Activity</TableHead>
             <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {endpoints.map((endpoint) => (
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center">
+                Loading...
+              </TableCell>
+            </TableRow>
+          ) : endpoints?.map((endpoint) => (
             <TableRow key={endpoint.id}>
               <TableCell className="font-medium">
                 <Link
-                  href={`/dashboard/${ulid}/${endpoint.name}`}
+                  href={`/dashboard/${userId}/${endpoint.name}`}
                   className="hover:underline"
                 >
                   {endpoint.name}
@@ -95,20 +89,33 @@ export function EndpointList({ ulid }: EndpointListProps) {
               <TableCell>{endpoint.requestCount}</TableCell>
               <TableCell>{formatDate(new Date(endpoint.lastActivity))}</TableCell>
               <TableCell>{formatDate(new Date(endpoint.createdAt))}</TableCell>
-              <TableCell className="text-right space-x-2">
+              <TableCell className="text-center space-x-2">
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => copyEndpointUrl(endpoint.url)}
+                  onClick={() => copyEndpointUrl(endpoint.name)}
+                  className="cursor-pointer"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  asChild
+                  onClick={async () => {
+                    await deleteEndpoint(endpoint.id);
+                    mutate();
+                  }}
+                  className="cursor-pointer"
                 >
-                  <Link href={`/dashboard/${ulid}/${endpoint.name}`}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className="cursor-pointer"
+                >
+                  <Link href={`/dashboard/${userId}/${endpoint.name}`}>
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 </Button>

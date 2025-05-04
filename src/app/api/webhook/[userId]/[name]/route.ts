@@ -3,42 +3,42 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { ulid: string; name: string } }
+  { params }: { params: { userId: string; name: string } }
 ) {
   return handleWebhook(request, params);
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: { ulid: string; name: string } }
+  { params }: { params: { userId: string; name: string } }
 ) {
   return handleWebhook(request, params);
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: { ulid: string; name: string } }
+  { params }: { params: { userId: string; name: string } }
 ) {
   return handleWebhook(request, params);
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { ulid: string; name: string } }
+  { params }: { params: { userId: string; name: string } }
 ) {
   return handleWebhook(request, params);
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { ulid: string; name: string } }
+  { params }: { params: { userId: string; name: string } }
 ) {
   return handleWebhook(request, params);
 }
 
 async function handleWebhook(
   request: Request,
-  { ulid, name }: { ulid: string; name: string }
+  { userId, name }: { userId: string; name: string }
 ) {
   const startTime = Date.now();
 
@@ -46,7 +46,7 @@ async function handleWebhook(
     // Find the endpoint
     const endpoint = await prisma.endpoint.findFirst({
       where: {
-        ulid,
+        userId,
         name,
       },
     });

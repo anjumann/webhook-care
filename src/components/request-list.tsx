@@ -25,7 +25,7 @@ interface Request {
   duration: number;
   createdAt: string;
   headers: Record<string, string>;
-  body: any;
+  body: Record<string, any>;
 }
 
 // This will be replaced with real data from the API
@@ -51,6 +51,7 @@ const MOCK_REQUESTS: Request[] = [
 ];
 
 export function RequestList({ endpointId }: RequestListProps) {
+  console.log("endpointId", endpointId);
   const [expandedRequests, setExpandedRequests] = useState<Set<string>>(new Set());
   const [requests, setRequests] = useState<Request[]>([]);
 
