@@ -14,6 +14,7 @@ import { Copy, ExternalLink, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { deleteEndpoint, useEndpoints } from "./api/endpoints";
+import toast from "react-hot-toast";
 
 export interface Endpoint {
   id: string;
@@ -39,8 +40,19 @@ export function EndpointList({ userId }: EndpointListProps) {
   const copyEndpointUrl = async (endpointName: string) => {
     const fullUrl = `${window.location.origin}/api/webhook/${userId}/${endpointName}`;
     await navigator.clipboard.writeText(fullUrl);
+    toast.success("Endpoint URL copied to clipboard");
   };
 
+  const handleDeleteEndpoint = async (endpointId: string) => {
+    try {
+      await deleteEndpoint(endpointId);
+      mutate();
+      toast.success("Endpoint deleted");
+    } catch (error) {
+      console.error("Failed to delete endpoint:", error);
+      toast.error("Failed to delete endpoint. Please try again.");
+    }
+  }
   const { endpoints, isLoading, mutate } = useEndpoints(userId);
 
   if (!userId) {
@@ -129,10 +141,7 @@ export function EndpointList({ userId }: EndpointListProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={async () => {
-                    await deleteEndpoint(endpoint.id);
-                    mutate();
-                  }}
+                  onClick={() => handleDeleteEndpoint(endpoint.id)}
                   className="cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />

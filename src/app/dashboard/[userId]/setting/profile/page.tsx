@@ -61,7 +61,6 @@ export default function ProfilePage() {
 
     try {
       const result = await updateProfile(id, data.userName, data.userImage)
-      console.log('Profile updated:', result)
       form.reset(
         {
           userName: result.userName,

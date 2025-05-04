@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
+import toast from "react-hot-toast"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -15,6 +16,12 @@ export function formatDate(date: Date) {
   }).format(date)
 }
 
-export function copyToClipboard(text: string) {
-  return navigator.clipboard.writeText(text)
+export async function copyToClipboard(text: string) {
+  try {
+    toast.success("Copied to clipboard")
+    return await navigator.clipboard.writeText(text)
+  } catch (error) {
+    console.error("Failed to copy to clipboard:", error)
+    toast.error("Failed to copy to clipboard")
+  }
 }

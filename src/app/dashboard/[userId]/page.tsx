@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EndpointList } from "@/endpoints/endpoint-list";
 import { Button } from "@/components/ui/button";
-import { PlusSquare } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { createOrGetUser } from "@/dashboard/action";
 
@@ -31,7 +31,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         </div>
         <Button asChild variant="outline" >
           <Link href={`/dashboard/${userId}/endpoint/create`}>
-            <PlusSquare className="mr-1 h-4 w-4" />
+            <Plus className="mr-1 h-4 w-4" />
             Create Endpoint
           </Link>
         </Button>

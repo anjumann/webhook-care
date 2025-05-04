@@ -23,5 +23,5 @@ export function useUser() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return { id: user?.id, imageUrl: `/avatar/${randomAvatar}`, loading }
+  return { id: user?.id, imageUrl: `/avatar/${user?.imageUrl}`, loading }
 } 

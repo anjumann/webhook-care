@@ -34,7 +34,7 @@ const Header: React.FC = () => {
                 </span>
                 <Link href={`/dashboard/${user?.id}/setting/profile`}>
                     <Avatar className='size-10' >
-                        <AvatarImage src={profile?.userImage || user?.imageUrl} className='object-cover' />
+                        <AvatarImage src={`/avatar/${profile?.userImage}` || user?.imageUrl} className='object-cover' />
                         <AvatarFallback>
                         A
                         </AvatarFallback>

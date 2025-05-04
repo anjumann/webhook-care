@@ -8,10 +8,10 @@ import { useUser } from '@/hooks/useUser'
 
 const GetStartedBtn = () => {
 
-  const { user } = useUser()
+  const { id } = useUser()
 
   return (
-    <Link href={`/dashboard/${user?.id}`}>
+    <Link href={`/dashboard/${id}`}>
       <Button>Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button>
     </Link>
   )

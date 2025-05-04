@@ -45,13 +45,12 @@ const defaultValues: Partial<EndpointFormValues> = {
     description: "",
 }
 
-export default function EndpointEditForm({ endpoint }: { endpoint?: string }) {
+export default function EndpointEditForm() {
     const router = useRouter();
-    const { user } = useUser();
+    const user  = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     // TODO: add edit functionality
-    console.log(endpoint)
     const form = useForm<EndpointFormValues>({
         resolver: zodResolver(endpointFormSchema),
         defaultValues,
@@ -82,9 +81,7 @@ export default function EndpointEditForm({ endpoint }: { endpoint?: string }) {
             }
 
             const result = await response.json();
-            console.log('Endpoint created:', result);
-            form.reset();
-            // Optional: redirect after success
+            if (!result.id) return
             router.push(`/dashboard/${user.id}`);
         } catch (error) {
             console.error('Error creating endpoint:', error);

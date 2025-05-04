@@ -78,7 +78,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             </p>
           )}
         </div>
-        <CopyButton text={webhookUrl} />
+        <CopyButton text={window.location.origin + webhookUrl} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
