@@ -75,7 +75,7 @@ export function EndpointList({ userId }: EndpointListProps) {
             <TableRow key={endpoint.id}>
               <TableCell className="font-medium">
                 <Link
-                  href={`/dashboard/${userId}/${endpoint.name}`}
+                  href={`/dashboard/${userId}/${endpoint.id}`}
                   className="hover:underline"
                 >
                   {endpoint.name}
@@ -115,7 +115,7 @@ export function EndpointList({ userId }: EndpointListProps) {
                   asChild
                   className="cursor-pointer"
                 >
-                  <Link href={`/dashboard/${userId}/${endpoint.name}`}>
+                  <Link href={`/dashboard/${userId}/${endpoint.id}`}>
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 </Button>

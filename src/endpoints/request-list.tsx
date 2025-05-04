@@ -10,12 +10,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { deleteRequest } from "./api/endpoints";
 
 interface RequestListProps {
-  endpointId: string;
+  requests: Request[];
+  mutate: () => void;
 }
 
 interface Request {
@@ -28,37 +30,9 @@ interface Request {
   body: Record<string, any>;
 }
 
-// This will be replaced with real data from the API
-const MOCK_REQUESTS: Request[] = [
-  {
-    id: "1",
-    method: "POST",
-    statusCode: 200,
-    duration: 150,
-    createdAt: "2024-05-02T00:21:11.000Z",
-    headers: {
-      "content-type": "application/json",
-      "user-agent": "curl/7.64.1",
-    },
-    body: {
-      event: "user.created",
-      data: {
-        id: 123,
-        name: "John Doe",
-      },
-    },
-  },
-];
-
-export function RequestList({ endpointId }: RequestListProps) {
-  console.log("endpointId", endpointId);
+export function RequestList({ requests, mutate }: RequestListProps) {
   const [expandedRequests, setExpandedRequests] = useState<Set<string>>(new Set());
-  const [requests, setRequests] = useState<Request[]>([]);
 
-  useEffect(() => {
-    // In the future, this will fetch from the API
-    setRequests(MOCK_REQUESTS);
-  }, []);
 
   const toggleRequest = (id: string) => {
     const newExpanded = new Set(expandedRequests);
@@ -88,13 +62,14 @@ export function RequestList({ endpointId }: RequestListProps) {
             <TableHead>Status</TableHead>
             <TableHead>Duration</TableHead>
             <TableHead>Time</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {requests.map((request) => [
-            <TableRow 
+            <TableRow
               key={`${request.id}-row`}
-              className="cursor-pointer hover:bg-muted/50" 
+              className="cursor-pointer hover:bg-muted/50"
               onClick={() => toggleRequest(request.id)}
             >
               <TableCell>
@@ -118,6 +93,27 @@ export function RequestList({ endpointId }: RequestListProps) {
               </TableCell>
               <TableCell>{request.duration}ms</TableCell>
               <TableCell>{formatDate(new Date(request.createdAt))}</TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="icon" className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await deleteRequest(request.id);
+                      mutate();
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>,
             expandedRequests.has(request.id) && (
               <TableRow key={`${request.id}-expanded`}>

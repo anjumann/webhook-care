@@ -1,6 +1,12 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RequestList } from "@/components/request-list";
+import { RequestList } from "@/endpoints/request-list";
 import { CopyButton } from "@/components/copy-button";
+import { useEffect, useState } from "react";
+import { useGetEndpoint } from "@/endpoints/api/endpoints";
+import { formatDistanceToNow } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EndpointDetailsPageProps {
   params: {
@@ -9,18 +15,68 @@ interface EndpointDetailsPageProps {
   };
 }
 
-export default async function EndpointDetailsPage({ params }: EndpointDetailsPageProps) {
-  const { userId, id } = await params;
-  const webhookUrl = `/api/webhook/${userId}/${id}`;
+export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps) {
+  useEffect(() => {
+    const getParams = async () => {
+      const { userId, id } = await params;
+      setParam({ userId, id });
+    }
+    getParams();
+  }, [params]);
+
+  const [param, setParam] = useState<{
+    userId: string;
+    id: string;
+  } | null>(null);
+
+  
+  const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? '');
+
+  const webhookUrl = `/api/webhook/${param?.userId}/${param?.id}`;
+
+  // Calculate success rate for the last 24 hours
+  const calculateSuccessRate = () => {
+    if (!endpoints?.requests?.length) return '100%';
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentRequests = endpoints.requests.filter(
+      req => new Date(req.createdAt) > last24Hours
+    );
+    if (!recentRequests.length) return '100%';
+    const successfulRequests = recentRequests.filter(req => req.statusCode >= 200 && req.statusCode < 300);
+    return `${Math.round((successfulRequests.length / recentRequests.length) * 100)}%`;
+  };
+
+  // Calculate average response time for the last 24 hours
+  const calculateAvgResponseTime = () => {
+    if (!endpoints?.requests?.length) return '0';
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentRequests = endpoints.requests.filter(
+      req => new Date(req.createdAt) > last24Hours
+    );
+    if (!recentRequests.length) return '0';
+    const avgTime = recentRequests.reduce((acc, req) => acc + req.duration, 0) / recentRequests.length;
+    return `${Math.round(avgTime)}`;
+  };
+
+  const formatLastActivity = () => {
+    if (!endpoints?.lastActivity) return 'Never';
+    return formatDistanceToNow(new Date(endpoints.lastActivity), { addSuffix: true });
+  };
 
   return (
     <main className="container py-6 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{id}</h1>
-          <p className="text-muted-foreground">
-            Monitor and configure your webhook endpoint
-          </p>
+          <h1 className="text-3xl font-bold">
+            {isLoading ? <Skeleton className="h-9 w-48" /> : endpoints?.name || param?.id}
+          </h1>
+          {isLoading ? (
+            <Skeleton className="h-6 w-64" />
+          ) : (
+            <p className="text-muted-foreground">
+              Monitor and configure your webhook endpoint
+            </p>
+          )}
         </div>
         <CopyButton text={webhookUrl} />
       </div>
@@ -28,54 +84,64 @@ export default async function EndpointDetailsPage({ params }: EndpointDetailsPag
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Requests
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              All time
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{endpoints?.requestCount || 0}</div>
+                <p className="text-xs text-muted-foreground">All time</p>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Success Rate
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">100%</div>
-            <p className="text-xs text-muted-foreground">
-              Last 24 hours
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{calculateSuccessRate()}</div>
+                <p className="text-xs text-muted-foreground">Last 24 hours</p>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avg Response Time
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0ms</div>
-            <p className="text-xs text-muted-foreground">
-              Last 24 hours
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{calculateAvgResponseTime()}ms</div>
+                <p className="text-xs text-muted-foreground">Last 24 hours</p>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Last Activity
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Last Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Never</div>
-            <p className="text-xs text-muted-foreground">
-              No requests yet
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{formatLastActivity()}</div>
+                <p className="text-xs text-muted-foreground">
+                  {endpoints?.lastActivity ? 'Last request received' : 'No requests yet'}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -88,7 +154,7 @@ export default async function EndpointDetailsPage({ params }: EndpointDetailsPag
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <RequestList endpointId={id} />
+          <RequestList mutate={mutate} requests={endpoints?.requests || []} />
         </CardContent>
       </Card>
     </main>
