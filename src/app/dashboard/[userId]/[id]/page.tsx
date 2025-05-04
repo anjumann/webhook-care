@@ -9,10 +9,10 @@ import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface EndpointDetailsPageProps {
-  params: {
+  params: Promise<{
     userId: string;
     id: string;
-  };
+  }>;
 }
 
 export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps) {

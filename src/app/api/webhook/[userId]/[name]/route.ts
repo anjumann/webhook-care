@@ -3,42 +3,42 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string; name: string } }
+  { params }: { params: Promise<{ userId: string; name: string }> }
 ) {
-  return handleWebhook(request, params);
+  return handleWebhook(request, await params);
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: { userId: string; name: string } }
+  { params }: { params: Promise<{ userId: string; name: string }> }
 ) {
-  return handleWebhook(request, params);
+  return handleWebhook(request, await params);
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: { userId: string; name: string } }
+  { params }: { params: Promise<{ userId: string; name: string }> }
 ) {
-  return handleWebhook(request, params);
+  return handleWebhook(request, await params);
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { userId: string; name: string } }
+  { params }: { params: Promise<{ userId: string; name: string }> }
 ) {
-  return handleWebhook(request, params);
+  return handleWebhook(request, await params);
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { userId: string; name: string } }
+  { params }: { params: Promise<{ userId: string; name: string }> }
 ) {
-  return handleWebhook(request, params);
+  return handleWebhook(request, await params);
 }
 
 async function handleWebhook(
   request: Request,
-  { userId, name }: { userId: string; name: string }
+  { userId, name }:   { userId: string; name: string }
 ) {
   const startTime = Date.now();
 

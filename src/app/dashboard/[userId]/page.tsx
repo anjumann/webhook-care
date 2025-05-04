@@ -6,9 +6,9 @@ import Link from "next/link";
 import { createOrGetUser } from "@/dashboard/action";
 
 interface DashboardPageProps {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {

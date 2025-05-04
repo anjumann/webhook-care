@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   const endpoint = await prisma.endpoint.delete({
     where: { id },
@@ -16,7 +16,7 @@ export async function DELETE(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -30,7 +30,6 @@ export async function GET(
       },  
     });
     
-   
     if (!endpoint) {
       endpoint = await prisma.endpoint.findUnique({
         where: { id },
@@ -38,7 +37,6 @@ export async function GET(
           requests: true,
         },
       });
-  
     }
 
     if (!endpoint) {
