@@ -1,0 +1,17 @@
+export const avatarFiles = [
+  "beru.jpg",
+  "gara.jpg",
+  "igris.jpg",
+  "itachi.png",
+  "jinwoo.jpg",
+  "jinwoo2.png",
+  "kakashi.jpg",
+  "kakashi2.jpg",
+  "luffy1.jpg",
+  "luffy2.jpg",
+  "luffy3.png",
+  "naruto.jpg",
+  "natsu.png",
+  "zoro.jpg",
+  "zoro2.jpg",
+];

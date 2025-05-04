@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EndpointList } from "@/endpoints/endpoint-list";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { PlusSquare } from "lucide-react";
 import Link from "next/link";
 import { createOrGetUser } from "@/dashboard/action";
 
@@ -29,9 +29,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             Manage your webhook endpoints and view request logs
           </p>
         </div>
-        <Button asChild>
+        <Button asChild variant="outline" >
           <Link href={`/dashboard/${userId}/endpoint/create`}>
-            <Plus className="mr-2 h-4 w-4" />
+            <PlusSquare className="mr-1 h-4 w-4" />
             Create Endpoint
           </Link>
         </Button>

@@ -51,17 +51,45 @@ export function EndpointList({ userId }: EndpointListProps) {
     );
   }
 
+  const headerlist = [
+    {
+      name: "Name",
+      align: "text-center"
+    },
+    {
+      name: "Status",
+      align: "text-center"
+    },
+    {
+      name: "Requests",
+      align: "text-center"
+    },
+    {
+      name: "Last Activity",
+      align: "text-center"
+    },
+    {
+      name: "Created",
+      align: "text-center"
+    },
+    {
+      name: "Actions",
+      align: "text-center"
+    }
+  ]
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Requests</TableHead>
-            <TableHead>Last Activity</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
+            {
+              headerlist.map((header, idx) => (
+                <TableHead key={idx} className={`${header.align}`}>
+                  {header.name}
+                </TableHead>
+              ))
+            }
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -73,7 +101,7 @@ export function EndpointList({ userId }: EndpointListProps) {
             </TableRow>
           ) : endpoints?.map((endpoint) => (
             <TableRow key={endpoint.id}>
-              <TableCell className="font-medium">
+              <TableCell className="text-center font-medium">
                 <Link
                   href={`/dashboard/${userId}/${endpoint.id}`}
                   className="hover:underline"
@@ -81,14 +109,14 @@ export function EndpointList({ userId }: EndpointListProps) {
                   {endpoint.name}
                 </Link>
               </TableCell>
-              <TableCell>
-                <Badge variant={endpoint.status === "active" ? "default" : "secondary"}>
+              <TableCell className="text-center">
+                <Badge variant={endpoint.status === "active" ? "success" : "destructive"} className="capitalize">
                   {endpoint.status}
                 </Badge>
               </TableCell>
-              <TableCell>{endpoint.requestCount}</TableCell>
-              <TableCell>{formatDate(new Date(endpoint.lastActivity))}</TableCell>
-              <TableCell>{formatDate(new Date(endpoint.createdAt))}</TableCell>
+              <TableCell className="text-center" >{endpoint.requestCount}</TableCell>
+              <TableCell className="text-center" >{formatDate(new Date(endpoint.lastActivity))}</TableCell>
+              <TableCell className="text-center" >{formatDate(new Date(endpoint.createdAt))}</TableCell>
               <TableCell className="text-center space-x-2">
                 <Button
                   variant="ghost"
