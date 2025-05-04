@@ -5,16 +5,15 @@ import { redirect } from "next/navigation"
 import { useEffect } from "react"
 
 const DashboardPage = () => {
-    const { user, loading } = useUser()
+    const { id, loading } = useUser()
 
     useEffect(() => {
-        if (!loading && user?.id) {
-            redirect(`/dashboard/${user.id}`)
+        if (!loading && id) {
+            redirect(`/dashboard/${id}`)
         }
-    }, [user, loading])
+    }, [id, loading])
 
-    // Optionally, show a loading indicator
-    return null
+    return redirect(`/`)
 }
 
 export default DashboardPage

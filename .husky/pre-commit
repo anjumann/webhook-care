@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 echo "Running build check before commit..."
 npm run build || (echo "Build failed. Please fix the build errors before committing." && exit 1)
