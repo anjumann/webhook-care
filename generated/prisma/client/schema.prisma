@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma/client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userName  String?
+  userId    String     @unique
+  userImage String?
+  endpoints Endpoint[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Endpoint {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  status       String    @default("active") // active, inactive
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastActivity DateTime  @default(now())
+  requestCount Int       @default(0)
+  requests     Request[]
+  user         User      @relation(fields: [userId], references: [userId])
+  userId       String
+}
+
+model Request {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  endpointId String   @db.ObjectId
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id])
+  method     String
+  headers    Json
+  body       Json?
+  query      Json?
+  statusCode Int
+  response   Json?
+  duration   Int // in milliseconds
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([endpointId])
+}
