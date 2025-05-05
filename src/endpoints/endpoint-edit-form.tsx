@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
+import CustomBreadcrumb from '@/components/custom-breadcrumb'
 
 // Define the schema for endpoint validation
 const endpointFormSchema = z.object({
@@ -47,7 +48,7 @@ const defaultValues: Partial<EndpointFormValues> = {
 
 export default function EndpointEditForm() {
     const router = useRouter();
-    const user  = useUser();
+    const user = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     // TODO: add edit functionality
@@ -58,10 +59,10 @@ export default function EndpointEditForm() {
 
     async function onSubmit(data: EndpointFormValues) {
         if (!user) return;
-        
+
         setIsSubmitting(true);
         setError(null);
-        
+
         try {
             const response = await fetch('/api/endpoints', {
                 method: 'POST',
@@ -91,12 +92,29 @@ export default function EndpointEditForm() {
         }
     }
 
+    const routeList = [
+        {
+            label: "Webhook Care",
+            href: `/`,
+        },
+        {
+            label: "Dashboard",
+            href: `/dashboard/${user?.id}`,
+        },
+        {
+            label: "Create Endpoint",
+            href: `/dashboard/${user?.id}/endpoint/create`,
+        },
+    ]
     return (
         <div className="container mx-auto py-10">
             <div className="max-w-11/12 mx-auto space-y-6">
                 <div>
                     <h1 className="text-2xl font-bold">Create Endpoint</h1>
                     <p className="text-muted-foreground">Create a new endpoint for your webhooks.</p>
+                    <div className="flex items-center gap-2 mt-2 "> 
+                        <CustomBreadcrumb routeList={routeList} />
+                    </div>
                 </div>
 
                 {error && (
@@ -110,13 +128,13 @@ export default function EndpointEditForm() {
                         <FormField
                             control={form.control}
                             name="name"
-                            
+
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Endpoint Name</FormLabel>
                                     <FormControl>
-                                        <Input 
-                                            placeholder="my-endpoint" 
+                                        <Input
+                                            placeholder="my-endpoint"
                                             {...field}
                                             autoFocus
                                         />

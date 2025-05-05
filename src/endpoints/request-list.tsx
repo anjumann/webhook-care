@@ -14,6 +14,7 @@ import { ChevronDown, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { useState } from "react";
 import { deleteRequest } from "./api/endpoints";
+import toast from "react-hot-toast";
 
 interface RequestListProps {
   requests: Request[];
@@ -95,15 +96,16 @@ export function RequestList({ requests, mutate }: RequestListProps) {
               <TableCell>{formatDate(new Date(request.createdAt))}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" className="h-6 w-6"
+                  <Button variant="ghost" size="icon" className="h-6 w-6 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
+                      toast.success("Payload copied to clipboard");
                     }}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6"
+                  <Button variant="ghost" size="icon" className="h-6 w-6 cursor-pointer"
                     onClick={async (e) => {
                       e.stopPropagation();
                       await deleteRequest(request.id);
@@ -117,16 +119,37 @@ export function RequestList({ requests, mutate }: RequestListProps) {
             </TableRow>,
             expandedRequests.has(request.id) && (
               <TableRow key={`${request.id}-expanded`}>
-                <TableCell colSpan={5}>
-                  <div className="p-4 space-y-4">
+                <TableCell colSpan={5} className="">
+                  <div className="p-4 space-y-4 mx-auto ">
                     <div>
-                      <h4 className="text-sm font-semibold mb-2">Headers</h4>
+                      <h4 className="text-sm font-semibold mb-2  flex items-center justify-between">Headers
+                        <Button variant="outline" size="sm" className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(JSON.stringify(request.headers, null, 2));
+                            toast.success("Headers copied to clipboard");
+                          }}
+                        >
+                          Copy <Copy className="h-4 w-4" />
+                        </Button>
+                      </h4>
                       <pre className="bg-muted p-2 rounded-md overflow-x-auto">
                         {JSON.stringify(request.headers, null, 2)}
                       </pre>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold mb-2">Body</h4>
+                      <h4 className="text-sm font-semibold mb-2 flex items-center justify-between">
+                        Body
+                        <Button variant="outline" size="sm" className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
+                            toast.success("Body copied to clipboard");
+                          }}
+                        >
+                          Copy <Copy className="h-4 w-4" />
+                        </Button>
+                      </h4>
                       <pre className="bg-muted p-2 rounded-md overflow-x-auto">
                         {JSON.stringify(request.body, null, 2)}
                       </pre>

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useGetEndpoint } from "@/endpoints/api/endpoints";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import CustomBreadcrumb from "@/components/custom-breadcrumb";
 
 interface EndpointDetailsPageProps {
   params: Promise<{
@@ -29,10 +30,16 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     id: string;
   } | null>(null);
 
-  
+
   const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? '');
 
-  const webhookUrl = `/api/webhook/${param?.userId}/${param?.id}`;
+  const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
+  const [fullWebhookUrl, setFullWebhookUrl] = useState<string>('');
+
+  useEffect(() => {
+    // Set the full URL only on the client side
+    setFullWebhookUrl(window.location.origin + webhookUrl);
+  }, [webhookUrl]);
 
   // Calculate success rate for the last 24 hours
   const calculateSuccessRate = () => {
@@ -63,6 +70,21 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     return formatDistanceToNow(new Date(endpoints.lastActivity), { addSuffix: true });
   };
 
+  const routeList = [
+    {
+      label: "Webhook Care",
+      href: `/`,
+    },
+    {
+      label: "Dashboard",
+      href: `/dashboard/${param?.userId}`,
+    },
+    {
+      label: endpoints?.name || param?.id || '',
+      href: `/dashboard/${param?.userId}/${param?.id}`,
+    },
+  ]
+
   return (
     <main className="container py-6 space-y-8">
       <div className="flex justify-between items-center">
@@ -77,8 +99,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               Monitor and configure your webhook endpoint
             </p>
           )}
+          <div className="flex items-center gap-2 mt-6 ">
+            <CustomBreadcrumb routeList={routeList} />
+          </div>
+
         </div>
-        <CopyButton text={window.location.origin + webhookUrl} />
+        <CopyButton text={fullWebhookUrl} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

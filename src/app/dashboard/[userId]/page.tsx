@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { createOrGetUser } from "@/dashboard/action";
+import CustomBreadcrumb from "@/components/custom-breadcrumb";
 
 interface DashboardPageProps {
   params: Promise<{
@@ -19,6 +20,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   if ('error' in userResponse) {
     return <div>Error: {userResponse.error}</div>;
   }
+  const routeList = [
+    {
+      label: "Webhook Care",
+      href: `/`,
+    },
+    {
+      label: "Dashboard",
+      href: `/dashboard/${userId}`,
+    },
+  ]
 
   return (
     <main className="container py-6 space-y-8 ">
@@ -28,7 +39,11 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           <p className="text-muted-foreground">
             Manage your webhook endpoints and view request logs
           </p>
+          <div className="flex items-center gap-2 mt-6 ">
+            <CustomBreadcrumb routeList={routeList} />
+          </div>
         </div>
+
         <Button asChild variant="outline" >
           <Link href={`/dashboard/${userId}/endpoint/create`}>
             <Plus className="mr-1 h-4 w-4" />

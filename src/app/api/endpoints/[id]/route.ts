@@ -26,15 +26,23 @@ export async function GET(
         name: id,
       },
       include: {
-        requests: true,
+        requests: {
+          orderBy: {  
+            createdAt: "desc",
+          },
+        },
       },  
     });
     
     if (!endpoint) {
       endpoint = await prisma.endpoint.findUnique({
         where: { id },
-        include: {
-          requests: true,
+        include: {  
+          requests: {
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
         },
       });
     }
