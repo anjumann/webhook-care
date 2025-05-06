@@ -2,17 +2,19 @@
 
 import { useUser } from "@/hooks/useUser"
 import { redirect } from "next/navigation"
-import { useEffect } from "react"
 
 const DashboardPage = () => {
     const { id, loading } = useUser()
 
-    useEffect(() => {
-        if (!loading && id) {
-            redirect(`/dashboard/${id}`)
-        }
-    }, [id, loading])
+    // Wait for user data to load
+    if (loading) {
+        // add loading state 
+        return null // or return a loading spinner component
+    }
 
+    if(id) {
+        return redirect(`/dashboard/${id}`)
+    }
     return redirect(`/`)
 }
 

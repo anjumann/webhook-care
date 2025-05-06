@@ -35,13 +35,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     <main className="container py-6 space-y-8 ">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your webhook endpoints and view request logs
-          </p>
-          <div className="flex items-center gap-2 mt-6 ">
-            <CustomBreadcrumb routeList={routeList} />
-          </div>
+
+          <CustomBreadcrumb routeList={routeList} header="Dashboard" description="Manage your webhook endpoints and view request logs" />
         </div>
 
         <Button asChild variant="outline" >

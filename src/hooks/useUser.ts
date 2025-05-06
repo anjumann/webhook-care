@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { ulid } from 'ulid'
-import { avatarFiles } from '@/constant'
 
 export function useUser() {
   const { get, set } = useLocalStorage<{ id: string, imageUrl: string }>('user')
@@ -9,12 +8,11 @@ export function useUser() {
   const [loading, setLoading] = useState(true)
 
 
-  const randomAvatar = avatarFiles[Math.floor(Math.random() * avatarFiles.length)];
 
   useEffect(() => {
     let user = get()
     if (!user || !user.id) {
-      const newUser = { id: ulid(), imageUrl: `/avatar/${randomAvatar}` }
+      const newUser = { id: ulid(), imageUrl: `/avatar/zoro.jpg` }
       set(newUser)
       user = newUser
     }

@@ -90,18 +90,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">
-            {isLoading ? <Skeleton className="h-9 w-48" /> : endpoints?.name || param?.id}
+            {isLoading && <Skeleton className="h-9 w-48" />}
           </h1>
-          {isLoading ? (
+          {isLoading && (
             <Skeleton className="h-6 w-64" />
-          ) : (
-            <p className="text-muted-foreground">
-              Monitor and configure your webhook endpoint
-            </p>
           )}
-          <div className="flex items-center gap-2 mt-6 ">
-            <CustomBreadcrumb routeList={routeList} />
-          </div>
+          {!isLoading && <CustomBreadcrumb header={endpoints?.name || param?.id} description="Monitor and configure your webhook endpoint" routeList={routeList} />}
 
         </div>
         <CopyButton text={fullWebhookUrl} />

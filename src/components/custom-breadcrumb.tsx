@@ -7,24 +7,32 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
   } from "@/components/ui/breadcrumb"
+import { ChevronsRight } from "lucide-react";
 import { Fragment } from "react";
 
 const CustomBreadcrumb = (
   {
-    routeList
+    routeList,
+    header,
+    description
   }: {
     routeList: {
       label: string;
       href: string;
     }[];
+    header?: string;
+    description?: string;
   }
 ) => {
 
 
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
+    <div className="flex flex-col gap-2 mt-6">
+      {header && <h1 className="text-3xl font-bold">{header}</h1>}
+      {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      <Breadcrumb>
+        <BreadcrumbList>
         {routeList.map((route, idx) => (
           <Fragment key={idx}>
             <BreadcrumbItem key={route.href}>
@@ -34,11 +42,12 @@ const CustomBreadcrumb = (
                 <BreadcrumbLink href={route.href}>{route.label}</BreadcrumbLink>
               )}
             </BreadcrumbItem>
-            {idx < routeList.length - 1 && <BreadcrumbSeparator />}
+            {idx < routeList.length - 1 && <BreadcrumbSeparator > <ChevronsRight /> </BreadcrumbSeparator> }
           </Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>
+    </div>
     )
 }
 
