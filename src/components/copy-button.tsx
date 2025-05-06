@@ -6,16 +6,18 @@ import { copyToClipboard } from "@/lib/utils";
 
 interface CopyButtonProps {
   text: string;
+  label?: string;
+  variant?: "default" | "outline" | "ghost" | "link" | "secondary" | "destructive";
 }
 
-export function CopyButton({ text }: CopyButtonProps) {
+export function CopyButton({ text, label, variant = "outline" }: CopyButtonProps) {
   return (
     <Button
-      variant="outline"
+      variant={variant}
       onClick={() => copyToClipboard(text)}
     >
       <Copy className="mr-2 h-4 w-4" />
-      Copy URL
+      {label || "Copy URL"}
     </Button>
   );
 } 

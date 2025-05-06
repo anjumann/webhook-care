@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import CustomBreadcrumb from '@/components/custom-breadcrumb'
+import { Card, CardContent } from '@/components/ui/card'
 
 // Define the schema for endpoint validation
 const endpointFormSchema = z.object({
@@ -83,7 +84,7 @@ export default function EndpointEditForm() {
 
             const result = await response.json();
             if (!result.id) return
-            router.push(`/dashboard/${user.id}`);
+            router.push(`/dashboard/${user.id}/${result.id}`);
         } catch (error) {
             console.error('Error creating endpoint:', error);
             setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -110,11 +111,7 @@ export default function EndpointEditForm() {
         <div className="container mx-auto py-10">
             <div className="max-w-11/12 mx-auto space-y-6">
                 <div>
-                    <h1 className="text-2xl font-bold">Create Endpoint</h1>
-                    <p className="text-muted-foreground">Create a new endpoint for your webhooks.</p>
-                    <div className="flex items-center gap-2 mt-2 "> 
-                        <CustomBreadcrumb routeList={routeList} />
-                    </div>
+                    <CustomBreadcrumb header="Create Endpoint" description="Create a new endpoint for your webhooks." routeList={routeList} />
                 </div>
 
                 {error && (
@@ -122,62 +119,65 @@ export default function EndpointEditForm() {
                         {error}
                     </div>
                 )}
+                <Card>
+                    <CardContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                                <FormField
+                                control={form.control}
+                                name="name"
 
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <FormField
-                            control={form.control}
-                            name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Endpoint Name</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="my-endpoint"
+                                                {...field}
+                                                autoFocus
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            This will be the endpoint URL path. Use only letters, numbers, dashes, and underscores.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Endpoint Name</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="my-endpoint"
-                                            {...field}
-                                            autoFocus
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        This will be the endpoint URL path. Use only letters, numbers, dashes, and underscores.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Description (Optional)</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Describe the purpose of this endpoint"
+                                                className="resize-y"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            A brief description of what this endpoint is used for.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Description (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Describe the purpose of this endpoint"
-                                            className="resize-y"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        A brief description of what this endpoint is used for.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="flex gap-4 justify-end">
-                            <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
-                                Reset
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? 'Creating...' : 'Create Endpoint'}
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
+                            <div className="flex gap-4 justify-end">
+                                <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
+                                    Reset
+                                </Button>
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Creating...' : 'Create Endpoint'}
+                                </Button>
+                            </div>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )

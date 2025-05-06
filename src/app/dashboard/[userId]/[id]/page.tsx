@@ -1,6 +1,12 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  EnhancedCard as Card,
+  EnhancedCardHeader as CardHeader,
+  EnhancedCardTitle as CardTitle,
+  EnhancedCardDescription as CardDescription,
+  EnhancedCardContent as CardContent,
+} from "@/components/enhanced-card";
 import { RequestList } from "@/endpoints/request-list";
 import { CopyButton } from "@/components/copy-button";
 import { useEffect, useState } from "react";
@@ -8,6 +14,10 @@ import { useGetEndpoint } from "@/endpoints/api/endpoints";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, BookOpenIcon, SettingsIcon } from "lucide-react";
+// import { LineChart } from "@/components/charts/line-chart";
 
 interface EndpointDetailsPageProps {
   params: Promise<{
@@ -84,27 +94,146 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
       href: `/dashboard/${param?.userId}/${param?.id}`,
     },
   ]
+  const samplePayload = {
+    type: "user.created",
+    data: {
+      id: "usr_123456789",
+      email: "john.doe@example.com",
+      name: "John Doe",
+      created_at: "2024-01-20T08:30:00Z",
+      metadata: {
+        source: "web_signup",
+        plan: "starter"
+      }
+    }
+  }
+
+  const curlCommand = `curl -X POST ${fullWebhookUrl} -H "Content-Type: application/json" -d '${JSON.stringify(samplePayload)}'`;
+
+
+  const handleExport = () => {
+    if (!endpoints?.requests) return;
+
+    // Prepare the data for export
+    const exportData = endpoints.requests.map(request => ({
+      id: request.id,
+      method: request.method,
+      statusCode: request.statusCode,
+      duration: request.duration,
+      createdAt: request.createdAt,
+      headers: request.headers,
+      body: request.body,
+      response: request.response,
+      query: request.query
+    }));
+
+    // Create blob and download
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `webhook-requests-${endpoints.name || param?.id}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
 
   return (
-    <main className="container py-6 space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">
-            {isLoading && <Skeleton className="h-9 w-48" />}
-          </h1>
-          {isLoading && (
-            <Skeleton className="h-6 w-64" />
-          )}
-          {!isLoading && <CustomBreadcrumb header={endpoints?.name || param?.id} description="Monitor and configure your webhook endpoint" routeList={routeList} />}
+    <main className="container py-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-9 w-48" />
+                <Skeleton className="h-6 w-64" />
+              </>
+            ) : (
+              <div className="w-full flex items-center justify-between">
+                <CustomBreadcrumb
+                  header={endpoints?.name || param?.id}
+                  description="Monitor and manage your webhook endpoint"
+                  routeList={routeList}
+                />
+              </div>
+            )}
+          </div>
 
+          <div className="flex items-center gap-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <BookOpenIcon className="w-4 h-4 mr-2" />
+                    View Docs
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Read integration documentation
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <SettingsIcon className="w-4 h-4 mr-2" />
+                    Configure
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Manage webhook settings
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
-        <CopyButton text={fullWebhookUrl} />
+
+        {/* Integration Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <ActivityIcon className="w-5 h-5 text-primary" />
+              Integration Details
+            </CardTitle>
+            <CardDescription>
+              Use these credentials to send webhook events to your endpoint
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                Webhook URL
+                <span className="text-xs text-muted-foreground">(Required)</span>
+              </label>
+              <div className="flex items-center gap-2 group">
+                <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
+                <CopyButton text={fullWebhookUrl} variant="outline" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                Sample cURL
+                <span className="text-xs text-muted-foreground">(Example)</span>
+              </label>
+              <div className="flex items-center gap-2 group">
+                <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
+                <CopyButton text={curlCommand} label="Copy cURL" variant="outline" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Metrics Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">Lifetime Requests</CardTitle>
+            <ActivityIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -112,44 +241,60 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             ) : (
               <>
                 <div className="text-2xl font-bold">{endpoints?.requestCount || 0}</div>
-                <p className="text-xs text-muted-foreground">All time</p>
+                <p className="text-xs text-muted-foreground">Total requests processed</p>
               </>
             )}
           </CardContent>
         </Card>
-        <Card>
+
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">Delivery Success Rate</CardTitle>
+            <CheckCircleIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{calculateSuccessRate()}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">{calculateSuccessRate()}</span>
+                  <span className="text-sm text-green-600 dark:text-green-500">
+                    <ArrowUpIcon className="h-4 w-4" />
+                  </span>
+                </div>
                 <p className="text-xs text-muted-foreground">Last 24 hours</p>
               </>
             )}
           </CardContent>
         </Card>
-        <Card>
+
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+            <CardTitle className="text-sm font-medium">Average Response Time</CardTitle>
+            <AlertCircleIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{calculateAvgResponseTime()}ms</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">{calculateAvgResponseTime()}ms</span>
+                  <span className="text-sm text-green-600 dark:text-green-500">
+                    <ArrowDownIcon className="h-4 w-4" />
+                  </span>
+                </div>
                 <p className="text-xs text-muted-foreground">Last 24 hours</p>
               </>
             )}
           </CardContent>
         </Card>
-        <Card>
+
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Activity</CardTitle>
+            <CardTitle className="text-sm font-medium">Last Webhook Activity</CardTitle>
+            <ActivityIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -158,7 +303,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               <>
                 <div className="text-2xl font-bold">{formatLastActivity()}</div>
                 <p className="text-xs text-muted-foreground">
-                  {endpoints?.lastActivity ? 'Last request received' : 'No requests yet'}
+                  {endpoints?.lastActivity ? 'Most recent request received' : 'No requests yet'}
                 </p>
               </>
             )}
@@ -166,15 +311,95 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
         </Card>
       </div>
 
+      {/* Analytics Section */}
+      {/* will implement in the future */}
+      {/* <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Success Rate Trend</CardTitle>
+            <CardDescription>
+              Webhook delivery success rate over the last 7 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <Skeleton className="h-[200px] w-full" />
+              </div>
+            ) : (
+              <LineChart
+                data={endpoints?.requests || []}
+                dataKey="statusCode"
+                valueFormatter={(value) => `${value}%`}
+                showGridLines={false}
+                className="h-[200px]"
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Response Time Trend</CardTitle>
+            <CardDescription>
+              Average response time variations over the last 7 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <Skeleton className="h-[200px] w-full" />
+              </div>
+            ) : (
+              <LineChart
+                data={endpoints?.requests || []}
+                dataKey="duration"
+                valueFormatter={(value) => `${value}ms`}
+                showGridLines={false}
+                className="h-[200px]"
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div> */}
+
+      {/* Request Log Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Request Log</CardTitle>
-          <CardDescription>
-            Recent webhook requests received by this endpoint
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>
+                <ActivityIcon className="w-5 h-5 text-primary" />
+                Request History
+              </CardTitle>
+              <CardDescription>
+                Detailed log of recent webhook requests and their outcomes
+              </CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport}
+            >
+              Export
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <RequestList mutate={mutate} requests={endpoints?.requests || []} />
+          {endpoints?.requests?.length === 0 ? (
+            <div className="text-center py-12">
+              <ActivityIcon className="mx-auto h-12 w-12 text-muted-foreground/30" />
+              <h3 className="mt-4 text-lg font-semibold">No requests yet</h3>
+              <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
+                Send your first webhook request to see the activity here. Use the integration details above to get started.
+              </p>
+              <Button className="mt-6" variant="outline">
+                View Integration Guide
+              </Button>
+            </div>
+          ) : (
+            <RequestList mutate={mutate} requests={endpoints?.requests || []} />
+          )}
         </CardContent>
       </Card>
     </main>

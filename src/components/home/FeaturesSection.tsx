@@ -1,5 +1,10 @@
 import { Clock, DollarSign, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  EnhancedCard as Card,
+  EnhancedCardHeader as CardHeader,
+  EnhancedCardTitle as CardTitle,
+  EnhancedCardContent as CardContent,
+} from "@/components/enhanced-card";
 
 const features = [
   {
@@ -26,9 +31,9 @@ export function FeaturesSection() {
         <h2 className="text-3xl font-bold text-center mb-16">Get Everything Done</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="border-none bg-background">
+            <Card key={index} variant="feature" className="border-none bg-background">
               <CardHeader>
-                <feature.icon className="w-12 h-12 mb-4" />
+                <feature.icon className="w-12 h-12 mb-4 text-primary" />
                 <CardTitle className="text-xl">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>

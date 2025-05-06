@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  EnhancedCard as Card,
+  EnhancedCardHeader as CardHeader,
+  EnhancedCardTitle as CardTitle,
+  EnhancedCardDescription as CardDescription,
+  EnhancedCardContent as CardContent,
+} from "@/components/enhanced-card";
 import { EndpointList } from "@/endpoints/endpoint-list";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -32,14 +38,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   ]
 
   return (
-    <main className="container py-6 space-y-8 ">
+    <main className="container py-6 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-
           <CustomBreadcrumb routeList={routeList} header="Dashboard" description="Manage your webhook endpoints and view request logs" />
         </div>
 
-        <Button asChild variant="outline" >
+        <Button asChild variant="outline">
           <Link href={`/dashboard/${userId}/endpoint/create`}>
             <Plus className="mr-1 h-4 w-4" />
             Create Endpoint
@@ -48,7 +53,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Endpoints
@@ -63,7 +68,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             </p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Active Endpoints
@@ -78,7 +84,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             </p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Success Rate
@@ -94,7 +101,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             </p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Avg Response Time
