@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFieldArray } from "react-hook-form"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,14 @@ import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import CustomBreadcrumb from '@/components/custom-breadcrumb'
 import { Card, CardContent } from '@/components/ui/card'
+import { Plus, Trash2 } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+// Define the schema for forwarding rule validation
+const forwardingRuleSchema = z.object({
+    url: z.string().url({ message: "Must be a valid URL" }),
+    method: z.string().min(1, { message: "Method is required" }),
+});
 
 // Define the schema for endpoint validation
 const endpointFormSchema = z.object({
@@ -38,6 +46,7 @@ const endpointFormSchema = z.object({
         .string()
         .max(200, { message: "Description must not exceed 200 characters." })
         .optional(),
+    forwardingUrls: z.array(forwardingRuleSchema).min(1, { message: "At least one forwarding rule is required" }),
 })
 
 type EndpointFormValues = z.infer<typeof endpointFormSchema>
@@ -45,6 +54,7 @@ type EndpointFormValues = z.infer<typeof endpointFormSchema>
 const defaultValues: Partial<EndpointFormValues> = {
     name: "",
     description: "",
+    forwardingUrls: [{ url: "", method: "POST" }],
 }
 
 export default function EndpointEditForm() {
@@ -57,6 +67,11 @@ export default function EndpointEditForm() {
         resolver: zodResolver(endpointFormSchema),
         defaultValues,
     })
+
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: "forwardingUrls",
+    });
 
     async function onSubmit(data: EndpointFormValues) {
         if (!user) return;
@@ -74,6 +89,7 @@ export default function EndpointEditForm() {
                     userId: user.id,
                     name: data.name,
                     description: data.description,
+                    forwardingUrls: data.forwardingUrls,
                 }),
             });
 
@@ -108,25 +124,23 @@ export default function EndpointEditForm() {
         },
     ]
     return (
-        <div className="container mx-auto py-10">
-            <div className="max-w-11/12 mx-auto space-y-6">
-                <div>
-                    <CustomBreadcrumb header="Create Endpoint" description="Create a new endpoint for your webhooks." routeList={routeList} />
-                </div>
+        <div className=" mx-auto">
+            <div>
+                <CustomBreadcrumb header="Create Endpoint" description="Create a new endpoint for your webhooks." routeList={routeList} />
+            </div>
 
-                {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
-                        {error}
-                    </div>
-                )}
-                <Card>
-                    <CardContent>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                                <FormField
+            {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
+                    {error}
+                </div>
+            )}
+            <Card className='my-8'>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <FormField
                                 control={form.control}
                                 name="name"
-
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Endpoint Name</FormLabel>
@@ -166,6 +180,62 @@ export default function EndpointEditForm() {
                                 )}
                             />
 
+                            {/* Forwarding Rules Dynamic Array */}
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="font-semibold">Forwarding Urls</span>
+                                </div>
+                                {fields.map((field, index) => (
+                                    <div key={field.id} className="flex gap-2 items-end mb-2">
+                                        <FormField
+                                            control={form.control}
+                                            name={`forwardingUrls.${index}.url`}
+                                            render={({ field }) => (
+                                                <FormItem className="flex-1">
+                                                    <FormLabel>URL</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="https://example.com/webhook" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name={`forwardingUrls.${index}.method`}
+                                            render={({ field }) => (
+                                                <FormItem className="w-32">
+                                                    <FormLabel>Method</FormLabel>
+                                                    <FormControl>
+                                                        <Select
+                                                            defaultValue="POST"
+                                                            onValueChange={field.onChange}
+                                                            value={field.value}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="POST" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="POST">POST</SelectItem>
+                                                                <SelectItem value="GET">GET</SelectItem>
+                                                                <SelectItem value="DELETE">DELETE</SelectItem>
+                                                                <SelectItem value="PUT">PUT</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className='flex gap-2'>
+                                            <Button size="icon" variant="outline" onClick={() => append({ url: "", method: "POST" })}><Plus /></Button>
+                                            <Button size="icon" variant="destructive" onClick={() => remove(index)} disabled={fields.length === 1}><Trash2 /></Button>
+                                        </div>
+
+                                    </div>
+                                ))}
+                            </div>
+
                             <div className="flex gap-4 justify-end">
                                 <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
                                     Reset
@@ -174,11 +244,10 @@ export default function EndpointEditForm() {
                                     {isSubmitting ? 'Creating...' : 'Create Endpoint'}
                                 </Button>
                             </div>
-                            </form>
-                        </Form>
-                    </CardContent>
-                </Card>
-            </div>
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
         </div>
     )
 }

@@ -148,6 +148,15 @@ exports.Prisma.RequestScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ForwardingUrlScalarFieldEnum = {
+  id: 'id',
+  method: 'method',
+  url: 'url',
+  endpointId: 'endpointId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -162,7 +171,8 @@ exports.Prisma.QueryMode = {
 exports.Prisma.ModelName = {
   User: 'User',
   Endpoint: 'Endpoint',
-  Request: 'Request'
+  Request: 'Request',
+  ForwardingUrl: 'ForwardingUrl'
 };
 
 /**

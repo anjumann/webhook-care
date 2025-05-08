@@ -17,6 +17,7 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
+
 model Endpoint {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
   name         String
@@ -29,6 +30,7 @@ model Endpoint {
   requests     Request[]
   user         User       @relation(fields: [userId], references: [userId])
   userId       String    
+  forwardingUrls ForwardingUrl[]
 }
 
 model Request {
@@ -46,6 +48,16 @@ model Request {
   updatedAt  DateTime   @updatedAt
 
   @@index([endpointId])
+}
+
+model ForwardingUrl {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  method     String
+  url        String
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id])
+  endpointId String   @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 

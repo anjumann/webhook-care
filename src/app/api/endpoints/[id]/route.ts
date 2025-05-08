@@ -31,6 +31,7 @@ export async function GET(
             createdAt: "desc",
           },
         },
+        forwardingUrls: true,
       },  
     });
     
@@ -43,6 +44,7 @@ export async function GET(
               createdAt: "desc",
             },
           },
+          forwardingUrls: true,
         },
       });
     }

@@ -1,6 +1,6 @@
 "use client"
 
-import { 
+import {
   EnhancedCard as Card,
   EnhancedCardHeader as CardHeader,
   EnhancedCardTitle as CardTitle,
@@ -17,6 +17,7 @@ import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, BookOpenIcon, SettingsIcon } from "lucide-react";
+import toast from "react-hot-toast";
 // import { LineChart } from "@/components/charts/line-chart";
 
 interface EndpointDetailsPageProps {
@@ -165,7 +166,9 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => toast("Under construction", {
+                    icon: "🚧",
+                  })}>
                     <BookOpenIcon className="w-4 h-4 mr-2" />
                     View Docs
                   </Button>
@@ -179,7 +182,9 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => toast("Under construction", {
+                    icon: "🚧",
+                  })}>
                     <SettingsIcon className="w-4 h-4 mr-2" />
                     Configure
                   </Button>
@@ -226,6 +231,32 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             </div>
           </CardContent>
         </Card>
+
+        {/* Forwarding URLs Section */}
+        {endpoints?.forwardingUrls && endpoints.forwardingUrls.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <ActivityIcon className="w-5 h-5 text-primary" />
+                Forwarding URLs
+              </CardTitle>
+              <CardDescription>
+                Requests to this endpoint will be forwarded to the following URLs
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {endpoints.forwardingUrls.map((fw) => (
+                <div key={fw.id} className="flex items-center gap-2">
+                  <span className="px-2 py-1 rounded bg-muted text-xs font-mono border border-muted-foreground/10">
+                    {fw.method}
+                  </span>
+                  <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono">{fw.url}</code>
+                  <CopyButton text={fw.url} variant="outline" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Metrics Section */}
@@ -376,9 +407,9 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                 Detailed log of recent webhook requests and their outcomes
               </CardDescription>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleExport}
             >
               Export

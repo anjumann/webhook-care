@@ -12,6 +12,7 @@ interface Endpoint {
   requestCount: number;
   userId: string;
   requests: Requests[];
+  forwardingUrls: ForwardingUrl[];
 }
  
 interface Requests {
@@ -31,6 +32,12 @@ interface Requests {
   duration: number;
   createdAt: string;
   updatedAt: string;
+}
+
+interface ForwardingUrl {
+  id: string;
+  url: string;
+  method: string;
 }
 
 // Fetcher function for SWR

@@ -28,6 +28,11 @@ export type Endpoint = $Result.DefaultSelection<Prisma.$EndpointPayload>
  * 
  */
 export type Request = $Result.DefaultSelection<Prisma.$RequestPayload>
+/**
+ * Model ForwardingUrl
+ * 
+ */
+export type ForwardingUrl = $Result.DefaultSelection<Prisma.$ForwardingUrlPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -150,6 +155,16 @@ export class PrismaClient<
     * ```
     */
   get request(): Prisma.RequestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.forwardingUrl`: Exposes CRUD operations for the **ForwardingUrl** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ForwardingUrls
+    * const forwardingUrls = await prisma.forwardingUrl.findMany()
+    * ```
+    */
+  get forwardingUrl(): Prisma.ForwardingUrlDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -592,7 +607,8 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Endpoint: 'Endpoint',
-    Request: 'Request'
+    Request: 'Request',
+    ForwardingUrl: 'ForwardingUrl'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -611,7 +627,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "endpoint" | "request"
+      modelProps: "user" | "endpoint" | "request" | "forwardingUrl"
       txIsolationLevel: never
     }
     model: {
@@ -837,6 +853,80 @@ export namespace Prisma {
           }
         }
       }
+      ForwardingUrl: {
+        payload: Prisma.$ForwardingUrlPayload<ExtArgs>
+        fields: Prisma.ForwardingUrlFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ForwardingUrlFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ForwardingUrlFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>
+          }
+          findFirst: {
+            args: Prisma.ForwardingUrlFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ForwardingUrlFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>
+          }
+          findMany: {
+            args: Prisma.ForwardingUrlFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>[]
+          }
+          create: {
+            args: Prisma.ForwardingUrlCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>
+          }
+          createMany: {
+            args: Prisma.ForwardingUrlCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ForwardingUrlDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>
+          }
+          update: {
+            args: Prisma.ForwardingUrlUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>
+          }
+          deleteMany: {
+            args: Prisma.ForwardingUrlDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ForwardingUrlUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ForwardingUrlUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ForwardingUrlPayload>
+          }
+          aggregate: {
+            args: Prisma.ForwardingUrlAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateForwardingUrl>
+          }
+          groupBy: {
+            args: Prisma.ForwardingUrlGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ForwardingUrlGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ForwardingUrlFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ForwardingUrlAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ForwardingUrlCountArgs<ExtArgs>
+            result: $Utils.Optional<ForwardingUrlCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -911,6 +1001,7 @@ export namespace Prisma {
     user?: UserOmit
     endpoint?: EndpointOmit
     request?: RequestOmit
+    forwardingUrl?: ForwardingUrlOmit
   }
 
   /* Types for Logging */
@@ -1037,10 +1128,12 @@ export namespace Prisma {
 
   export type EndpointCountOutputType = {
     requests: number
+    forwardingUrls: number
   }
 
   export type EndpointCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     requests?: boolean | EndpointCountOutputTypeCountRequestsArgs
+    forwardingUrls?: boolean | EndpointCountOutputTypeCountForwardingUrlsArgs
   }
 
   // Custom InputTypes
@@ -1059,6 +1152,13 @@ export namespace Prisma {
    */
   export type EndpointCountOutputTypeCountRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RequestWhereInput
+  }
+
+  /**
+   * EndpointCountOutputType without action
+   */
+  export type EndpointCountOutputTypeCountForwardingUrlsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ForwardingUrlWhereInput
   }
 
 
@@ -2314,6 +2414,7 @@ export namespace Prisma {
     userId?: boolean
     requests?: boolean | Endpoint$requestsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    forwardingUrls?: boolean | Endpoint$forwardingUrlsArgs<ExtArgs>
     _count?: boolean | EndpointCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["endpoint"]>
 
@@ -2335,6 +2436,7 @@ export namespace Prisma {
   export type EndpointInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     requests?: boolean | Endpoint$requestsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    forwardingUrls?: boolean | Endpoint$forwardingUrlsArgs<ExtArgs>
     _count?: boolean | EndpointCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -2343,6 +2445,7 @@ export namespace Prisma {
     objects: {
       requests: Prisma.$RequestPayload<ExtArgs>[]
       user: Prisma.$UserPayload<ExtArgs>
+      forwardingUrls: Prisma.$ForwardingUrlPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2719,6 +2822,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     requests<T extends Endpoint$requestsArgs<ExtArgs> = {}>(args?: Subset<T, Endpoint$requestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    forwardingUrls<T extends Endpoint$forwardingUrlsArgs<ExtArgs> = {}>(args?: Subset<T, Endpoint$forwardingUrlsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3148,6 +3252,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: RequestScalarFieldEnum | RequestScalarFieldEnum[]
+  }
+
+  /**
+   * Endpoint.forwardingUrls
+   */
+  export type Endpoint$forwardingUrlsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    where?: ForwardingUrlWhereInput
+    orderBy?: ForwardingUrlOrderByWithRelationInput | ForwardingUrlOrderByWithRelationInput[]
+    cursor?: ForwardingUrlWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ForwardingUrlScalarFieldEnum | ForwardingUrlScalarFieldEnum[]
   }
 
   /**
@@ -4237,6 +4365,996 @@ export namespace Prisma {
 
 
   /**
+   * Model ForwardingUrl
+   */
+
+  export type AggregateForwardingUrl = {
+    _count: ForwardingUrlCountAggregateOutputType | null
+    _min: ForwardingUrlMinAggregateOutputType | null
+    _max: ForwardingUrlMaxAggregateOutputType | null
+  }
+
+  export type ForwardingUrlMinAggregateOutputType = {
+    id: string | null
+    method: string | null
+    url: string | null
+    endpointId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ForwardingUrlMaxAggregateOutputType = {
+    id: string | null
+    method: string | null
+    url: string | null
+    endpointId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ForwardingUrlCountAggregateOutputType = {
+    id: number
+    method: number
+    url: number
+    endpointId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ForwardingUrlMinAggregateInputType = {
+    id?: true
+    method?: true
+    url?: true
+    endpointId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ForwardingUrlMaxAggregateInputType = {
+    id?: true
+    method?: true
+    url?: true
+    endpointId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ForwardingUrlCountAggregateInputType = {
+    id?: true
+    method?: true
+    url?: true
+    endpointId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ForwardingUrlAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ForwardingUrl to aggregate.
+     */
+    where?: ForwardingUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ForwardingUrls to fetch.
+     */
+    orderBy?: ForwardingUrlOrderByWithRelationInput | ForwardingUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ForwardingUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ForwardingUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ForwardingUrls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ForwardingUrls
+    **/
+    _count?: true | ForwardingUrlCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ForwardingUrlMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ForwardingUrlMaxAggregateInputType
+  }
+
+  export type GetForwardingUrlAggregateType<T extends ForwardingUrlAggregateArgs> = {
+        [P in keyof T & keyof AggregateForwardingUrl]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateForwardingUrl[P]>
+      : GetScalarType<T[P], AggregateForwardingUrl[P]>
+  }
+
+
+
+
+  export type ForwardingUrlGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ForwardingUrlWhereInput
+    orderBy?: ForwardingUrlOrderByWithAggregationInput | ForwardingUrlOrderByWithAggregationInput[]
+    by: ForwardingUrlScalarFieldEnum[] | ForwardingUrlScalarFieldEnum
+    having?: ForwardingUrlScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ForwardingUrlCountAggregateInputType | true
+    _min?: ForwardingUrlMinAggregateInputType
+    _max?: ForwardingUrlMaxAggregateInputType
+  }
+
+  export type ForwardingUrlGroupByOutputType = {
+    id: string
+    method: string
+    url: string
+    endpointId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ForwardingUrlCountAggregateOutputType | null
+    _min: ForwardingUrlMinAggregateOutputType | null
+    _max: ForwardingUrlMaxAggregateOutputType | null
+  }
+
+  type GetForwardingUrlGroupByPayload<T extends ForwardingUrlGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ForwardingUrlGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ForwardingUrlGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ForwardingUrlGroupByOutputType[P]>
+            : GetScalarType<T[P], ForwardingUrlGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ForwardingUrlSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    method?: boolean
+    url?: boolean
+    endpointId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    endpoint?: boolean | EndpointDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["forwardingUrl"]>
+
+
+
+  export type ForwardingUrlSelectScalar = {
+    id?: boolean
+    method?: boolean
+    url?: boolean
+    endpointId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ForwardingUrlOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "method" | "url" | "endpointId" | "createdAt" | "updatedAt", ExtArgs["result"]["forwardingUrl"]>
+  export type ForwardingUrlInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    endpoint?: boolean | EndpointDefaultArgs<ExtArgs>
+  }
+
+  export type $ForwardingUrlPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ForwardingUrl"
+    objects: {
+      endpoint: Prisma.$EndpointPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      method: string
+      url: string
+      endpointId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["forwardingUrl"]>
+    composites: {}
+  }
+
+  type ForwardingUrlGetPayload<S extends boolean | null | undefined | ForwardingUrlDefaultArgs> = $Result.GetResult<Prisma.$ForwardingUrlPayload, S>
+
+  type ForwardingUrlCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ForwardingUrlFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ForwardingUrlCountAggregateInputType | true
+    }
+
+  export interface ForwardingUrlDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ForwardingUrl'], meta: { name: 'ForwardingUrl' } }
+    /**
+     * Find zero or one ForwardingUrl that matches the filter.
+     * @param {ForwardingUrlFindUniqueArgs} args - Arguments to find a ForwardingUrl
+     * @example
+     * // Get one ForwardingUrl
+     * const forwardingUrl = await prisma.forwardingUrl.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ForwardingUrlFindUniqueArgs>(args: SelectSubset<T, ForwardingUrlFindUniqueArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ForwardingUrl that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ForwardingUrlFindUniqueOrThrowArgs} args - Arguments to find a ForwardingUrl
+     * @example
+     * // Get one ForwardingUrl
+     * const forwardingUrl = await prisma.forwardingUrl.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ForwardingUrlFindUniqueOrThrowArgs>(args: SelectSubset<T, ForwardingUrlFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ForwardingUrl that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlFindFirstArgs} args - Arguments to find a ForwardingUrl
+     * @example
+     * // Get one ForwardingUrl
+     * const forwardingUrl = await prisma.forwardingUrl.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ForwardingUrlFindFirstArgs>(args?: SelectSubset<T, ForwardingUrlFindFirstArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ForwardingUrl that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlFindFirstOrThrowArgs} args - Arguments to find a ForwardingUrl
+     * @example
+     * // Get one ForwardingUrl
+     * const forwardingUrl = await prisma.forwardingUrl.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ForwardingUrlFindFirstOrThrowArgs>(args?: SelectSubset<T, ForwardingUrlFindFirstOrThrowArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ForwardingUrls that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ForwardingUrls
+     * const forwardingUrls = await prisma.forwardingUrl.findMany()
+     * 
+     * // Get first 10 ForwardingUrls
+     * const forwardingUrls = await prisma.forwardingUrl.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const forwardingUrlWithIdOnly = await prisma.forwardingUrl.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ForwardingUrlFindManyArgs>(args?: SelectSubset<T, ForwardingUrlFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ForwardingUrl.
+     * @param {ForwardingUrlCreateArgs} args - Arguments to create a ForwardingUrl.
+     * @example
+     * // Create one ForwardingUrl
+     * const ForwardingUrl = await prisma.forwardingUrl.create({
+     *   data: {
+     *     // ... data to create a ForwardingUrl
+     *   }
+     * })
+     * 
+     */
+    create<T extends ForwardingUrlCreateArgs>(args: SelectSubset<T, ForwardingUrlCreateArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ForwardingUrls.
+     * @param {ForwardingUrlCreateManyArgs} args - Arguments to create many ForwardingUrls.
+     * @example
+     * // Create many ForwardingUrls
+     * const forwardingUrl = await prisma.forwardingUrl.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ForwardingUrlCreateManyArgs>(args?: SelectSubset<T, ForwardingUrlCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ForwardingUrl.
+     * @param {ForwardingUrlDeleteArgs} args - Arguments to delete one ForwardingUrl.
+     * @example
+     * // Delete one ForwardingUrl
+     * const ForwardingUrl = await prisma.forwardingUrl.delete({
+     *   where: {
+     *     // ... filter to delete one ForwardingUrl
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ForwardingUrlDeleteArgs>(args: SelectSubset<T, ForwardingUrlDeleteArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ForwardingUrl.
+     * @param {ForwardingUrlUpdateArgs} args - Arguments to update one ForwardingUrl.
+     * @example
+     * // Update one ForwardingUrl
+     * const forwardingUrl = await prisma.forwardingUrl.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ForwardingUrlUpdateArgs>(args: SelectSubset<T, ForwardingUrlUpdateArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ForwardingUrls.
+     * @param {ForwardingUrlDeleteManyArgs} args - Arguments to filter ForwardingUrls to delete.
+     * @example
+     * // Delete a few ForwardingUrls
+     * const { count } = await prisma.forwardingUrl.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ForwardingUrlDeleteManyArgs>(args?: SelectSubset<T, ForwardingUrlDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ForwardingUrls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ForwardingUrls
+     * const forwardingUrl = await prisma.forwardingUrl.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ForwardingUrlUpdateManyArgs>(args: SelectSubset<T, ForwardingUrlUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ForwardingUrl.
+     * @param {ForwardingUrlUpsertArgs} args - Arguments to update or create a ForwardingUrl.
+     * @example
+     * // Update or create a ForwardingUrl
+     * const forwardingUrl = await prisma.forwardingUrl.upsert({
+     *   create: {
+     *     // ... data to create a ForwardingUrl
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ForwardingUrl we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ForwardingUrlUpsertArgs>(args: SelectSubset<T, ForwardingUrlUpsertArgs<ExtArgs>>): Prisma__ForwardingUrlClient<$Result.GetResult<Prisma.$ForwardingUrlPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ForwardingUrls that matches the filter.
+     * @param {ForwardingUrlFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const forwardingUrl = await prisma.forwardingUrl.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ForwardingUrlFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ForwardingUrl.
+     * @param {ForwardingUrlAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const forwardingUrl = await prisma.forwardingUrl.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ForwardingUrlAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ForwardingUrls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlCountArgs} args - Arguments to filter ForwardingUrls to count.
+     * @example
+     * // Count the number of ForwardingUrls
+     * const count = await prisma.forwardingUrl.count({
+     *   where: {
+     *     // ... the filter for the ForwardingUrls we want to count
+     *   }
+     * })
+    **/
+    count<T extends ForwardingUrlCountArgs>(
+      args?: Subset<T, ForwardingUrlCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ForwardingUrlCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ForwardingUrl.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ForwardingUrlAggregateArgs>(args: Subset<T, ForwardingUrlAggregateArgs>): Prisma.PrismaPromise<GetForwardingUrlAggregateType<T>>
+
+    /**
+     * Group by ForwardingUrl.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ForwardingUrlGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ForwardingUrlGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ForwardingUrlGroupByArgs['orderBy'] }
+        : { orderBy?: ForwardingUrlGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ForwardingUrlGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetForwardingUrlGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ForwardingUrl model
+   */
+  readonly fields: ForwardingUrlFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ForwardingUrl.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ForwardingUrlClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    endpoint<T extends EndpointDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EndpointDefaultArgs<ExtArgs>>): Prisma__EndpointClient<$Result.GetResult<Prisma.$EndpointPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ForwardingUrl model
+   */
+  interface ForwardingUrlFieldRefs {
+    readonly id: FieldRef<"ForwardingUrl", 'String'>
+    readonly method: FieldRef<"ForwardingUrl", 'String'>
+    readonly url: FieldRef<"ForwardingUrl", 'String'>
+    readonly endpointId: FieldRef<"ForwardingUrl", 'String'>
+    readonly createdAt: FieldRef<"ForwardingUrl", 'DateTime'>
+    readonly updatedAt: FieldRef<"ForwardingUrl", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ForwardingUrl findUnique
+   */
+  export type ForwardingUrlFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which ForwardingUrl to fetch.
+     */
+    where: ForwardingUrlWhereUniqueInput
+  }
+
+  /**
+   * ForwardingUrl findUniqueOrThrow
+   */
+  export type ForwardingUrlFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which ForwardingUrl to fetch.
+     */
+    where: ForwardingUrlWhereUniqueInput
+  }
+
+  /**
+   * ForwardingUrl findFirst
+   */
+  export type ForwardingUrlFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which ForwardingUrl to fetch.
+     */
+    where?: ForwardingUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ForwardingUrls to fetch.
+     */
+    orderBy?: ForwardingUrlOrderByWithRelationInput | ForwardingUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ForwardingUrls.
+     */
+    cursor?: ForwardingUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ForwardingUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ForwardingUrls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ForwardingUrls.
+     */
+    distinct?: ForwardingUrlScalarFieldEnum | ForwardingUrlScalarFieldEnum[]
+  }
+
+  /**
+   * ForwardingUrl findFirstOrThrow
+   */
+  export type ForwardingUrlFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which ForwardingUrl to fetch.
+     */
+    where?: ForwardingUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ForwardingUrls to fetch.
+     */
+    orderBy?: ForwardingUrlOrderByWithRelationInput | ForwardingUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ForwardingUrls.
+     */
+    cursor?: ForwardingUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ForwardingUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ForwardingUrls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ForwardingUrls.
+     */
+    distinct?: ForwardingUrlScalarFieldEnum | ForwardingUrlScalarFieldEnum[]
+  }
+
+  /**
+   * ForwardingUrl findMany
+   */
+  export type ForwardingUrlFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which ForwardingUrls to fetch.
+     */
+    where?: ForwardingUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ForwardingUrls to fetch.
+     */
+    orderBy?: ForwardingUrlOrderByWithRelationInput | ForwardingUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ForwardingUrls.
+     */
+    cursor?: ForwardingUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ForwardingUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ForwardingUrls.
+     */
+    skip?: number
+    distinct?: ForwardingUrlScalarFieldEnum | ForwardingUrlScalarFieldEnum[]
+  }
+
+  /**
+   * ForwardingUrl create
+   */
+  export type ForwardingUrlCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ForwardingUrl.
+     */
+    data: XOR<ForwardingUrlCreateInput, ForwardingUrlUncheckedCreateInput>
+  }
+
+  /**
+   * ForwardingUrl createMany
+   */
+  export type ForwardingUrlCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ForwardingUrls.
+     */
+    data: ForwardingUrlCreateManyInput | ForwardingUrlCreateManyInput[]
+  }
+
+  /**
+   * ForwardingUrl update
+   */
+  export type ForwardingUrlUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ForwardingUrl.
+     */
+    data: XOR<ForwardingUrlUpdateInput, ForwardingUrlUncheckedUpdateInput>
+    /**
+     * Choose, which ForwardingUrl to update.
+     */
+    where: ForwardingUrlWhereUniqueInput
+  }
+
+  /**
+   * ForwardingUrl updateMany
+   */
+  export type ForwardingUrlUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ForwardingUrls.
+     */
+    data: XOR<ForwardingUrlUpdateManyMutationInput, ForwardingUrlUncheckedUpdateManyInput>
+    /**
+     * Filter which ForwardingUrls to update
+     */
+    where?: ForwardingUrlWhereInput
+    /**
+     * Limit how many ForwardingUrls to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ForwardingUrl upsert
+   */
+  export type ForwardingUrlUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ForwardingUrl to update in case it exists.
+     */
+    where: ForwardingUrlWhereUniqueInput
+    /**
+     * In case the ForwardingUrl found by the `where` argument doesn't exist, create a new ForwardingUrl with this data.
+     */
+    create: XOR<ForwardingUrlCreateInput, ForwardingUrlUncheckedCreateInput>
+    /**
+     * In case the ForwardingUrl was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ForwardingUrlUpdateInput, ForwardingUrlUncheckedUpdateInput>
+  }
+
+  /**
+   * ForwardingUrl delete
+   */
+  export type ForwardingUrlDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+    /**
+     * Filter which ForwardingUrl to delete.
+     */
+    where: ForwardingUrlWhereUniqueInput
+  }
+
+  /**
+   * ForwardingUrl deleteMany
+   */
+  export type ForwardingUrlDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ForwardingUrls to delete
+     */
+    where?: ForwardingUrlWhereInput
+    /**
+     * Limit how many ForwardingUrls to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ForwardingUrl findRaw
+   */
+  export type ForwardingUrlFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ForwardingUrl aggregateRaw
+   */
+  export type ForwardingUrlAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ForwardingUrl without action
+   */
+  export type ForwardingUrlDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ForwardingUrl
+     */
+    select?: ForwardingUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ForwardingUrl
+     */
+    omit?: ForwardingUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ForwardingUrlInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -4282,6 +5400,18 @@ export namespace Prisma {
   };
 
   export type RequestScalarFieldEnum = (typeof RequestScalarFieldEnum)[keyof typeof RequestScalarFieldEnum]
+
+
+  export const ForwardingUrlScalarFieldEnum: {
+    id: 'id',
+    method: 'method',
+    url: 'url',
+    endpointId: 'endpointId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ForwardingUrlScalarFieldEnum = (typeof ForwardingUrlScalarFieldEnum)[keyof typeof ForwardingUrlScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -4446,6 +5576,7 @@ export namespace Prisma {
     userId?: StringFilter<"Endpoint"> | string
     requests?: RequestListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    forwardingUrls?: ForwardingUrlListRelationFilter
   }
 
   export type EndpointOrderByWithRelationInput = {
@@ -4460,6 +5591,7 @@ export namespace Prisma {
     userId?: SortOrder
     requests?: RequestOrderByRelationAggregateInput
     user?: UserOrderByWithRelationInput
+    forwardingUrls?: ForwardingUrlOrderByRelationAggregateInput
   }
 
   export type EndpointWhereUniqueInput = Prisma.AtLeast<{
@@ -4477,6 +5609,7 @@ export namespace Prisma {
     userId?: StringFilter<"Endpoint"> | string
     requests?: RequestListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    forwardingUrls?: ForwardingUrlListRelationFilter
   }, "id">
 
   export type EndpointOrderByWithAggregationInput = {
@@ -4598,6 +5731,66 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Request"> | Date | string
   }
 
+  export type ForwardingUrlWhereInput = {
+    AND?: ForwardingUrlWhereInput | ForwardingUrlWhereInput[]
+    OR?: ForwardingUrlWhereInput[]
+    NOT?: ForwardingUrlWhereInput | ForwardingUrlWhereInput[]
+    id?: StringFilter<"ForwardingUrl"> | string
+    method?: StringFilter<"ForwardingUrl"> | string
+    url?: StringFilter<"ForwardingUrl"> | string
+    endpointId?: StringFilter<"ForwardingUrl"> | string
+    createdAt?: DateTimeFilter<"ForwardingUrl"> | Date | string
+    updatedAt?: DateTimeFilter<"ForwardingUrl"> | Date | string
+    endpoint?: XOR<EndpointScalarRelationFilter, EndpointWhereInput>
+  }
+
+  export type ForwardingUrlOrderByWithRelationInput = {
+    id?: SortOrder
+    method?: SortOrder
+    url?: SortOrder
+    endpointId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    endpoint?: EndpointOrderByWithRelationInput
+  }
+
+  export type ForwardingUrlWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ForwardingUrlWhereInput | ForwardingUrlWhereInput[]
+    OR?: ForwardingUrlWhereInput[]
+    NOT?: ForwardingUrlWhereInput | ForwardingUrlWhereInput[]
+    method?: StringFilter<"ForwardingUrl"> | string
+    url?: StringFilter<"ForwardingUrl"> | string
+    endpointId?: StringFilter<"ForwardingUrl"> | string
+    createdAt?: DateTimeFilter<"ForwardingUrl"> | Date | string
+    updatedAt?: DateTimeFilter<"ForwardingUrl"> | Date | string
+    endpoint?: XOR<EndpointScalarRelationFilter, EndpointWhereInput>
+  }, "id">
+
+  export type ForwardingUrlOrderByWithAggregationInput = {
+    id?: SortOrder
+    method?: SortOrder
+    url?: SortOrder
+    endpointId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ForwardingUrlCountOrderByAggregateInput
+    _max?: ForwardingUrlMaxOrderByAggregateInput
+    _min?: ForwardingUrlMinOrderByAggregateInput
+  }
+
+  export type ForwardingUrlScalarWhereWithAggregatesInput = {
+    AND?: ForwardingUrlScalarWhereWithAggregatesInput | ForwardingUrlScalarWhereWithAggregatesInput[]
+    OR?: ForwardingUrlScalarWhereWithAggregatesInput[]
+    NOT?: ForwardingUrlScalarWhereWithAggregatesInput | ForwardingUrlScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ForwardingUrl"> | string
+    method?: StringWithAggregatesFilter<"ForwardingUrl"> | string
+    url?: StringWithAggregatesFilter<"ForwardingUrl"> | string
+    endpointId?: StringWithAggregatesFilter<"ForwardingUrl"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ForwardingUrl"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ForwardingUrl"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     userName?: string | null
@@ -4672,6 +5865,7 @@ export namespace Prisma {
     requestCount?: number
     requests?: RequestCreateNestedManyWithoutEndpointInput
     user: UserCreateNestedOneWithoutEndpointsInput
+    forwardingUrls?: ForwardingUrlCreateNestedManyWithoutEndpointInput
   }
 
   export type EndpointUncheckedCreateInput = {
@@ -4685,6 +5879,7 @@ export namespace Prisma {
     requestCount?: number
     userId: string
     requests?: RequestUncheckedCreateNestedManyWithoutEndpointInput
+    forwardingUrls?: ForwardingUrlUncheckedCreateNestedManyWithoutEndpointInput
   }
 
   export type EndpointUpdateInput = {
@@ -4697,6 +5892,7 @@ export namespace Prisma {
     requestCount?: IntFieldUpdateOperationsInput | number
     requests?: RequestUpdateManyWithoutEndpointNestedInput
     user?: UserUpdateOneRequiredWithoutEndpointsNestedInput
+    forwardingUrls?: ForwardingUrlUpdateManyWithoutEndpointNestedInput
   }
 
   export type EndpointUncheckedUpdateInput = {
@@ -4709,6 +5905,7 @@ export namespace Prisma {
     requestCount?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     requests?: RequestUncheckedUpdateManyWithoutEndpointNestedInput
+    forwardingUrls?: ForwardingUrlUncheckedUpdateManyWithoutEndpointNestedInput
   }
 
   export type EndpointCreateManyInput = {
@@ -4833,6 +6030,64 @@ export namespace Prisma {
     statusCode?: IntFieldUpdateOperationsInput | number
     response?: InputJsonValue | InputJsonValue | null
     duration?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ForwardingUrlCreateInput = {
+    id?: string
+    method: string
+    url: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    endpoint: EndpointCreateNestedOneWithoutForwardingUrlsInput
+  }
+
+  export type ForwardingUrlUncheckedCreateInput = {
+    id?: string
+    method: string
+    url: string
+    endpointId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ForwardingUrlUpdateInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endpoint?: EndpointUpdateOneRequiredWithoutForwardingUrlsNestedInput
+  }
+
+  export type ForwardingUrlUncheckedUpdateInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    endpointId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ForwardingUrlCreateManyInput = {
+    id?: string
+    method: string
+    url: string
+    endpointId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ForwardingUrlUpdateManyMutationInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ForwardingUrlUncheckedUpdateManyInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    endpointId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -4989,7 +6244,17 @@ export namespace Prisma {
     isNot?: UserWhereInput
   }
 
+  export type ForwardingUrlListRelationFilter = {
+    every?: ForwardingUrlWhereInput
+    some?: ForwardingUrlWhereInput
+    none?: ForwardingUrlWhereInput
+  }
+
   export type RequestOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ForwardingUrlOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -5154,6 +6419,33 @@ export namespace Prisma {
     isSet?: boolean
   }
 
+  export type ForwardingUrlCountOrderByAggregateInput = {
+    id?: SortOrder
+    method?: SortOrder
+    url?: SortOrder
+    endpointId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ForwardingUrlMaxOrderByAggregateInput = {
+    id?: SortOrder
+    method?: SortOrder
+    url?: SortOrder
+    endpointId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ForwardingUrlMinOrderByAggregateInput = {
+    id?: SortOrder
+    method?: SortOrder
+    url?: SortOrder
+    endpointId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type EndpointCreateNestedManyWithoutUserInput = {
     create?: XOR<EndpointCreateWithoutUserInput, EndpointUncheckedCreateWithoutUserInput> | EndpointCreateWithoutUserInput[] | EndpointUncheckedCreateWithoutUserInput[]
     connectOrCreate?: EndpointCreateOrConnectWithoutUserInput | EndpointCreateOrConnectWithoutUserInput[]
@@ -5222,11 +6514,25 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type ForwardingUrlCreateNestedManyWithoutEndpointInput = {
+    create?: XOR<ForwardingUrlCreateWithoutEndpointInput, ForwardingUrlUncheckedCreateWithoutEndpointInput> | ForwardingUrlCreateWithoutEndpointInput[] | ForwardingUrlUncheckedCreateWithoutEndpointInput[]
+    connectOrCreate?: ForwardingUrlCreateOrConnectWithoutEndpointInput | ForwardingUrlCreateOrConnectWithoutEndpointInput[]
+    createMany?: ForwardingUrlCreateManyEndpointInputEnvelope
+    connect?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+  }
+
   export type RequestUncheckedCreateNestedManyWithoutEndpointInput = {
     create?: XOR<RequestCreateWithoutEndpointInput, RequestUncheckedCreateWithoutEndpointInput> | RequestCreateWithoutEndpointInput[] | RequestUncheckedCreateWithoutEndpointInput[]
     connectOrCreate?: RequestCreateOrConnectWithoutEndpointInput | RequestCreateOrConnectWithoutEndpointInput[]
     createMany?: RequestCreateManyEndpointInputEnvelope
     connect?: RequestWhereUniqueInput | RequestWhereUniqueInput[]
+  }
+
+  export type ForwardingUrlUncheckedCreateNestedManyWithoutEndpointInput = {
+    create?: XOR<ForwardingUrlCreateWithoutEndpointInput, ForwardingUrlUncheckedCreateWithoutEndpointInput> | ForwardingUrlCreateWithoutEndpointInput[] | ForwardingUrlUncheckedCreateWithoutEndpointInput[]
+    connectOrCreate?: ForwardingUrlCreateOrConnectWithoutEndpointInput | ForwardingUrlCreateOrConnectWithoutEndpointInput[]
+    createMany?: ForwardingUrlCreateManyEndpointInputEnvelope
+    connect?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -5259,6 +6565,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEndpointsInput, UserUpdateWithoutEndpointsInput>, UserUncheckedUpdateWithoutEndpointsInput>
   }
 
+  export type ForwardingUrlUpdateManyWithoutEndpointNestedInput = {
+    create?: XOR<ForwardingUrlCreateWithoutEndpointInput, ForwardingUrlUncheckedCreateWithoutEndpointInput> | ForwardingUrlCreateWithoutEndpointInput[] | ForwardingUrlUncheckedCreateWithoutEndpointInput[]
+    connectOrCreate?: ForwardingUrlCreateOrConnectWithoutEndpointInput | ForwardingUrlCreateOrConnectWithoutEndpointInput[]
+    upsert?: ForwardingUrlUpsertWithWhereUniqueWithoutEndpointInput | ForwardingUrlUpsertWithWhereUniqueWithoutEndpointInput[]
+    createMany?: ForwardingUrlCreateManyEndpointInputEnvelope
+    set?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    disconnect?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    delete?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    connect?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    update?: ForwardingUrlUpdateWithWhereUniqueWithoutEndpointInput | ForwardingUrlUpdateWithWhereUniqueWithoutEndpointInput[]
+    updateMany?: ForwardingUrlUpdateManyWithWhereWithoutEndpointInput | ForwardingUrlUpdateManyWithWhereWithoutEndpointInput[]
+    deleteMany?: ForwardingUrlScalarWhereInput | ForwardingUrlScalarWhereInput[]
+  }
+
   export type RequestUncheckedUpdateManyWithoutEndpointNestedInput = {
     create?: XOR<RequestCreateWithoutEndpointInput, RequestUncheckedCreateWithoutEndpointInput> | RequestCreateWithoutEndpointInput[] | RequestUncheckedCreateWithoutEndpointInput[]
     connectOrCreate?: RequestCreateOrConnectWithoutEndpointInput | RequestCreateOrConnectWithoutEndpointInput[]
@@ -5273,6 +6593,20 @@ export namespace Prisma {
     deleteMany?: RequestScalarWhereInput | RequestScalarWhereInput[]
   }
 
+  export type ForwardingUrlUncheckedUpdateManyWithoutEndpointNestedInput = {
+    create?: XOR<ForwardingUrlCreateWithoutEndpointInput, ForwardingUrlUncheckedCreateWithoutEndpointInput> | ForwardingUrlCreateWithoutEndpointInput[] | ForwardingUrlUncheckedCreateWithoutEndpointInput[]
+    connectOrCreate?: ForwardingUrlCreateOrConnectWithoutEndpointInput | ForwardingUrlCreateOrConnectWithoutEndpointInput[]
+    upsert?: ForwardingUrlUpsertWithWhereUniqueWithoutEndpointInput | ForwardingUrlUpsertWithWhereUniqueWithoutEndpointInput[]
+    createMany?: ForwardingUrlCreateManyEndpointInputEnvelope
+    set?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    disconnect?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    delete?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    connect?: ForwardingUrlWhereUniqueInput | ForwardingUrlWhereUniqueInput[]
+    update?: ForwardingUrlUpdateWithWhereUniqueWithoutEndpointInput | ForwardingUrlUpdateWithWhereUniqueWithoutEndpointInput[]
+    updateMany?: ForwardingUrlUpdateManyWithWhereWithoutEndpointInput | ForwardingUrlUpdateManyWithWhereWithoutEndpointInput[]
+    deleteMany?: ForwardingUrlScalarWhereInput | ForwardingUrlScalarWhereInput[]
+  }
+
   export type EndpointCreateNestedOneWithoutRequestsInput = {
     create?: XOR<EndpointCreateWithoutRequestsInput, EndpointUncheckedCreateWithoutRequestsInput>
     connectOrCreate?: EndpointCreateOrConnectWithoutRequestsInput
@@ -5285,6 +6619,20 @@ export namespace Prisma {
     upsert?: EndpointUpsertWithoutRequestsInput
     connect?: EndpointWhereUniqueInput
     update?: XOR<XOR<EndpointUpdateToOneWithWhereWithoutRequestsInput, EndpointUpdateWithoutRequestsInput>, EndpointUncheckedUpdateWithoutRequestsInput>
+  }
+
+  export type EndpointCreateNestedOneWithoutForwardingUrlsInput = {
+    create?: XOR<EndpointCreateWithoutForwardingUrlsInput, EndpointUncheckedCreateWithoutForwardingUrlsInput>
+    connectOrCreate?: EndpointCreateOrConnectWithoutForwardingUrlsInput
+    connect?: EndpointWhereUniqueInput
+  }
+
+  export type EndpointUpdateOneRequiredWithoutForwardingUrlsNestedInput = {
+    create?: XOR<EndpointCreateWithoutForwardingUrlsInput, EndpointUncheckedCreateWithoutForwardingUrlsInput>
+    connectOrCreate?: EndpointCreateOrConnectWithoutForwardingUrlsInput
+    upsert?: EndpointUpsertWithoutForwardingUrlsInput
+    connect?: EndpointWhereUniqueInput
+    update?: XOR<XOR<EndpointUpdateToOneWithWhereWithoutForwardingUrlsInput, EndpointUpdateWithoutForwardingUrlsInput>, EndpointUncheckedUpdateWithoutForwardingUrlsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -5459,6 +6807,7 @@ export namespace Prisma {
     lastActivity?: Date | string
     requestCount?: number
     requests?: RequestCreateNestedManyWithoutEndpointInput
+    forwardingUrls?: ForwardingUrlCreateNestedManyWithoutEndpointInput
   }
 
   export type EndpointUncheckedCreateWithoutUserInput = {
@@ -5471,6 +6820,7 @@ export namespace Prisma {
     lastActivity?: Date | string
     requestCount?: number
     requests?: RequestUncheckedCreateNestedManyWithoutEndpointInput
+    forwardingUrls?: ForwardingUrlUncheckedCreateNestedManyWithoutEndpointInput
   }
 
   export type EndpointCreateOrConnectWithoutUserInput = {
@@ -5571,6 +6921,31 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutEndpointsInput, UserUncheckedCreateWithoutEndpointsInput>
   }
 
+  export type ForwardingUrlCreateWithoutEndpointInput = {
+    id?: string
+    method: string
+    url: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ForwardingUrlUncheckedCreateWithoutEndpointInput = {
+    id?: string
+    method: string
+    url: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ForwardingUrlCreateOrConnectWithoutEndpointInput = {
+    where: ForwardingUrlWhereUniqueInput
+    create: XOR<ForwardingUrlCreateWithoutEndpointInput, ForwardingUrlUncheckedCreateWithoutEndpointInput>
+  }
+
+  export type ForwardingUrlCreateManyEndpointInputEnvelope = {
+    data: ForwardingUrlCreateManyEndpointInput | ForwardingUrlCreateManyEndpointInput[]
+  }
+
   export type RequestUpsertWithWhereUniqueWithoutEndpointInput = {
     where: RequestWhereUniqueInput
     update: XOR<RequestUpdateWithoutEndpointInput, RequestUncheckedUpdateWithoutEndpointInput>
@@ -5631,6 +7006,34 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ForwardingUrlUpsertWithWhereUniqueWithoutEndpointInput = {
+    where: ForwardingUrlWhereUniqueInput
+    update: XOR<ForwardingUrlUpdateWithoutEndpointInput, ForwardingUrlUncheckedUpdateWithoutEndpointInput>
+    create: XOR<ForwardingUrlCreateWithoutEndpointInput, ForwardingUrlUncheckedCreateWithoutEndpointInput>
+  }
+
+  export type ForwardingUrlUpdateWithWhereUniqueWithoutEndpointInput = {
+    where: ForwardingUrlWhereUniqueInput
+    data: XOR<ForwardingUrlUpdateWithoutEndpointInput, ForwardingUrlUncheckedUpdateWithoutEndpointInput>
+  }
+
+  export type ForwardingUrlUpdateManyWithWhereWithoutEndpointInput = {
+    where: ForwardingUrlScalarWhereInput
+    data: XOR<ForwardingUrlUpdateManyMutationInput, ForwardingUrlUncheckedUpdateManyWithoutEndpointInput>
+  }
+
+  export type ForwardingUrlScalarWhereInput = {
+    AND?: ForwardingUrlScalarWhereInput | ForwardingUrlScalarWhereInput[]
+    OR?: ForwardingUrlScalarWhereInput[]
+    NOT?: ForwardingUrlScalarWhereInput | ForwardingUrlScalarWhereInput[]
+    id?: StringFilter<"ForwardingUrl"> | string
+    method?: StringFilter<"ForwardingUrl"> | string
+    url?: StringFilter<"ForwardingUrl"> | string
+    endpointId?: StringFilter<"ForwardingUrl"> | string
+    createdAt?: DateTimeFilter<"ForwardingUrl"> | Date | string
+    updatedAt?: DateTimeFilter<"ForwardingUrl"> | Date | string
+  }
+
   export type EndpointCreateWithoutRequestsInput = {
     id?: string
     name: string
@@ -5641,6 +7044,7 @@ export namespace Prisma {
     lastActivity?: Date | string
     requestCount?: number
     user: UserCreateNestedOneWithoutEndpointsInput
+    forwardingUrls?: ForwardingUrlCreateNestedManyWithoutEndpointInput
   }
 
   export type EndpointUncheckedCreateWithoutRequestsInput = {
@@ -5653,6 +7057,7 @@ export namespace Prisma {
     lastActivity?: Date | string
     requestCount?: number
     userId: string
+    forwardingUrls?: ForwardingUrlUncheckedCreateNestedManyWithoutEndpointInput
   }
 
   export type EndpointCreateOrConnectWithoutRequestsInput = {
@@ -5680,6 +7085,7 @@ export namespace Prisma {
     lastActivity?: DateTimeFieldUpdateOperationsInput | Date | string
     requestCount?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutEndpointsNestedInput
+    forwardingUrls?: ForwardingUrlUpdateManyWithoutEndpointNestedInput
   }
 
   export type EndpointUncheckedUpdateWithoutRequestsInput = {
@@ -5691,6 +7097,73 @@ export namespace Prisma {
     lastActivity?: DateTimeFieldUpdateOperationsInput | Date | string
     requestCount?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
+    forwardingUrls?: ForwardingUrlUncheckedUpdateManyWithoutEndpointNestedInput
+  }
+
+  export type EndpointCreateWithoutForwardingUrlsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastActivity?: Date | string
+    requestCount?: number
+    requests?: RequestCreateNestedManyWithoutEndpointInput
+    user: UserCreateNestedOneWithoutEndpointsInput
+  }
+
+  export type EndpointUncheckedCreateWithoutForwardingUrlsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastActivity?: Date | string
+    requestCount?: number
+    userId: string
+    requests?: RequestUncheckedCreateNestedManyWithoutEndpointInput
+  }
+
+  export type EndpointCreateOrConnectWithoutForwardingUrlsInput = {
+    where: EndpointWhereUniqueInput
+    create: XOR<EndpointCreateWithoutForwardingUrlsInput, EndpointUncheckedCreateWithoutForwardingUrlsInput>
+  }
+
+  export type EndpointUpsertWithoutForwardingUrlsInput = {
+    update: XOR<EndpointUpdateWithoutForwardingUrlsInput, EndpointUncheckedUpdateWithoutForwardingUrlsInput>
+    create: XOR<EndpointCreateWithoutForwardingUrlsInput, EndpointUncheckedCreateWithoutForwardingUrlsInput>
+    where?: EndpointWhereInput
+  }
+
+  export type EndpointUpdateToOneWithWhereWithoutForwardingUrlsInput = {
+    where?: EndpointWhereInput
+    data: XOR<EndpointUpdateWithoutForwardingUrlsInput, EndpointUncheckedUpdateWithoutForwardingUrlsInput>
+  }
+
+  export type EndpointUpdateWithoutForwardingUrlsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: DateTimeFieldUpdateOperationsInput | Date | string
+    requestCount?: IntFieldUpdateOperationsInput | number
+    requests?: RequestUpdateManyWithoutEndpointNestedInput
+    user?: UserUpdateOneRequiredWithoutEndpointsNestedInput
+  }
+
+  export type EndpointUncheckedUpdateWithoutForwardingUrlsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: DateTimeFieldUpdateOperationsInput | Date | string
+    requestCount?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    requests?: RequestUncheckedUpdateManyWithoutEndpointNestedInput
   }
 
   export type EndpointCreateManyUserInput = {
@@ -5713,6 +7186,7 @@ export namespace Prisma {
     lastActivity?: DateTimeFieldUpdateOperationsInput | Date | string
     requestCount?: IntFieldUpdateOperationsInput | number
     requests?: RequestUpdateManyWithoutEndpointNestedInput
+    forwardingUrls?: ForwardingUrlUpdateManyWithoutEndpointNestedInput
   }
 
   export type EndpointUncheckedUpdateWithoutUserInput = {
@@ -5724,6 +7198,7 @@ export namespace Prisma {
     lastActivity?: DateTimeFieldUpdateOperationsInput | Date | string
     requestCount?: IntFieldUpdateOperationsInput | number
     requests?: RequestUncheckedUpdateManyWithoutEndpointNestedInput
+    forwardingUrls?: ForwardingUrlUncheckedUpdateManyWithoutEndpointNestedInput
   }
 
   export type EndpointUncheckedUpdateManyWithoutUserInput = {
@@ -5745,6 +7220,14 @@ export namespace Prisma {
     statusCode: number
     response?: InputJsonValue | null
     duration: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ForwardingUrlCreateManyEndpointInput = {
+    id?: string
+    method: string
+    url: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5781,6 +7264,27 @@ export namespace Prisma {
     statusCode?: IntFieldUpdateOperationsInput | number
     response?: InputJsonValue | InputJsonValue | null
     duration?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ForwardingUrlUpdateWithoutEndpointInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ForwardingUrlUncheckedUpdateWithoutEndpointInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ForwardingUrlUncheckedUpdateManyWithoutEndpointInput = {
+    method?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
