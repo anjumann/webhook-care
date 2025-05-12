@@ -21,7 +21,7 @@ import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import CustomBreadcrumb from '@/components/custom-breadcrumb'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Sparkles } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // Define the schema for forwarding rule validation
@@ -46,7 +46,7 @@ const endpointFormSchema = z.object({
         .string()
         .max(200, { message: "Description must not exceed 200 characters." })
         .optional(),
-    forwardingUrls: z.array(forwardingRuleSchema).min(1, { message: "At least one forwarding rule is required" }),
+    forwardingUrls: z.array(forwardingRuleSchema).optional(),
 })
 
 type EndpointFormValues = z.infer<typeof endpointFormSchema>
@@ -54,7 +54,17 @@ type EndpointFormValues = z.infer<typeof endpointFormSchema>
 const defaultValues: Partial<EndpointFormValues> = {
     name: "",
     description: "",
-    forwardingUrls: [{ url: "", method: "POST" }],
+    forwardingUrls: [],
+}
+
+// Helper to generate a random valid endpoint name
+function generateRandomEndpointName(length = 8) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789-';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 export default function EndpointEditForm() {
@@ -66,6 +76,7 @@ export default function EndpointEditForm() {
     const form = useForm<EndpointFormValues>({
         resolver: zodResolver(endpointFormSchema),
         defaultValues,
+        mode: "onSubmit",
     })
 
     const { fields, append, remove } = useFieldArray({
@@ -100,7 +111,7 @@ export default function EndpointEditForm() {
 
             const result = await response.json();
             if (!result.id) return
-            router.push(`/dashboard/${user.id}/${result.id}`);
+            router.push(`/dashboard/${user.id}/${result.id}?isNew=true`);
         } catch (error) {
             console.error('Error creating endpoint:', error);
             setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -144,13 +155,24 @@ export default function EndpointEditForm() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Endpoint Name</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="my-endpoint"
-                                                {...field}
-                                                autoFocus
-                                            />
-                                        </FormControl>
+                                        <div className="flex gap-2 items-center">
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="my-endpoint"
+                                                    {...field}
+                                                    autoFocus
+                                                />
+                                            </FormControl>
+                                            <Button
+                                                type="button"
+                                                size="icon"
+                                                variant="ghost"
+                                                title="Generate random name"
+                                                onClick={() => form.setValue('name', generateRandomEndpointName(8))}
+                                            >
+                                                <Sparkles className="w-4 h-4" />
+                                            </Button>
+                                        </div>
                                         <FormDescription>
                                             This will be the endpoint URL path. Use only letters, numbers, dashes, and underscores.
                                         </FormDescription>
@@ -184,6 +206,7 @@ export default function EndpointEditForm() {
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="font-semibold">Forwarding Urls</span>
+                                    <Button size="icon" variant="outline" onClick={() => append({ url: "https://", method: "POST" })}><Plus /></Button>
                                 </div>
                                 {fields.map((field, index) => (
                                     <div key={field.id} className="flex gap-2 items-end mb-2">
@@ -228,8 +251,8 @@ export default function EndpointEditForm() {
                                             )}
                                         />
                                         <div className='flex gap-2'>
-                                            <Button size="icon" variant="outline" onClick={() => append({ url: "", method: "POST" })}><Plus /></Button>
-                                            <Button size="icon" variant="destructive" onClick={() => remove(index)} disabled={fields.length === 1}><Trash2 /></Button>
+                                            <Button size="icon" variant="outline" onClick={() => append({ url: "https://", method: "POST" })}><Plus /></Button>
+                                            <Button size="icon" variant="destructive" onClick={() => remove(index)} ><Trash2 /></Button>
                                         </div>
 
                                     </div>

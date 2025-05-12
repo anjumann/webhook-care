@@ -6,16 +6,14 @@ export function HeroSection() {
     <section className="py-24 text-center">
       <div className="container mx-auto px-4">
         <h1 className="text-5xl font-bold tracking-tight mb-6">
-          The first
-          truly intelligent <br />
-          Project Management
+          Modern Webhook Testing & Debugging
         </h1>
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Skyrocket your online store conversion rate and improve the customer journey with smart online visual merchandising.
+          Instantly create endpoints, inspect incoming requests, and forward webhooks to multiple destinations. Built for developers who want fast, reliable, and insightful webhook workflows.
         </p>
         <div className="flex gap-4 justify-center">
           <GetStartedBtn />
-          <Button size="sm" variant="outline">View Demo</Button>
+          <Button size="sm" variant="outline">View Docs</Button>
         </div>
       </div>
     </section>

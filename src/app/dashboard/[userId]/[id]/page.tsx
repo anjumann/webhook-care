@@ -20,6 +20,7 @@ import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleI
 import WebhookTestSection from "@/endpoints/webhook-test-section";
 import { AnimatedIconSwitch } from "@/framer-presets/animate-icon-switch";
 import { AnimatedShow } from "@/components/ui/animated-show";
+import { useSearchParams } from "next/navigation";
 
 interface EndpointDetailsPageProps {
   params: Promise<{
@@ -29,6 +30,10 @@ interface EndpointDetailsPageProps {
 }
 
 export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps) {
+
+  const searchParams = useSearchParams();
+  const isNew = searchParams?.get('isNew') === 'true' || false;
+
   useEffect(() => {
     const getParams = async () => {
       const { userId, id } = await params;
@@ -45,8 +50,8 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
   const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? '');
   const [sectionVisibility, setSectionVisibility] = useState({
-    Integration: false,
-    forwardingURLs: false,
+    Integration: isNew,
+    forwardingURLs: isNew,
   });
 
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
@@ -210,7 +215,18 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => setIsTesting(!isTesting)}>
+                  <CopyButton text={fullWebhookUrl} label="Copy Webhook URL" variant="outline" isIcon={true} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  Copy Webhook URL
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="default" onClick={() => setIsTesting(!isTesting)}>
                     <AnimatedIconSwitch
                       show={isTesting}
                       iconA={<LoaderCircle className="h-4 w-4" />}

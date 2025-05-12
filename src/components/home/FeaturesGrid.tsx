@@ -1,48 +1,46 @@
-import { 
-  Users, Layout, FileText, Files, 
-  Edit, Grid, Share2, CloudCog 
-} from "lucide-react";
+import { BarChart2, List, ClipboardCopy, Eye, RefreshCcw, AlertCircle, UserCircle2, FlaskConical } from "lucide-react";
 
 const features = [
+ 
   {
-    title: "CRM",
-    description: "Build and maintain strong relationships with your customers",
-    icon: Users
+    title: "Animated & Responsive UI",
+    description: "Enjoy a modern, interactive interface with animated transitions and feedback.",
+    icon: Eye
   },
   {
-    title: "Task Board",
-    description: "Simple and easy to use tasks to manage your projects",
-    icon: Layout
+    title: "Real-Time Metrics",
+    description: "Monitor request counts, delivery success rates, and response times for each endpoint.",
+    icon: BarChart2
   },
   {
-    title: "Project Templates",
-    description: "Save countless hours creating the same project over",
-    icon: FileText
+    title: "Webhook Playground",
+    description: "Interactively test your endpoints with custom payloads, HTTP methods, and headers. Instantly see responses and debug with ease.",
+    icon: FlaskConical
   },
   {
-    title: "Backups",
-    description: "Never lose data by having all your data offline",
-    icon: CloudCog
+    title: "Detailed Request History",
+    description: "Access a complete log of all webhook requests, including payloads and responses.",
+    icon: List
   },
   {
-    title: "Files",
-    description: "Quickly duplicate projects and save countless hours",
-    icon: Files
+    title: "Copy-to-Clipboard",
+    description: "Quickly copy webhook URLs and cURL commands for easy integration.",
+    icon: ClipboardCopy
   },
   {
-    title: "File Edit",
-    description: "Edit any file directly from our special online application",
-    icon: Edit
+    title: "Instant Refresh",
+    description: "Refresh your data and logs in real-time with a single click.",
+    icon: RefreshCcw
   },
   {
-    title: "Widget Board",
-    description: "Create custom widgets for any type of information you need",
-    icon: Grid
+    title: "Consistent Error Handling",
+    description: "Get clear feedback and error messages for all actions and API calls.",
+    icon: AlertCircle
   },
   {
-    title: "Integrations",
-    description: "Get peace of mind by having all your data offline",
-    icon: Share2
+    title: "User Personalization",
+    description: "Update your profile and personalize your dashboard experience.",
+    icon: UserCircle2
   }
 ];
 
@@ -51,7 +49,7 @@ export function FeaturesGrid() {
     <section className="py-24">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-16">
-          Our system is chock-full of features!
+          Developer Experience at the Core
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (

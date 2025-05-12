@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
 import { getProfile } from '@/profile/api';
 import { ModeToggle } from './theme-toggle';
+import { APP_NAME } from '@/constant/app-constant';
 const Header: React.FC = () => {
     const user = useUser();
 
@@ -25,7 +26,7 @@ const Header: React.FC = () => {
             <Link href={`/dashboard/${user?.id}`}>
                 <div className="flex items-center gap-2">
                     <WebhookIcon className="w-6 h-6" />
-                    <h1 className="text-2xl font-bold">Webhook Care</h1>
+                    <h1 className="text-2xl font-bold"> {APP_NAME} </h1>
                 </div>
             </Link>
             <div className="flex items-center gap-4">
