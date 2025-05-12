@@ -49,9 +49,14 @@ async function handleWebhook(
         userId,
         name,
       },
-      include:{
-        forwardingUrls: true,
-      }
+      select: {
+        id: true,
+        forwardingUrls: {
+          select: {
+            url: true,
+          },
+        },
+      },
     });
 
     if (!endpoint) {
@@ -134,7 +139,7 @@ async function handleWebhook(
           new URLSearchParams(body).toString() : undefined;
 
       Promise.allSettled(
-        endpoint.forwardingUrls.map((fw: any) =>
+        endpoint.forwardingUrls.map((fw: { url: string }) =>
           fetch(fw.url, {
             method,
             headers: forwardHeaders,
