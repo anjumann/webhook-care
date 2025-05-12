@@ -2,8 +2,9 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { CatalogSection } from "@/components/home/CatalogSection";
 import { FeaturesGrid } from "@/components/home/FeaturesGrid";
-import { FreeTrialSection } from "@/components/home/FreeTrialSection";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
+
 export default function HomePage() {
   return (
     <main>
@@ -16,7 +17,8 @@ export default function HomePage() {
       <FeaturesGrid />
       {/* TODO: Add testimonials section when we have some reviews 🎃*/}
       {/* <TestimonialsSection /> */}
-      <FreeTrialSection />
+      {/* <FreeTrialSection /> */}
+      <Footer />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Eye, Send } from "lucide-react";
+import Image from "next/image";
 
 export function CatalogSection() {
   return (
@@ -33,7 +34,13 @@ export function CatalogSection() {
             </Button>
           </div>
           <div className="bg-muted rounded-lg flex items-center justify-center text-4xl text-muted-foreground font-bold">
-            🚀
+            <Image
+              src="/home/details-page.png"
+              alt="Dashboard Preview"
+              width={600}
+              height={400}
+              className="rounded-lg w-full h-auto object-cover"
+            />
           </div>
         </div>
       </div>
