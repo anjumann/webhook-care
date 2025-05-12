@@ -24,10 +24,13 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("Error updating user profile:", error);
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error updating user profile:", message, code, meta);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: message,
+        code,
+        meta,
       },
       { status: 500 }
     );
@@ -52,9 +55,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error fetching user profile:", message, code, meta);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: message, code, meta },
       { status: 500 }
     );
   }

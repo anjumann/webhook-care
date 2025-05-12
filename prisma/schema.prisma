@@ -27,8 +27,8 @@ model Endpoint {
   updatedAt    DateTime   @updatedAt
   lastActivity DateTime   @default(now())
   requestCount Int        @default(0)
-  requests     Request[]
-  user         User       @relation(fields: [userId], references: [userId])
+  requests     Request[]  
+  user         User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
   userId       String    
   forwardingUrls ForwardingUrl[]
 }
@@ -36,7 +36,7 @@ model Endpoint {
 model Request {
   id         String     @id @default(auto()) @map("_id") @db.ObjectId
   endpointId String     @db.ObjectId
-  endpoint   Endpoint   @relation(fields: [endpointId], references: [id])
+  endpoint   Endpoint   @relation(fields: [endpointId], references: [id], onDelete: Cascade)
   method     String
   headers    Json
   body       Json?
@@ -54,7 +54,7 @@ model ForwardingUrl {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   method     String
   url        String
-  endpoint   Endpoint @relation(fields: [endpointId], references: [id])
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
   endpointId String   @db.ObjectId
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

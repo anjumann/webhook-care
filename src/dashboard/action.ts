@@ -15,7 +15,7 @@ interface UserData {
   endpoints: { id: string }[];
 }
 
-type UserResponse = UserData | { success: false; error: string };
+type UserResponse = UserData | { success: false; error: string; code?: string; meta?: any };
 
 /**
  * Creates a user if it doesn't exist, otherwise returns the existing user
@@ -82,7 +82,8 @@ export async function createOrGetUser({
 
     return newUser;
   } catch (error) {
-    console.error("Error in createOrGetUser:", error);
-    return { success: false, error: "Failed to create or get user" };
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error in createOrGetUser:", message, code, meta);
+    return { success: false, error: message, code, meta };
   }
 }

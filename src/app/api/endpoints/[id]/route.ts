@@ -8,7 +8,7 @@ export async function DELETE(
   const { id } = await params;
 
   const endpoint = await prisma.endpoint.delete({
-    where: { id },
+    where: { id }
   });
 
   return NextResponse.json(endpoint, { status: 200 });
@@ -58,9 +58,10 @@ export async function GET(
 
     return NextResponse.json(endpoint, { status: 200 });
   } catch (error) {
-    console.error("Error fetching endpoint:", error);
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error fetching endpoint:", message, code, meta);
     return NextResponse.json(
-      { error: "Failed to fetch endpoint" },
+      { error: message, code, meta },
       { status: 500 }
     );
   }

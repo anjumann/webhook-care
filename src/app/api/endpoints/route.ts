@@ -7,10 +7,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { userId, name, description, forwardingUrls } = body;
 
-    console.log(forwardingUrls);
-    // return NextResponse.json(body, { status: 201 });
-
-
     if (!userId || !name) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -49,9 +45,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(endpoint, { status: 201 });
   } catch (error) {
-    console.error("Error creating endpoint:", error);
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error creating endpoint:", message, code, meta);
     return NextResponse.json(
-      { error: "Failed to create endpoint" },
+      { error: message, code, meta },
       { status: 500 }
     );
   }
@@ -80,10 +77,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(endpoints);
   } catch (error) {
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error fetching endpoints:", message, code, meta);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
+      { error: message, code, meta },
       { status: 500 }
     );
   }

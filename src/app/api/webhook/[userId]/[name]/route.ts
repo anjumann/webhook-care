@@ -49,6 +49,9 @@ async function handleWebhook(
         userId,
         name,
       },
+      include:{
+        forwardingUrls: true,
+      }
     });
 
     if (!endpoint) {
@@ -117,9 +120,11 @@ async function handleWebhook(
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error("Error processing webhook:", error);
+    // Use parseError for consistent error handling
+    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    console.error("Error processing webhook:", message, code, meta);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: message, code, meta },
       { status: 500 }
     );
   }
