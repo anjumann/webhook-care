@@ -100,7 +100,7 @@ async function handleWebhook(
     const duration = Date.now() - startTime;
 
     // Store the request
-    await prisma.$transaction([
+    prisma.$transaction([
       prisma.request.create({
         data: {
           endpointId: endpoint.id,
