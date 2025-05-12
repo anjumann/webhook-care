@@ -16,9 +16,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, BookOpenIcon, SettingsIcon } from "lucide-react";
-import toast from "react-hot-toast";
+import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle } from "lucide-react";
+import WebhookTestSection from "@/endpoints/webhook-test-section";
 // import { LineChart } from "@/components/charts/line-chart";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface EndpointDetailsPageProps {
   params: Promise<{
@@ -46,7 +47,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
   const [fullWebhookUrl, setFullWebhookUrl] = useState<string>('');
-
+  const [isTesting, setIsTesting] = useState<boolean>(false);
   useEffect(() => {
     // Set the full URL only on the client side
     setFullWebhookUrl(window.location.origin + webhookUrl);
@@ -163,10 +164,10 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
           </div>
 
           <div className="flex items-center gap-3">
-            <TooltipProvider>
+            {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => toast("Under construction", {
+                  <Button variant="outline" size="sm" onClick={() => toast("Coming soon", {
                     icon: "🚧",
                   })}>
                     <BookOpenIcon className="w-4 h-4 mr-2" />
@@ -177,12 +178,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                   Read integration documentation
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
 
-            <TooltipProvider>
+            {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => toast("Under construction", {
+                  <Button variant="outline" size="sm" onClick={() => toast("Coming soon", {
                     icon: "🚧",
                   })}>
                     <SettingsIcon className="w-4 h-4 mr-2" />
@@ -193,11 +194,56 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                   Manage webhook settings
                 </TooltipContent>
               </Tooltip>
+            </TooltipProvider> */}
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" onClick={() => setIsTesting(!isTesting)}>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {!isTesting ? (
+                        <motion.span
+                          key="loader"
+                          initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                          transition={{ duration: 0.25 }}
+                          className="inline-flex"
+                        >
+                          <LoaderCircle className="h-4 w-4" />
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="check"
+                          initial={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                          transition={{ duration: 0.25 }}
+                          className="inline-flex"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    Test
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Test the Webhook
+                </TooltipContent>
+              </Tooltip>
             </TooltipProvider>
           </div>
         </div>
 
+        {
+          isTesting && (
+            <WebhookTestSection initialPayload={JSON.stringify(samplePayload)} url={fullWebhookUrl} isTesting={isTesting} />
+          )
+        }
+
         {/* Integration Section */}
+
         <Card>
           <CardHeader>
             <CardTitle>
@@ -216,7 +262,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               </label>
               <div className="flex items-center gap-2 group">
                 <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
-                <CopyButton text={fullWebhookUrl} variant="outline" />
+                <CopyButton text={fullWebhookUrl} variant="outline" isIcon={true} />
               </div>
             </div>
             <div className="space-y-2">
@@ -226,7 +272,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               </label>
               <div className="flex items-center gap-2 group">
                 <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
-                <CopyButton text={curlCommand} label="Copy cURL" variant="outline" />
+                <CopyButton text={curlCommand} label="Copy cURL" variant="outline" isIcon={true} />
               </div>
             </div>
           </CardContent>
@@ -234,6 +280,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
         {/* Forwarding URLs Section */}
         {endpoints?.forwardingUrls && endpoints.forwardingUrls.length > 0 && (
+
           <Card>
             <CardHeader>
               <CardTitle>
@@ -261,6 +308,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
       {/* Metrics Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+
         <Card variant="metric">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Lifetime Requests</CardTitle>
@@ -395,6 +443,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
       </div> */}
 
       {/* Request Log Section */}
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -407,13 +456,22 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                 Detailed log of recent webhook requests and their outcomes
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-            >
-              Export
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => mutate()}
+              >
+                <RefreshCcw className="w-4 h-4 mr-2" /> Refresh
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+              >
+                <DownloadIcon className="w-4 h-4 mr-2" /> Export
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

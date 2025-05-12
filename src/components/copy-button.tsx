@@ -8,16 +8,18 @@ interface CopyButtonProps {
   text: string;
   label?: string;
   variant?: "default" | "outline" | "ghost" | "link" | "secondary" | "destructive";
+  isIcon?: boolean;
 }
 
-export function CopyButton({ text, label, variant = "outline" }: CopyButtonProps) {
+export function CopyButton({ text, label, variant = "outline", isIcon = false }: CopyButtonProps) {
   return (
     <Button
       variant={variant}
       onClick={() => copyToClipboard(text)}
+      size={isIcon ? "icon" : "default"}
+      className="cursor-pointer"
     >
-      <Copy className="mr-2 h-4 w-4" />
-      {label || "Copy URL"}
+      {isIcon ? <Copy className={`${!isIcon ? "mr-2" : ""} h-4 w-4`} /> : <> <Copy className={`${!isIcon ? "" : "mr-2"} h-4 w-4`} /> {label ?? "Copy URL"} </> }
     </Button>
   );
 } 
