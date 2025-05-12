@@ -24,7 +24,7 @@ export function FreeTrialSection() {
                   </li>
                 ))}
               </ul>
-              <Button size="lg">Request demo</Button>
+              <Button size="sm">Request demo</Button>
             </div>
             <div className="bg-background rounded-lg aspect-video"></div>
           </div>

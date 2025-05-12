@@ -12,7 +12,7 @@ const GetStartedBtn = () => {
 
   return (
     <Link href={`/dashboard/${id}`}>
-      <Button>Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button>
+      <Button size="sm">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button>
     </Link>
   )
 }

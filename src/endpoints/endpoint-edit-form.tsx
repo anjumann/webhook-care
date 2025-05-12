@@ -124,7 +124,7 @@ export default function EndpointEditForm() {
         },
     ]
     return (
-        <div className=" mx-auto">
+        <div className=" mx-auto py-6 ">
             <div>
                 <CustomBreadcrumb header="Create Endpoint" description="Create a new endpoint for your webhooks." routeList={routeList} />
             </div>
@@ -237,10 +237,10 @@ export default function EndpointEditForm() {
                             </div>
 
                             <div className="flex gap-4 justify-end">
-                                <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
+                                <Button size="sm" type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
                                     Reset
                                 </Button>
-                                <Button type="submit" disabled={isSubmitting}>
+                                <Button size="sm" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Creating...' : 'Create Endpoint'}
                                 </Button>
                             </div>

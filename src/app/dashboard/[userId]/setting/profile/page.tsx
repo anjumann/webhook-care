@@ -14,6 +14,7 @@ import Image from "next/image"
 import { avatarFiles } from "@/constant"
 import { getProfile, updateProfile } from "@/profile/api"
 import CustomBreadcrumb from "@/components/custom-breadcrumb"
+import toast from "react-hot-toast"
 
 // Define the schema for profile validation
 const profileFormSchema = z.object({
@@ -62,6 +63,7 @@ export default function ProfilePage() {
 
     try {
       const result = await updateProfile(id, data.userName, data.userImage)
+      toast.success('Profile updated successfully')
       form.reset(
         {
           userName: result.userName,
@@ -155,7 +157,7 @@ export default function ProfilePage() {
                 <div className="text-sm font-medium text-destructive">{error}</div>
               )}
               <div className="flex justify-end">
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} size="sm">
                   {isSubmitting ? "Updating..." : "Update Profile"}
                 </Button>
               </div>

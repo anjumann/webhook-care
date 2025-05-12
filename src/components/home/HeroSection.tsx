@@ -15,7 +15,7 @@ export function HeroSection() {
         </p>
         <div className="flex gap-4 justify-center">
           <GetStartedBtn />
-          <Button size="lg" variant="outline">View Demo</Button>
+          <Button size="sm" variant="outline">View Demo</Button>
         </div>
       </div>
     </section>

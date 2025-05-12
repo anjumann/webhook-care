@@ -52,7 +52,7 @@ export function TestimonialsSection() {
           ))}
         </div>
         <div className="text-center">
-          <Button variant="outline">See all reviews</Button>
+          <Button size="sm" variant="outline">See all reviews</Button>
         </div>
       </div>
     </section>

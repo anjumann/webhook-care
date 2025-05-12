@@ -1,4 +1,4 @@
-export const APP_NAME = "Webhook Care";
+export const APP_NAME = "Webhook Catch";
 
 export const APP_DESCRIPTION = "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.";
 

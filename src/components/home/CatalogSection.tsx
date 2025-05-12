@@ -14,7 +14,7 @@ export function CatalogSection() {
             <p className="text-lg text-muted-foreground mb-8">
               Set scores for products by adding number. SKUs with higher scores will be displayed on top of the category page.
             </p>
-            <Button variant="link" className="group">
+            <Button variant="link" className="group" size="sm">
               Learn more <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

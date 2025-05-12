@@ -88,6 +88,7 @@ async function handleWebhook(
     const response = {
       message: "Webhook received successfully",
       timestamp: new Date().toISOString(),
+      forwardingUrls: endpoint.forwardingUrls.map(fw => fw.url),
     };
 
     // Calculate duration
@@ -117,6 +118,33 @@ async function handleWebhook(
         },
       }),
     ]);
+
+    // Forward the request to all forwardingUrls asynchronously
+    if (endpoint.forwardingUrls && endpoint.forwardingUrls.length > 0) {
+      const forwardHeaders = { ...headers };
+      // Remove headers that should not be forwarded
+      delete forwardHeaders["host"];
+      delete forwardHeaders["content-length"];
+      // Optionally, remove any other headers you don't want to forward
+
+      const forwardBody =
+        method === "GET" || method === "HEAD" ? undefined :
+        contentType?.includes("application/json") ? JSON.stringify(body) :
+        contentType?.includes("application/x-www-form-urlencoded") && body ?
+          new URLSearchParams(body).toString() : undefined;
+
+      Promise.allSettled(
+        endpoint.forwardingUrls.map((fw: any) =>
+          fetch(fw.url, {
+            method,
+            headers: forwardHeaders,
+            body: forwardBody,
+          }).catch((err) => {
+            console.error(`Error forwarding to ${fw.url}:`, err);
+          })
+        )
+      );
+    }
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {

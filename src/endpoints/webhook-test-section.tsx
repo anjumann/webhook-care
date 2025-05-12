@@ -216,6 +216,7 @@ const WebhookTestSection = (
                                     onClick={handleSend}
                                     disabled={loading}
                                     type="button"
+                                    size="sm"
                                 >
                                     {loading ? 'Sending...' : 'Send Request'}
                                 </Button>
@@ -230,13 +231,13 @@ const WebhookTestSection = (
                                 </Alert>
                             )}
                             {response && (
-                                <Card className="mt-4 bg-white">
+                                <Card className="mt-4">
                                     <CardHeader>
                                         <CardTitle>Response</CardTitle>
                                     </CardHeader>
-                                    <CardContent>
-                                        <div className="text-sm text-gray-700 mb-2">Status: {response.status} {response.statusText}</div>
-                                        <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{typeof response.body === 'string' ? response.body : JSON.stringify(response.body, null, 2)}</pre>
+                                    <CardContent className="">
+                                        <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">Status: {response.status} {response.statusText}</div>
+                                        <pre className="p-2 rounded text-xs overflow-x-auto border dark:border-zinc-400/65">{typeof response.body === 'string' ? response.body : JSON.stringify(response.body, null, 2)}</pre>
                                     </CardContent>
                                 </Card>
                             )}

@@ -16,10 +16,10 @@ export function CopyButton({ text, label, variant = "outline", isIcon = false }:
     <Button
       variant={variant}
       onClick={() => copyToClipboard(text)}
-      size={isIcon ? "icon" : "default"}
+      size={isIcon ? "icon" : "sm"}
       className="cursor-pointer"
     >
-      {isIcon ? <Copy className={`${!isIcon ? "mr-2" : ""} h-4 w-4`} /> : <> <Copy className={`${!isIcon ? "" : "mr-2"} h-4 w-4`} /> {label ?? "Copy URL"} </> }
+      {isIcon ? <Copy className={`${!isIcon ? "mr-2" : ""} h-2 w-2`} /> : <> <Copy className={`${!isIcon ? "" : "mr-2"} h-2 w-2`} /> {label ?? "Copy URL"} </> }
     </Button>
   );
 } 

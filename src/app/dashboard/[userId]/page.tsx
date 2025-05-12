@@ -11,6 +11,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { createOrGetUser } from "@/dashboard/action";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
+import { APP_NAME } from "@/constant/app-constant";
 
 interface DashboardPageProps {
   params: Promise<{
@@ -28,7 +29,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   }
   const routeList = [
     {
-      label: "Webhook Care",
+      label: APP_NAME,
       href: `/`,
     },
     {
@@ -44,7 +45,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           <CustomBreadcrumb routeList={routeList} header="Dashboard" description="Manage your webhook endpoints and view request logs" />
         </div>
 
-        <Button asChild variant="outline">
+        <Button asChild  size="sm">
           <Link href={`/dashboard/${userId}/endpoint/create`}>
             <Plus className="mr-1 h-4 w-4" />
             Create Endpoint

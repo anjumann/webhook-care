@@ -265,7 +265,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                     <span className="text-xs text-muted-foreground">(Required)</span>
                   </label>
                   <div className="flex items-center gap-2 group">
-                    <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
+                    <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono border border-muted-foreground group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
                     <CopyButton text={fullWebhookUrl} variant="outline" isIcon={true} />
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                     <span className="text-xs text-muted-foreground">(Example)</span>
                   </label>
                   <div className="flex items-center gap-2 group">
-                    <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
+                    <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono border border-muted-foreground overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
                     <CopyButton text={curlCommand} label="Copy cURL" variant="outline" isIcon={true} />
                   </div>
                 </div>
@@ -313,10 +313,10 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                 <div className="space-y-2">
                   {endpoints.forwardingUrls.map((fw) => (
                     <div key={fw.id} className="flex items-center gap-2">
-                      <span className="px-2 py-1 rounded bg-muted text-xs font-mono border border-muted-foreground/10">
+                      <span className="px-2 py-1 rounded bg-muted text-xs font-mono border border-muted-foreground">
                         {fw.method}
                       </span>
-                      <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono">{fw.url}</code>
+                      <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono border border-muted-foreground">{fw.url}</code>
                       <CopyButton text={fw.url} variant="outline" />
                     </div>
                   ))}
@@ -503,7 +503,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
                 Send your first webhook request to see the activity here. Use the integration details above to get started.
               </p>
-              <Button className="mt-6" variant="outline">
+              <Button className="mt-6" variant="outline" size="sm">
                 View Integration Guide
               </Button>
             </div>
