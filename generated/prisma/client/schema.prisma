@@ -31,6 +31,8 @@ model Endpoint {
   user           User            @relation(fields: [userId], references: [userId], onDelete: Cascade)
   userId         String
   forwardingUrls ForwardingUrl[]
+
+  @@index([userId, name])
 }
 
 model Request {
