@@ -184,7 +184,7 @@ const WebhookTestSection = (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button
-                                                        className=""
+                                                        className="cursor-pointer"
                                                         type="button"
                                                         variant="ghost"
                                                         size="icon"
@@ -199,7 +199,7 @@ const WebhookTestSection = (
                                             </Tooltip>
                                         </TooltipProvider>
                                     </div>
-                                    <div className="rounded border border-gray-300 bg-gray-50 shadow-sm p-2">
+                                    <div className="rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 shadow-sm">
                                         <Textarea
                                             className="font-mono bg-transparent border-none focus:ring-0 focus:outline-none resize-none"
                                             value={payload}

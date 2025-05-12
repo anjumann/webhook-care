@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/utils";
 import { useState } from "react";
 import { deleteRequest } from "./api/endpoints";
 import toast from "react-hot-toast";
+import { METHODS } from "@/constant/app-constant";
 
 interface RequestListProps {
   requests: Request[];
@@ -83,7 +84,7 @@ export function RequestList({ requests, mutate }: RequestListProps) {
                 </Button>
               </TableCell>
               <TableCell>
-                <Badge variant="outline">{request.method}</Badge>
+                <Badge variant="outline" >{ METHODS[request.method as keyof typeof METHODS].label}</Badge>
               </TableCell>
               <TableCell>
                 <Badge

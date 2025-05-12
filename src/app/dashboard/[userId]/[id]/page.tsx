@@ -16,10 +16,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle, Eye, EyeOff } from "lucide-react";
 import WebhookTestSection from "@/endpoints/webhook-test-section";
-// import { LineChart } from "@/components/charts/line-chart";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatedIconSwitch } from "@/framer-presets/animate-icon-switch";
+import { AnimatedShow } from "@/components/ui/animated-show";
 
 interface EndpointDetailsPageProps {
   params: Promise<{
@@ -44,6 +44,10 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
 
   const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? '');
+  const [sectionVisibility, setSectionVisibility] = useState({
+    Integration: false,
+    forwardingURLs: false,
+  });
 
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
   const [fullWebhookUrl, setFullWebhookUrl] = useState<string>('');
@@ -141,8 +145,15 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     document.body.removeChild(a);
   };
 
+  const toggleSection = (name: keyof typeof sectionVisibility) => {
+    setSectionVisibility(prev => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
+
   return (
-    <main className="container py-6 space-y-6">
+    <main className="container py-6 space-y-6 hide-scrollbar">
       {/* Header Section */}
       <div className="flex flex-col gap-6">
         <div className="flex justify-between items-center">
@@ -200,32 +211,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="sm" onClick={() => setIsTesting(!isTesting)}>
-                    <AnimatePresence mode="wait" initial={false}>
-                      {!isTesting ? (
-                        <motion.span
-                          key="loader"
-                          initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
-                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                          exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
-                          transition={{ duration: 0.25 }}
-                          className="inline-flex"
-                        >
-                          <LoaderCircle className="h-4 w-4" />
-                        </motion.span>
-                      ) : (
-                        <motion.span
-                          key="check"
-                          initial={{ opacity: 0, scale: 0.8, rotate: 90 }}
-                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                          exit={{ opacity: 0, scale: 0.8, rotate: -90 }}
-                          transition={{ duration: 0.25 }}
-                          className="inline-flex"
-                        >
-                          <CheckCircleIcon className="h-4 w-4" />
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    Test
+                    <AnimatedIconSwitch
+                      show={isTesting}
+                      iconA={<LoaderCircle className="h-4 w-4" />}
+                      iconB={<CheckCircleIcon className="h-4 w-4" />}
+                    />
+                    Testing Playground
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -246,35 +237,50 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
         <Card>
           <CardHeader>
-            <CardTitle>
-              <ActivityIcon className="w-5 h-5 text-primary" />
-              Integration Details
-            </CardTitle>
-            <CardDescription>
-              Use these credentials to send webhook events to your endpoint
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col items-start gap-2">
+                <CardTitle>
+                  <ActivityIcon className="w-5 h-5 text-primary" />
+                  Integration Details
+                </CardTitle>
+                <CardDescription>
+                  Use these credentials to send webhook events to your endpoint
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="icon" onClick={() => toggleSection("Integration")} >
+                <AnimatedIconSwitch
+                  show= {!sectionVisibility.Integration}
+                  iconA={<EyeOff />}
+                  iconB={<Eye />}
+                />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                Webhook URL
-                <span className="text-xs text-muted-foreground">(Required)</span>
-              </label>
-              <div className="flex items-center gap-2 group">
-                <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
-                <CopyButton text={fullWebhookUrl} variant="outline" isIcon={true} />
+          <CardContent>
+            <AnimatedShow show={sectionVisibility.Integration}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    Webhook URL
+                    <span className="text-xs text-muted-foreground">(Required)</span>
+                  </label>
+                  <div className="flex items-center gap-2 group">
+                    <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
+                    <CopyButton text={fullWebhookUrl} variant="outline" isIcon={true} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    Sample cURL
+                    <span className="text-xs text-muted-foreground">(Example)</span>
+                  </label>
+                  <div className="flex items-center gap-2 group">
+                    <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
+                    <CopyButton text={curlCommand} label="Copy cURL" variant="outline" isIcon={true} />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                Sample cURL
-                <span className="text-xs text-muted-foreground">(Example)</span>
-              </label>
-              <div className="flex items-center gap-2 group">
-                <code className="flex-1 p-3 bg-muted/50 rounded-md text-sm font-mono overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
-                <CopyButton text={curlCommand} label="Copy cURL" variant="outline" isIcon={true} />
-              </div>
-            </div>
+            </AnimatedShow>
           </CardContent>
         </Card>
 
@@ -283,24 +289,39 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
           <Card>
             <CardHeader>
-              <CardTitle>
-                <ActivityIcon className="w-5 h-5 text-primary" />
-                Forwarding URLs
-              </CardTitle>
-              <CardDescription>
-                Requests to this endpoint will be forwarded to the following URLs
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {endpoints.forwardingUrls.map((fw) => (
-                <div key={fw.id} className="flex items-center gap-2">
-                  <span className="px-2 py-1 rounded bg-muted text-xs font-mono border border-muted-foreground/10">
-                    {fw.method}
-                  </span>
-                  <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono">{fw.url}</code>
-                  <CopyButton text={fw.url} variant="outline" />
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col items-start gap-2">
+                  <CardTitle>
+                    <ActivityIcon className="w-5 h-5 text-primary" />
+                    Forwarding URLs
+                  </CardTitle>
+                  <CardDescription>
+                    Requests to this endpoint will be forwarded to the following URLs
+                  </CardDescription>
                 </div>
-              ))}
+                <Button variant="outline" size="icon" onClick={() => toggleSection("forwardingURLs")} >
+                  <AnimatedIconSwitch
+                    show={!sectionVisibility.forwardingURLs}
+                    iconA={<EyeOff />}
+                    iconB={<Eye />}
+                  />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AnimatedShow show={sectionVisibility.forwardingURLs}>
+                <div className="space-y-2">
+                  {endpoints.forwardingUrls.map((fw) => (
+                    <div key={fw.id} className="flex items-center gap-2">
+                      <span className="px-2 py-1 rounded bg-muted text-xs font-mono border border-muted-foreground/10">
+                        {fw.method}
+                      </span>
+                      <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono">{fw.url}</code>
+                      <CopyButton text={fw.url} variant="outline" />
+                    </div>
+                  ))}
+                </div>
+              </AnimatedShow>
             </CardContent>
           </Card>
         )}
