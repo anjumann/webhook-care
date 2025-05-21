@@ -125,7 +125,6 @@ export default function EndpointEditForm({ id }: { id?: string }) {
                         forwardingUrls: data.forwardingUrls,
                     }),
                 });
-                console.log(response)
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || `Failed to update endpoint`);
