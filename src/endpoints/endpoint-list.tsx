@@ -17,6 +17,12 @@ import { deleteEndpoint, useEndpoints } from "./api/endpoints";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
+export interface ForwardingUrl {
+  id: string;
+  url: string;
+  method: string;
+}
+
 export interface Endpoint {
   id: string;
   name: string;
@@ -27,6 +33,7 @@ export interface Endpoint {
   lastActivity: string;
   requestCount: number;
   userId: string;
+  forwardingUrls: ForwardingUrl[];
 }
 
 

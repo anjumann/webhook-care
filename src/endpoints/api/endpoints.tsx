@@ -87,6 +87,15 @@ export function useGetEndpoint(id: string) {
   };
 }
 
+export async function getEndpoint(id: string) {
+  const response = await fetch(`/api/endpoints/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch endpoint');
+  }
+  return response.json();
+}
+
+
 export async function deleteRequest(id: string) {
   const response = await fetch(`/api/requests/${id}`, {
     method: 'DELETE',
@@ -96,3 +105,4 @@ export async function deleteRequest(id: string) {
   }
   return response.json();
 } 
+

@@ -16,11 +16,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle, Eye, EyeOff } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle, Eye, EyeOff, PencilIcon } from "lucide-react";
 import WebhookTestSection from "@/endpoints/webhook-test-section";
 import { AnimatedIconSwitch } from "@/framer-presets/animate-icon-switch";
 import { AnimatedShow } from "@/components/ui/animated-show";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface EndpointDetailsPageProps {
   params: Promise<{
@@ -33,7 +33,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
   const searchParams = useSearchParams();
   const isNew = searchParams?.get('isNew') === 'true' || false;
-
+  const router = useRouter();
   useEffect(() => {
     const getParams = async () => {
       const { userId, id } = await params;
@@ -51,7 +51,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
   const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? '');
   const [sectionVisibility, setSectionVisibility] = useState({
     Integration: isNew,
-    forwardingURLs: isNew,
+    forwardingURLs: true,
   });
 
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
@@ -215,6 +215,19 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
+                  <Button variant="outline" className="cursor-pointer" size="icon" onClick={() => router.push(`/dashboard/${param?.userId}/${param?.id}/edit`)}>
+                    <PencilIcon className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Edit Endpoint
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <CopyButton text={fullWebhookUrl} label="Copy Webhook URL" variant="outline" isIcon={true} />
                 </TooltipTrigger>
                 <TooltipContent>
@@ -226,7 +239,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="default" onClick={() => setIsTesting(!isTesting)}>
+                  <Button variant="outline"  className="cursor-pointer" size="default" onClick={() => setIsTesting(!isTesting)}>
                     <AnimatedIconSwitch
                       show={isTesting}
                       iconA={<LoaderCircle className="h-4 w-4" />}
