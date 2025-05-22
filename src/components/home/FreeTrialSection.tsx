@@ -1,32 +1,39 @@
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+"use client"
 
-const features = [
-  "No coding needed. Plug & Play",
-  "All eCommerce platforms supported"
-];
+import GetStartedBtn from "@/home/get-started-btn";
+import Image from "next/image";
 
 export function FreeTrialSection() {
   return (
-    <section className="py-24">
-      <div className="container mx-auto px-4">
-        <div className="bg-muted rounded-xl p-8 md:p-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Try Chainlist For Free!</h2>
-              <ul className="space-y-4 mb-8">
-                {features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-1">
-                      <Check className="w-4 h-4 text-primary" />
-                    </div>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button size="sm">Request demo</Button>
+    <section className="container mx-auto px-4 py-16 flex flex-col md:flex-row items-center gap-10 md:gap-20">
+      {/* Text Content */}
+      <div className="flex-1 text-center md:text-left space-y-6">
+        <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
+          Start Testing Webhooks <span className="text-primary">for Free</span>
+        </h2>
+        <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0">
+          Instantly create endpoints, inspect requests, <span className="text-primary font-semibold">forward webhooks to multiple destinations</span>, and debug with ease. No credit card required. Experience the fastest way to build and test your webhook workflows.
+        </p>
+        <div className="flex justify-center md:justify-start mt-6">
+          <GetStartedBtn />
+        </div>
+      </div>
+      {/* Image */}
+      <div className="flex-1 flex justify-center">
+        <div className="relative rounded-xl overflow-hidden shadow-lg aspect-[3/4] w-full max-w-xs md:max-w-sm">
+          <Image
+            src="/avatar/jinwoo.jpg"
+            alt="Webhook Care Demo"
+            fill
+            sizes="(max-width: 768px) 80vw, 30vw"
+            priority
+            className="object-cover rounded-xl"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+            <div className="text-white">
+              <p className="text-xs opacity-80">Webhook Care</p>
+              <h4 className="text-lg font-semibold">Testing Made Simple</h4>
             </div>
-            <div className="bg-background rounded-lg aspect-video"></div>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { CatalogSection } from "@/components/home/CatalogSection";
 import { FeaturesGrid } from "@/components/home/FeaturesGrid";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { FreeTrialSection } from "@/components/home/FreeTrialSection";
 
 export default function HomePage() {
   return (
@@ -17,7 +18,7 @@ export default function HomePage() {
       <FeaturesGrid />
       {/* TODO: Add testimonials section when we have some reviews 🎃*/}
       {/* <TestimonialsSection /> */}
-      {/* <FreeTrialSection /> */}
+      <FreeTrialSection />
       <Footer />
     </main>
   );

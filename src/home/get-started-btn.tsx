@@ -6,13 +6,19 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 
-const GetStartedBtn = () => {
+const GetStartedBtn = (
+  {
+    children,
+  }: {
+    children?: React.ReactNode,
+  }
+) => {
 
   const { id } = useUser()
 
   return (
     <Link href={`/dashboard/${id}`}>
-      <Button size="sm">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button>
+      {children ?? <Button size="sm">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button>}
     </Link>
   )
 }

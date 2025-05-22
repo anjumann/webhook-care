@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import GetStartedBtn from "@/home/get-started-btn";
 import { ArrowRight, Zap, Eye, Send } from "lucide-react";
 import Image from "next/image";
 
@@ -29,9 +30,11 @@ export function CatalogSection() {
                 </span>
               </li>
             </ol>
-            <Button variant="link" className="group" size="sm">
-              Learn more <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <GetStartedBtn>
+              <Button variant="link" className="group" size="sm">
+                Learn more <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </GetStartedBtn>
           </div>
           <div className="bg-muted rounded-lg flex items-center justify-center text-4xl text-muted-foreground font-bold">
             <Image

@@ -81,16 +81,18 @@ export default function ProfilePage() {
   return (
 
     <div className="flex flex-col gap-4">
-      <CustomBreadcrumb
-        header="Profile Settings"
-        description="Update your profile information and avatar."
-        routeList={[
-          { label: "Webhook Care", href: "/" },
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Profile", href: "/dashboard/setting/profile" },
-        ]}
-      />
-      <Card>
+      <div className="mt-4">
+        <CustomBreadcrumb
+          header="Profile Settings"
+          description="Update your profile information and avatar."
+          routeList={[
+            { label: "Webhook Care", href: "/" },
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Profile", href: "/dashboard/setting/profile" },
+          ]}
+        />
+      </div>
+      <Card className="mt-6">
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

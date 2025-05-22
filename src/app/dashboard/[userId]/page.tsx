@@ -45,7 +45,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           <CustomBreadcrumb routeList={routeList} header="Dashboard" description="Manage your webhook endpoints and view request logs" />
         </div>
 
-        <Button asChild  size="sm">
+        <Button asChild  size="sm" variant="outline" >
           <Link href={`/dashboard/${userId}/endpoint/create`}>
             <Plus className="mr-1 h-4 w-4" />
             Create Endpoint
