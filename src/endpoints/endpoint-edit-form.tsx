@@ -318,9 +318,11 @@ export default function EndpointEditForm({ id }: { id?: string }) {
                             </div>
 
                             <div className="flex gap-4 justify-end">
-                                <Button size="sm" type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
-                                    Reset
-                                </Button>
+                                {!id && (
+                                    <Button size="sm" type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
+                                        Reset
+                                    </Button>
+                                )}
                                 <Button size="sm" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Saving...' : id ? 'Update Endpoint' : 'Create Endpoint'}
                                 </Button>

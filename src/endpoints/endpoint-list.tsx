@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Edit, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { deleteEndpoint, useEndpoints } from "./api/endpoints";
@@ -139,6 +139,14 @@ export function EndpointList({ userId }: EndpointListProps) {
               <TableCell className="text-center" >{formatDate(new Date(endpoint.lastActivity))}</TableCell>
               <TableCell className="text-center" >{formatDate(new Date(endpoint.createdAt))}</TableCell>
               <TableCell className="text-center space-x-2" onClick={(e) => e.stopPropagation()} >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.push(`/dashboard/${userId}/${endpoint.id}/edit`)}
+                  className="cursor-pointer"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
