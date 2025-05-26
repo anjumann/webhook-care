@@ -2,31 +2,36 @@ import { Button } from "@/components/ui/button";
 import GetStartedBtn from "@/home/get-started-btn";
 import { ArrowRight, Zap, Eye, Send } from "lucide-react";
 import Image from "next/image";
+import { Highlight } from "@/components/ui/Highlight";
 
 export function CatalogSection() {
   return (
-    <section className="py-24">
+    <section 
+      className="py-24"
+    >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl font-bold mb-6">Get Started in 3 Easy Steps</h2>
-            <ol className="space-y-6 mb-8">
+            <h2 className="text-3xl font-bold mb-6">Get Started in <Highlight>3 Easy Steps</Highlight></h2>
+            <ol 
+              className="space-y-6 mb-8"
+            >
               <li className="flex items-start gap-4">
-                <Zap className="w-6 h-6 text-primary mt-1" />
+                <Zap className="w-6 h-6 text-green-500 mt-1" />
                 <span>
-                  <strong>Create an Endpoint:</strong> Instantly generate a unique webhook endpoint for your integration or test.
+                  <strong>1. Create Your Endpoint:</strong> Instantly generate a <Highlight>unique URL</Highlight> for your integration or test.
                 </span>
               </li>
               <li className="flex items-start gap-4">
-                <Send className="w-6 h-6 text-primary mt-1" />
+                <Send className="w-6 h-6 text-green-500 mt-1" />
                 <span>
-                  <strong>Send a Webhook:</strong> Use the provided URL and sample cURL command to send a webhook from any service.
+                  <strong>2. Send a Test Webhook:</strong> Use our provided URL in your service, or fire off a quick test with the <Highlight>sample cURL command</Highlight>.
                 </span>
               </li>
               <li className="flex items-start gap-4">
-                <Eye className="w-6 h-6 text-primary mt-1" />
+                <Eye className="w-6 h-6 text-green-500 mt-1" />
                 <span>
-                  <strong>Inspect & Forward:</strong> View the full request details in your dashboard and forward to any destination.
+                  <strong>3. Inspect, Customize & Forward:</strong> Dive into <Highlight>request details</Highlight> on your dashboard. Customize responses, forward to local, and more.
                 </span>
               </li>
             </ol>
@@ -36,7 +41,9 @@ export function CatalogSection() {
               </Button>
             </GetStartedBtn>
           </div>
-          <div className="bg-muted rounded-lg flex items-center justify-center text-4xl text-muted-foreground font-bold">
+          <div 
+            className="bg-muted rounded-lg flex items-center justify-center text-4xl text-muted-foreground font-bold"
+          >
             <Image
               src="/home/details-page.png"
               alt="Dashboard Preview"

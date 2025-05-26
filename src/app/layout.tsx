@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from "@/components/theme-provider";
 import { APP_NAME } from "@/constant/app-constant";
+import { Analytics } from '@vercel/analytics/next';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
             position="top-right"
             reverseOrder={false}
           />
+           <Analytics />
         </ThemeProvider>
       </body>
     </html>
