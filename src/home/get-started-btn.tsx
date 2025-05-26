@@ -18,7 +18,7 @@ const GetStartedBtn = (
 
   return (
     <Link href={`/dashboard/${id}`}>
-      {children ?? <Button size="sm">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button>}
+      {children ?? <Button size="sm">Catch Webhooks <ArrowRight className="ml-2 h-4 w-4" /></Button>}
     </Link>
   )
 }

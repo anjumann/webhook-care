@@ -12,7 +12,7 @@ export function CatalogSection() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl font-bold mb-6">Get Started in <Highlight>3 Easy Steps</Highlight></h2>
+            <h2 className="text-3xl font-bold mb-6">Start catching webhooks in <Highlight>3 Easy Steps</Highlight></h2>
             <ol 
               className="space-y-6 mb-8"
             >
