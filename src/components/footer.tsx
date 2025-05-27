@@ -11,6 +11,9 @@ export default function Footer() {
         <span>
           <a href="https://github.com/anjumann/webhook-care" className="underline" target="_blank" rel="noopener noreferrer">GitHub</a>
         </span>
+        <span>
+          <a href="https://www.producthunt.com/posts/webhook-catcher" className="underline" target="_blank" >Product Hunt</a>
+        </span>
       </div>
     </footer>
   );

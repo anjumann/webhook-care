@@ -64,7 +64,7 @@ const itemVariants = {
 export function FeaturesGrid() {
   return (
     <motion.section 
-      className="py-24"
+      className="py-24 px-2"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -78,7 +78,7 @@ export function FeaturesGrid() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Highlight>Developer Experience</Highlight> at the Core
+          <Highlight>Developer Experience</Highlight> <br className="md:hidden" /> at the Core
         </motion.h2>
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
