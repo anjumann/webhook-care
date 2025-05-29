@@ -8,6 +8,7 @@ import { getProfile } from '@/profile/api';
 import { ModeToggle } from './theme-toggle';
 import { APP_NAME } from '@/constant/app-constant';
 import { Button } from './ui/button';
+import Image from 'next/image';
 
 const Header: React.FC = () => {
     const user = useUser();
@@ -42,13 +43,17 @@ const Header: React.FC = () => {
                             <GithubIcon className="w-5 h-5" />
                         </Button>
                     </a>
-                    <a href="https://www.producthunt.com/posts/webhook-catcher" target="_blank" >
-                        <Button variant="ghost" size="icon" className="p-2" aria-label="Product Hunt">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                <title>Product Hunt icon</title>
-                                <path d="M13.604 8.4h-3.405V12h3.405c.995 0 1.801-.806 1.801-1.801 0-.993-.805-1.799-1.801-1.799zM12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm1.604 14.4h-3.405V18H7.801V6h5.804c2.319 0 4.2 1.88 4.2 4.199 0 2.321-1.881 4.201-4.201 4.201z"/>
-                            </svg>
-                        </Button>
+                    <a
+                        href="https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <Image
+                            src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970283&theme=light&t=1748547517762`}
+                            alt="Webhook Catcher - Create instant disposable Webhooks to inspect & respond fast | Product Hunt"
+                            width={150}
+                            height={24}
+                        />
                     </a>
                     <Link href={`/dashboard/${user?.id}/setting/profile`}>
                         <Avatar className='size-10' >

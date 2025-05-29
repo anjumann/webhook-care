@@ -2,6 +2,7 @@ import GetStartedBtn from "@/home/get-started-btn";
 import { Highlight } from "@/components/ui/Highlight";
 
 export function HeroSection() {
+
   return (
     <section
       className="py-24 text-center"
@@ -23,6 +24,7 @@ export function HeroSection() {
           <GetStartedBtn />
           {/* <Button size="sm" variant="outline">View Docs</Button> */}
         </div>
+      
       </div>
     </section>
   );
