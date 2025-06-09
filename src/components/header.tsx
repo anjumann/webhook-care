@@ -1,5 +1,5 @@
 "use client"
-import { GithubIcon, WebhookIcon } from 'lucide-react';
+import { GithubIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/hooks/useUser';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -27,8 +27,8 @@ const Header: React.FC = () => {
     return (
         <div className="flex justify-between items-center p-4 ">
             <Link href={`/dashboard/${user?.id}`}>
-                <div className="flex items-center gap-2">
-                    <WebhookIcon className="w-6 h-6" />
+                <div className="flex items-center ">
+                    <Image src="/android-chrome-512x512.png" alt="logo" width={80} height={80} />
                     <h1 className="text-2xl font-bold hidden md:block"> {APP_NAME} </h1>
                 </div>
             </Link>
@@ -49,7 +49,7 @@ const Header: React.FC = () => {
                         rel="noopener noreferrer"
                     >
                         <Image
-                            src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970283&theme=light&t=1748547517762`}
+                            src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970283&theme=dark&t=1748547517762`}
                             alt="Webhook Catcher - Create instant disposable Webhooks to inspect & respond fast | Product Hunt"
                             width={150}
                             height={24}

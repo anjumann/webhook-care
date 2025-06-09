@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 
 export default function Footer() {
@@ -7,13 +8,23 @@ export default function Footer() {
         <span>
           &copy; {new Date().getFullYear()} Webhook Care. All rights reserved.
         </span>
-       
-        <span>
-          <a href="https://github.com/anjumann/webhook-care" className="underline" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </span>
-        <span>
-          <a href="https://www.producthunt.com/posts/webhook-catcher" className="underline" target="_blank" >Product Hunt</a>
-        </span>
+        <div className="flex items-center gap-4">
+          <span>
+            <a href="https://github.com/anjumann/webhook-care" className="underline" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </span>
+          <a
+            href="https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970283&theme=dark&t=1748547517762`}
+              alt="Webhook Catcher - Create instant disposable Webhooks to inspect & respond fast | Product Hunt"
+              width={150}
+              height={24}
+            />
+          </a>
+        </div>
       </div>
     </footer>
   );
