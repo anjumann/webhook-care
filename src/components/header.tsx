@@ -1,5 +1,4 @@
 "use client"
-import { GithubIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/hooks/useUser';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -7,7 +6,6 @@ import Link from 'next/link';
 import { getProfile } from '@/profile/api';
 import { ModeToggle } from './theme-toggle';
 import { APP_NAME } from '@/constant/app-constant';
-import { Button } from './ui/button';
 import Image from 'next/image';
 
 const Header: React.FC = () => {
@@ -38,11 +36,6 @@ const Header: React.FC = () => {
                 </span>
                 <div className='flex items-center gap-1'>
                     <ModeToggle />
-                    <a href="https://github.com/anjumann/webhook-care" target="_blank" >
-                        <Button variant="ghost" size="icon" className="p-2" aria-label="GitHub">
-                            <GithubIcon className="w-5 h-5" />
-                        </Button>
-                    </a>
                     <a
                         href="https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher"
                         target="_blank"
