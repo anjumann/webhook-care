@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import PageLayout from "@/components/page-layout";
-import { APP_NAME } from "@/constant/app-constant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, MessageSquare, Bug, Lightbulb, HelpCircle, Github, Clock, CheckCircle } from "lucide-react";
+import { Mail, MessageSquare, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ContactUsClient() {
   const [formData, setFormData] = useState({
@@ -21,16 +20,31 @@ export default function ContactUsClient() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    console.log("Contact form submission:", formData);
-    
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      setError(null);
+      
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
+      console.log('Contact form sent successfully:', result);
+      
       setIsSubmitting(false);
       setIsSubmitted(true);
       
@@ -45,7 +59,11 @@ export default function ContactUsClient() {
           message: ""
         });
       }, 3000);
-    }, 1000);
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      setIsSubmitting(false);
+      setError(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -104,12 +122,12 @@ export default function ContactUsClient() {
                   
                   <div className="space-y-2">
                     <h4 className="font-semibold">Bug Reports</h4>
-                    <p className="text-muted-foreground text-sm">bugs@webhookcare.com</p>
+                    <p className="text-muted-foreground text-sm">anjumanraj2@gmail.com</p>
                   </div>
                   
                   <div className="space-y-2">
                     <h4 className="font-semibold">Feature Requests</h4>
-                    <p className="text-muted-foreground text-sm">features@webhookcare.com</p>
+                    <p className="text-muted-foreground text-sm">anjumanraj2@gmail.com</p>
                   </div>
                 </CardContent>
               </Card>
@@ -137,19 +155,7 @@ export default function ContactUsClient() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Github className="h-5 w-5" />
-                    Open Source
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm mb-3">
-                    {APP_NAME} is open source! Report issues, contribute, or check out our code.
-                  </p>
-                </CardContent>
-              </Card>
+            
             </div>
 
             {/* Contact Form */}
@@ -162,6 +168,15 @@ export default function ContactUsClient() {
                   </p>
                 </CardHeader>
                 <CardContent>
+                  {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-red-800">Error sending message</h4>
+                        <p className="text-red-600 text-sm mt-1">{error}</p>
+                      </div>
+                    </div>
+                  )}
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">

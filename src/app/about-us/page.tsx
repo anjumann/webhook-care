@@ -165,7 +165,7 @@ export default function AboutUsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="secondary">Open Source</Badge>
+                  {/* <Badge variant="secondary">Open Source</Badge> */}
                   <Badge variant="secondary">Beta Testing</Badge>
                   <Badge variant="secondary">Actively Developed</Badge>
                   <Badge variant="secondary">Community Driven</Badge>
@@ -175,10 +175,10 @@ export default function AboutUsPage() {
                   analysis and advanced platform integrations. Our core webhook testing features 
                   remain free and always will be.
                 </p>
-                <p className="text-muted-foreground">
+                {/* <p className="text-muted-foreground">
                   {APP_NAME} is open source and community-driven. We welcome contributions, 
                   feedback, and feature requests from developers worldwide.
-                </p>
+                </p> */}
               </CardContent>
             </Card>
 
