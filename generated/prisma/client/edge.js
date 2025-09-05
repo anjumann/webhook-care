@@ -157,7 +157,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/anjuman/Desktop/webhook-care/generated/prisma/client",
+      "value": "/home/anjuman/Desktop/dev/webhook-care/generated/prisma/client",
       "fromEnvVar": null
     },
     "config": {
@@ -171,7 +171,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/anjuman/Desktop/webhook-care/prisma/schema.prisma",
+    "sourceFilePath": "/home/anjuman/Desktop/dev/webhook-care/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
