@@ -9,14 +9,15 @@ import {
 } from "@/components/enhanced-card";
 import { RequestList } from "@/endpoints/request-list";
 import { CopyButton } from "@/components/copy-button";
-import { useEffect, useState } from "react";
-import { useGetEndpoint } from "@/endpoints/api/endpoints";
+import { useEffect, useState, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { useGetEndpoint, deleteAllRequests } from "@/endpoints/api/endpoints";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle, Eye, EyeOff, PencilIcon } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle, Eye, EyeOff, PencilIcon, Trash2, SearchIcon } from "lucide-react";
 import WebhookTestSection from "@/endpoints/webhook-test-section";
 import { AnimatedIconSwitch } from "@/framer-presets/animate-icon-switch";
 import { AnimatedShow } from "@/components/ui/animated-show";
@@ -57,6 +58,15 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
   const [fullWebhookUrl, setFullWebhookUrl] = useState<string>('');
   const [isTesting, setIsTesting] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const filteredRequests = useMemo(() => {
+    const requests = endpoints?.requests ?? [];
+    if (!searchQuery.trim()) return requests;
+    const q = searchQuery.toLowerCase();
+    return requests.filter(req => JSON.stringify(req).toLowerCase().includes(q));
+  }, [endpoints?.requests, searchQuery]);
+
   useEffect(() => {
     // Set the full URL only on the client side
     setFullWebhookUrl(window.location.origin + webhookUrl);
@@ -148,6 +158,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+  };
+
+  const handleClearAll = async () => {
+    if (!param?.id) return;
+    await deleteAllRequests(param.id);
+    mutate();
   };
 
   const toggleSection = (name: keyof typeof sectionVisibility) => {
@@ -496,31 +512,51 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>
-                <ActivityIcon className="w-5 h-5 text-primary" />
-                Request History
-              </CardTitle>
-              <CardDescription>
-                Detailed log of recent webhook requests and their outcomes
-              </CardDescription>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>
+                  <ActivityIcon className="w-5 h-5 text-primary" />
+                  Request History
+                </CardTitle>
+                <CardDescription>
+                  Detailed log of recent webhook requests and their outcomes
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => mutate()}
+                >
+                  <RefreshCcw className="w-4 h-4 mr-2" /> Refresh
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                >
+                  <DownloadIcon className="w-4 h-4 mr-2" /> Export
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearAll}
+                  disabled={!endpoints?.requests?.length}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Clear All
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => mutate()}
-              >
-                <RefreshCcw className="w-4 h-4 mr-2" /> Refresh
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExport}
-              >
-                <DownloadIcon className="w-4 h-4 mr-2" /> Export
-              </Button>
+            <div className="relative">
+              <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search requests (method, status, body, headers...)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
           </div>
         </CardHeader>
@@ -536,8 +572,16 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                 View Integration Guide
               </Button>
             </div>
+          ) : filteredRequests.length === 0 ? (
+            <div className="text-center py-12">
+              <SearchIcon className="mx-auto h-12 w-12 text-muted-foreground/30" />
+              <h3 className="mt-4 text-lg font-semibold">No matching requests</h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                No requests match &quot;{searchQuery}&quot;
+              </p>
+            </div>
           ) : (
-            <RequestList mutate={mutate} requests={endpoints?.requests || []} />
+            <RequestList mutate={mutate} requests={filteredRequests} />
           )}
         </CardContent>
       </Card>

@@ -104,5 +104,15 @@ export async function deleteRequest(id: string) {
     throw new Error('Failed to delete request');
   }
   return response.json();
-} 
+}
+
+export async function deleteAllRequests(endpointId: string) {
+  const response = await fetch(`/api/requests?endpointId=${endpointId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete all requests');
+  }
+  return response.json();
+}
 
