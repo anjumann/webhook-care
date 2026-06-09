@@ -1,8 +1,8 @@
 # Webhook Catcher — Feature List (PM Reference)
 
 > One-page, PM-facing snapshot. The "why/how" detail lives in
-> `IMPROVEMENTS.md` (audit + roadmap), `FEATURES-DESIGN.md` (feature designs),
-> and `IMPLEMENTATION-PLAN.md` (build checklist).
+> `02-audit-and-roadmap.md` (audit + roadmap), `03-feature-designs.md` (feature designs),
+> and `04-implementation-plan.md` (build checklist).
 >
 > **Scope:** all-free product. No paid tiers; the `/pricing` page has been
 > removed. Every feature below ships to all users (retention = 30 days for everyone).

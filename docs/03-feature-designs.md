@@ -1,6 +1,6 @@
 # Webhook Catcher — Detailed Design: Identity, Export & Agent Access
 
-> Companion to `IMPROVEMENTS.md`. This document is the implementation-ready
+> Companion to `02-audit-and-roadmap.md`. This document is the implementation-ready
 > design for three **confirmed** features and how they interlock:
 >
 > 1. **Email / Magic-link identity** — optional, recoverable, cross-device login
@@ -36,7 +36,7 @@
 ```
 
 Without identity, export and agent access would leak data (today any `userId`
-is guessable — see `IMPROVEMENTS.md` §1.1). With it, every privileged path has a
+is guessable — see `02-audit-and-roadmap.md` §1.1). With it, every privileged path has a
 provable owner.
 
 ---
@@ -137,7 +137,7 @@ Move this browser's 2 endpoints into it?").
 
 ### 1.6 Retention tie-in
 
-- **Anonymous users:** 30-day retention as designed in `IMPROVEMENTS.md` §6.
+- **Anonymous users:** 30-day retention as designed in `02-audit-and-roadmap.md` §6.
 - **Claimed (email) users:** can receive a pre-expiry **"your webhooks expire in
   3 days — export them"** email (Resend), with a one-click link to the ZIP export
   (Feature B). This turns retention from a silent delete into a helpful nudge and
@@ -181,7 +181,7 @@ webhook-catcher-export-2026-06-09.zip
 - **Scope:** All endpoints · Selected endpoints · This endpoint.
 - **Date range:** optional (default: everything still retained).
 - **Include:** headers ✅, body ✅, redact-secrets toggle (reuses the redaction
-  list from `IMPROVEMENTS.md` §3.4), forwarding config ✅.
+  list from `02-audit-and-roadmap.md` §3.4), forwarding config ✅.
 - **Format:** NDJSON (default) · pretty JSON · CSV summary (method/status/time
   table) for spreadsheet users.
 
@@ -423,7 +423,7 @@ Shared building blocks reused across features:
 - **`requireToken(req, scope)`** — PAT guard (REST/MCP).
 - **Upstash Redis `@upstash/ratelimit`** — magic-link sends, token calls, export
   requests.
-- **Upstash QStash** — large async exports + (from `IMPROVEMENTS.md` §6) retention.
+- **Upstash QStash** — large async exports + (from `02-audit-and-roadmap.md` §6) retention.
 - **Resend** — magic links + pre-expiry export nudges + async-export download
   links.
 - **One service layer** (`src/services/*`) behind REST, MCP, and the dashboard.
@@ -446,7 +446,7 @@ Shared building blocks reused across features:
 ## 6. Rollout Sequencing
 
 **Step 1 — Identity foundation:** magic-link auth + `Session` + `requireOwner`;
-retrofit it onto the existing management API (closes the `IMPROVEMENTS.md` §1.1
+retrofit it onto the existing management API (closes the `02-audit-and-roadmap.md` §1.1
 authz hole). Optional merge UI.
 
 **Step 2 — ZIP export:** synchronous streaming export for typical datasets;

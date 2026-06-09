@@ -1,7 +1,7 @@
 # Webhook Catcher — MCP Server Design & Implementation Plan
 
-> The build companion to `IMPROVEMENTS.md` (audit + roadmap) and
-> `FEATURES-DESIGN.md` (feature rationale). This document does two things:
+> The build companion to `02-audit-and-roadmap.md` (audit + roadmap) and
+> `03-feature-designs.md` (feature rationale). This document does two things:
 >
 > 1. **§A — A full, standalone design for the MCP server** so a user's AI agent
 >    can connect and fetch (and optionally search) their webhook data.
@@ -56,7 +56,7 @@ Two layers, pick the rollout you want:
    bearer PAT is enough to launch.
 
 > Auth reuses the exact `ApiToken` model and hash-lookup from
-> `FEATURES-DESIGN.md` §3.1, so revoking a token in Settings instantly kills both
+> `03-feature-designs.md` §3.1, so revoking a token in Settings instantly kills both
 > REST and MCP access.
 
 ## A.4 Tools (the agent-facing API)
@@ -96,7 +96,7 @@ list is returned.
 
 > **Tool-output hygiene:** cap payload sizes returned to the agent (truncate huge
 > bodies with a note + `get_request` for full content), and always redact the
-> secret-header denylist (`IMPROVEMENTS.md` §3.4) so tokens never reach the model.
+> secret-header denylist (`02-audit-and-roadmap.md` §3.4) so tokens never reach the model.
 
 ## A.5 Reference implementation sketch
 
@@ -213,7 +213,7 @@ browser — no pasted token.)
 # Part B — What We Need to Implement
 
 Grouped by workstream and ordered for delivery. Each item is a concrete unit of
-work. (Phases mirror `IMPROVEMENTS.md` §8 and `FEATURES-DESIGN.md` §6.)
+work. (Phases mirror `02-audit-and-roadmap.md` §8 and `03-feature-designs.md` §6.)
 
 ## B.0 Shared foundations (do these first — everything depends on them)
 
@@ -243,11 +243,11 @@ work. (Phases mirror `IMPROVEMENTS.md` §8 and `FEATURES-DESIGN.md` §6.)
   REST, and MCP.
 - [ ] **Prisma hygiene:** stop committing `generated/prisma/`; add to
   `.gitignore`; run `prisma generate` in `postinstall`.
-- [ ] **Fix known bugs** (`IMPROVEMENTS.md` §1.1 #9): avatar double-prefix in
+- [ ] **Fix known bugs** (`02-audit-and-roadmap.md` §1.1 #9): avatar double-prefix in
   `useUser`, trailing spaces in `getProfile` URL, unguarded `JSON.parse` in the
   playground, empty `endpoints/types.ts`.
 
-## B.1 Retention (30-day auto-delete) — `IMPROVEMENTS.md` §6
+## B.1 Retention (30-day auto-delete) — `02-audit-and-roadmap.md` §6
 
 **Schema**
 - [ ] `Request.pinned Boolean @default(false)`
@@ -256,7 +256,7 @@ work. (Phases mirror `IMPROVEMENTS.md` §8 and `FEATURES-DESIGN.md` §6.)
 - [ ] (optional safety net) Mongo TTL index on `expiresAt`
 
 **Code** *(free-tier shape — single batched job, NOT per-endpoint fan-out; see
-`IMPROVEMENTS.md` §6.3 callout re: QStash 1,000 msg/day limit)*
+`02-audit-and-roadmap.md` §6.3 callout re: QStash 1,000 msg/day limit)*
 - [ ] Webhook handler sets `expiresAt = now + retentionDays` on capture
 - [ ] `POST /api/jobs/retention` — QStash-signed; **one job** that loops bounded
   `deleteMany` (e.g. 1–5k/pass) over expired, **unpinned** requests until done
@@ -271,7 +271,7 @@ work. (Phases mirror `IMPROVEMENTS.md` §8 and `FEATURES-DESIGN.md` §6.)
 - [ ] Pin/unpin action in the request list
 - [ ] Per-endpoint retention selector (24h / 7d / 30d)
 
-## B.2 Magic-link identity — `FEATURES-DESIGN.md` §1
+## B.2 Magic-link identity — `03-feature-designs.md` §1
 
 **Schema**
 - [ ] `User.email String? @unique`, `User.emailVerifiedAt DateTime?`
@@ -293,7 +293,7 @@ work. (Phases mirror `IMPROVEMENTS.md` §8 and `FEATURES-DESIGN.md` §6.)
 - [ ] Merge prompt ("move this browser's N endpoints into your account?")
 - [ ] Pre-expiry "export your webhooks" email (ties to B.3)
 
-## B.3 ZIP export — `FEATURES-DESIGN.md` §2
+## B.3 ZIP export — `03-feature-designs.md` §2
 
 **Routes**
 - [ ] `POST /api/export` — owner-guarded; **streams** a ZIP (manifest +
@@ -308,7 +308,7 @@ work. (Phases mirror `IMPROVEMENTS.md` §8 and `FEATURES-DESIGN.md` §6.)
   include headers/body, redact toggle, format (NDJSON / JSON / CSV summary)
 - [ ] "Preparing your export, we'll email a link" state for async
 
-## B.4 Agent REST API — `FEATURES-DESIGN.md` §3
+## B.4 Agent REST API — `03-feature-designs.md` §3
 
 **Schema**
 - [ ] `ApiToken` model (userId, name, tokenHash, prefix, scopes[], lastUsedAt, expiresAt)

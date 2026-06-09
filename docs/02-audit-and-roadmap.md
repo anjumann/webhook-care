@@ -561,7 +561,7 @@ These aren't blockers, but they shape the build and are genuinely your call:
    **email / magic-link claim** for recovery and cross-device access (uses the
    existing Resend integration). This unlocks two further confirmed features —
    **ZIP export** of webhooks and **AI-agent API/MCP access**. Full design for
-   all three lives in **`FEATURES-DESIGN.md`**.
+   all three lives in **`03-feature-designs.md`**.
 4. **Plan limits / monetization:** ✅ **RESOLVED — out of scope.** The product is
    **all-free for now**; there are no paid tiers. The `/pricing` page (a
    waitlist that advertised unbuilt Pro features) has been **removed**. Retention
