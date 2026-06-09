@@ -11,6 +11,7 @@ order. Start at the top for a guided path, or jump to whatever you need.
 | 03 | [Feature Designs](./03-feature-designs.md) | Detailed designs: magic-link identity, ZIP export, agent API | You're about to build identity / export / agent access |
 | 04 | [Implementation Plan](./04-implementation-plan.md) | MCP server design + full checkbox build plan for every workstream | You're ready to write code |
 | UI | [UI Redesign](./UI%20redesign/README.md) | Full visual + structural redesign to the "Relay · Emerald Console" — tokens, components, screens, build plan | You're re-skinning/re-laying-out the app |
+| PRD | [Product Requirements (DX Layer)](./PRD/README.md) | DX-focused PRDs, one per surface — personas, flows, states, acceptance criteria, metrics, phasing | You're deciding *what* each surface should do and how it should feel |
 
 > The repo's root `README.md` is the original Product Requirements Document
 > (partly aspirational). These `docs/` are the current, accurate source of truth.
