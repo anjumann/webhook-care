@@ -4,6 +4,13 @@ This folder is the **design source of truth** for re-skinning and re-laying-out
 the entire Webhook Catcher application to match the **Relay · Emerald Console**
 reference in `../../webhook catcher/`.
 
+> **🚧 Build status (2026-06-09):** Phase 0 (foundation), Phase 1 (shell) and
+> Phase 3 §1 (Endpoints list) are **done**; Phase 2 core components are partly
+> done. Detail / create-edit / playground / profile still render pre-redesign
+> markup inside the new shell. See the live checklist in
+> [`03-implementation-plan.md`](./03-implementation-plan.md) (incl. deviations:
+> toast lib is `sileo`, brand mark is lucide `Webhook`).
+
 > **Reference artifact:** open `webhook catcher/Relay - Emerald Console.html` in a
 > browser. It renders six artboards — Endpoints list, Endpoint detail, Request
 > inspector, Live requests, Playground, Create endpoint — in both Dark and Light
