@@ -27,9 +27,10 @@ model Endpoint {
   updatedAt    DateTime   @updatedAt
   lastActivity DateTime   @default(now())
   requestCount Int        @default(0)
-  requests     Request[]  
+  retentionDays Int       @default(30) // per-endpoint retention window (days)
+  requests     Request[]
   user         User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  userId       String    
+  userId       String
   forwardingUrls ForwardingUrl[]
 
   @@index([userId, name])
@@ -42,14 +43,20 @@ model Request {
   method     String
   headers    Json
   body       Json?
+  rawBody    String?    // verbatim payload for any content-type (esp. text/xml/binary)
+  contentType String?   // captured Content-Type for content-aware rendering
   query      Json?
   statusCode Int
   response   Json?
   duration   Int        // in milliseconds
+  pinned     Boolean    @default(false) // pinned requests are exempt from retention
+  expiresAt  DateTime?  // createdAt + endpoint.retentionDays; nightly sweep target
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
   @@index([endpointId])
+  @@index([endpointId, createdAt]) // cursor pagination of a request list
+  @@index([expiresAt])             // nightly retention sweep
 }
 
 model ForwardingUrl {

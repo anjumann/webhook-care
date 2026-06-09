@@ -1,44 +1,5 @@
 import useSWR from 'swr';
-
-// Types for the endpoint data
-interface Endpoint {
-  id: string;
-  name: string;
-  description: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  lastActivity: string;
-  requestCount: number;
-  userId: string;
-  requests: Requests[];
-  forwardingUrls: ForwardingUrl[];
-}
- 
-interface Requests {
-  id: string;
-  endpointId: string;
-  method: string;
-  headers: {
-    [key: string]: string;
-  };
-  body: any;
-  query: Record<string, any>;
-  statusCode: number;
-  response: {
-    message: string;
-    timestamp: string;
-  };
-  duration: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ForwardingUrl {
-  id: string;
-  url: string;
-  method: string;
-}
+import type { Endpoint, EndpointWithRequests } from '@/endpoints/types';
 
 // Fetcher function for SWR
 const fetcher = async (url: string) => {
@@ -74,7 +35,7 @@ export async function deleteEndpoint(id: string) {
 }
 
 export function useGetEndpoint(id: string) {
-  const { data, error, isLoading, mutate } = useSWR<Endpoint>(
+  const { data, error, isLoading, mutate } = useSWR<EndpointWithRequests>(
     `/api/endpoints/${id}`,
     fetcher
   );

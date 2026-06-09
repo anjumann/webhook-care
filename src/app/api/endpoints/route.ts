@@ -1,87 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import * as endpoints from "@/services/endpoints";
+import { created, ok, badRequest, failFromError } from "@/lib/http";
 
+const forwardingUrlSchema = z.object({
+  url: z.string().url(),
+  method: z.string().min(1),
+});
+
+const createSchema = z.object({
+  userId: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().max(1000).optional(),
+  forwardingUrls: z.array(forwardingUrlSchema).optional().default([]),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, name, description, forwardingUrls } = body;
-
-    if (!userId || !name) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    const parsed = createSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
     }
-
-    // Transform endpoint name for consistency
-    const transformedName = name
-      .replace(/\s+/g, "-")
-      .replace(/[^a-zA-Z0-9_-]/g, "")
-      .trim();
-
-    // Create the endpoint
-    const endpoint = await prisma.endpoint.create({
-      data: {
-        name: transformedName,
-        description,
-        forwardingUrls: {
-          create: forwardingUrls.map((rule: { url: string; method: string }) => ({
-            url: rule.url,
-            method: rule.method,
-          })),
-        },
-        user: {
-          connect: {
-            userId,
-          },
-        },
-        
-      },
-    });
-
-
-    // If forwardingRules are provided, create them
-
-    return NextResponse.json(endpoint, { status: 201 });
+    const endpoint = await endpoints.createEndpoint(parsed.data);
+    return created(endpoint);
   } catch (error) {
-    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
-    console.error("Error creating endpoint:", message, code, meta);
-    return NextResponse.json(
-      { error: message, code, meta },
-      { status: 500 }
-    );
+    return failFromError(error, "Error creating endpoint:");
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const endpoints = await prisma.endpoint.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    return NextResponse.json(endpoints);
+    const userId = new URL(request.url).searchParams.get("userId");
+    if (!userId) return badRequest("User ID is required");
+    return ok(await endpoints.listEndpoints(userId));
   } catch (error) {
-    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
-    console.error("Error fetching endpoints:", message, code, meta);
-    return NextResponse.json(
-      { error: message, code, meta },
-      { status: 500 }
-    );
+    return failFromError(error, "Error fetching endpoints:");
   }
 }

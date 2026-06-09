@@ -17,9 +17,10 @@ export const updateProfile = async (userId: string, userName: string, userImage:
 }
 
 export const getProfile = async (userId: string) => {
-  const response = await fetch(`/api/user/profile?userId=${userId}  `, {
-    method: 'GET',
-  })
+  const response = await fetch(
+    `/api/user/profile?userId=${encodeURIComponent(userId)}`,
+    { method: 'GET' }
+  )
 
   if (!response.ok) {
     throw new Error('Failed to get profile')

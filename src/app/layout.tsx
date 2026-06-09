@@ -6,6 +6,7 @@ import { Toaster } from "@/components/console/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { APP_NAME } from "@/constant/app-constant";
 import { Analytics } from '@vercel/analytics/next';
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 
 const hankenGrotesk = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
   title: APP_NAME,
   description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
   metadataBase: new URL('https://your-domain.com'),
+  manifest: '/site.webmanifest',
   openGraph: {
     title: APP_NAME,
     description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
@@ -82,6 +84,7 @@ export default function RootLayout({
           {children}
           <Toaster />
            <Analytics />
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>

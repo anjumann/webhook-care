@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ConsoleBreadcrumb } from "./console-breadcrumb";
 import { CommandPalette } from "./command-palette";
 
@@ -36,6 +37,8 @@ export function Topbar() {
           ⌘K
         </kbd>
       </button>
+
+      <InstallPrompt />
 
       <ModeToggle />
 

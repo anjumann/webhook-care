@@ -27,7 +27,14 @@ const WebhookTestSection = (
 ) => {
     const [method, setMethod] = useState('POST');
     const [headers, setHeaders] = useState([{ key: '', value: '' }]);
-    const [payload, setPayload] = useState(JSON.stringify(JSON.parse(initialPayload), null, 2));
+    // Lazy + guarded: a malformed sample payload must not throw during render.
+    const [payload, setPayload] = useState(() => {
+        try {
+            return JSON.stringify(JSON.parse(initialPayload), null, 2);
+        } catch {
+            return initialPayload ?? '';
+        }
+    });
     const [response, setResponse] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

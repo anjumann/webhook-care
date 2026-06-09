@@ -18,20 +18,11 @@ import { toast } from "@/lib/toast";
 import { METHODS } from "@/constant/app-constant";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { unwantedHeaders } from "@/constant";
+import type { RequestRecord } from "@/endpoints/types";
 
 interface RequestListProps {
-  requests: Request[];
+  requests: RequestRecord[];
   mutate: () => void;
-}
-
-interface Request {
-  id: string;
-  method: string;
-  statusCode: number;
-  duration: number;
-  createdAt: string;
-  headers: Record<string, string>;
-  body: Record<string, any>;
 }
 
 // JSON Display Component

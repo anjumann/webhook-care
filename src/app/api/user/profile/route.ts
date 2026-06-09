@@ -1,65 +1,32 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import * as users from "@/services/users";
+import { ok, badRequest, failFromError } from "@/lib/http";
 
-export async function PUT(request: Request) {
+const updateSchema = z.object({
+  userId: z.string().min(1),
+  userName: z.string().max(60).optional(),
+  userImage: z.string().max(200).optional(),
+});
+
+export async function PUT(request: NextRequest) {
   try {
-    const { userId, userName, userImage } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+    const parsed = updateSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
     }
-
-    const updatedUser = await prisma.user.update({
-      where: {
-        userId: userId,
-      },
-      data: {
-        userName,
-        userImage,
-      },
-    });
-
-    return NextResponse.json(updatedUser);
+    return ok(await users.updateProfile(parsed.data));
   } catch (error) {
-    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
-    console.error("Error updating user profile:", message, code, meta);
-    return NextResponse.json(
-      {
-        error: message,
-        code,
-        meta,
-      },
-      { status: 500 }
-    );
+    return failFromError(error, "Error updating user profile:");
   }
 }
 
-// GET
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });  
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        userId: userId,
-      },
-    });
-
-    return NextResponse.json(user);
+    const userId = new URL(request.url).searchParams.get("userId");
+    if (!userId) return badRequest("User ID is required");
+    return ok(await users.getUser(userId));
   } catch (error) {
-    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
-    console.error("Error fetching user profile:", message, code, meta);
-    return NextResponse.json(
-      { error: message, code, meta },
-      { status: 500 }
-    );
+    return failFromError(error, "Error fetching user profile:");
   }
 }

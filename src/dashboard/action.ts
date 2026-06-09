@@ -1,6 +1,7 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { getOrCreateUser } from "@/services/users";
+import { parseError } from "@/lib/error";
 
 interface UserData {
   id?: string;
@@ -30,59 +31,9 @@ export async function createOrGetUser({
   userImage?: string;
 }): Promise<UserResponse> {
   try {
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        userId: userId,
-      },
-      include: {
-        _count: {
-          select: {
-            endpoints: {
-              where: {
-                status: "active"
-              }
-            }
-          }
-        },
-        endpoints: {
-          select: {
-            id: true
-          }
-        }
-      },
-    });
-
-    if (existingUser) {
-      return existingUser;
-    }
-
-    const newUser = await prisma.user.create({
-      data: {
-        userId,
-        userName,
-        userImage,
-      },
-      include: {
-        _count: {
-          select: {
-            endpoints: {
-              where: {
-                status: "active"
-              }
-            }
-          }
-        },
-        endpoints: {
-          select: {
-            id: true
-          }
-        }
-      },
-    });
-
-    return newUser;
+    return await getOrCreateUser({ userId, userName, userImage });
   } catch (error) {
-    const { message, code, meta } = (await import("@/lib/error")).parseError(error);
+    const { message, code, meta } = parseError(error);
     console.error("Error in createOrGetUser:", message, code, meta);
     return { success: false, error: message, code, meta };
   }
