@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import "sileo/styles.css";
@@ -50,10 +50,16 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
-  themeColor: '#ffffff',
   alternates: {
     canonical: '/',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#08110d' },
+    { media: '(prefers-color-scheme: light)', color: '#eef6f1' },
+  ],
 };
 
 export default function RootLayout({

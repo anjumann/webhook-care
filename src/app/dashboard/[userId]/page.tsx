@@ -1,17 +1,8 @@
-import { 
-  EnhancedCard as Card,
-  EnhancedCardHeader as CardHeader,
-  EnhancedCardTitle as CardTitle,
-  EnhancedCardDescription as CardDescription,
-  EnhancedCardContent as CardContent,
-} from "@/components/enhanced-card";
-import { EndpointList } from "@/endpoints/endpoint-list";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
+import { EndpointList } from "@/endpoints/endpoint-list";
 import { createOrGetUser } from "@/dashboard/action";
-import CustomBreadcrumb from "@/components/custom-breadcrumb";
-import { APP_NAME } from "@/constant/app-constant";
+import { EnvPill } from "@/components/console/env-pill";
 
 interface DashboardPageProps {
   params: Promise<{
@@ -24,116 +15,39 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
   const userResponse = await createOrGetUser({ userId });
 
-  if ('error' in userResponse) {
-    return <div>Error: {userResponse.error}</div>;
+  if ("error" in userResponse) {
+    return (
+      <div className="rounded-lg border border-danger-soft bg-danger-soft/40 px-4 py-3 text-sm text-danger">
+        Error: {userResponse.error}
+      </div>
+    );
   }
-  const routeList = [
-    {
-      label: APP_NAME,
-      href: `/`,
-    },
-    {
-      label: "Dashboard",
-      href: `/dashboard/${userId}`,
-    },
-  ]
 
   return (
-    <main className="container py-6 space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="mx-auto max-w-[1180px]">
+      {/* Page head */}
+      <div className="mb-[22px] flex items-start gap-4">
         <div>
-          <CustomBreadcrumb routeList={routeList} header="Dashboard" description="Manage your webhook endpoints and view request logs" />
+          <h1 className="whitespace-nowrap text-[25px] font-bold tracking-[-0.5px]">
+            Endpoints
+          </h1>
+          <p className="mt-[3px] text-[13.5px] text-mid">
+            Capture, inspect and forward webhooks across your integrations.
+          </p>
+          <EnvPill label="Local workspace" className="mt-[9px]" />
         </div>
-
-        <Button asChild  size="sm" variant="outline" >
-          <Link href={`/dashboard/${userId}/endpoint/create`}>
-            <Plus className="mr-1 h-4 w-4" />
-            Create Endpoint
+        <div className="ml-auto flex flex-shrink-0 items-center gap-2.5">
+          <Link
+            href={`/dashboard/${userId}/endpoint/create`}
+            className="inline-flex h-[34px] items-center gap-[7px] rounded-sm bg-gradient-to-br from-primary to-accent2 px-3.5 text-[13px] font-semibold text-accentfg shadow-[0_5px_16px_var(--accent-soft)] transition-shadow hover:shadow-[0_6px_20px_var(--accent-line)]"
+          >
+            <Plus className="size-4" strokeWidth={2} />
+            Create endpoint
           </Link>
-        </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Endpoints
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {userResponse._count?.endpoints}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Across all endpoints
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Endpoints
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {userResponse.endpoints.length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Currently receiving requests
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Success Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">100%</div>
-            <p className="text-xs text-muted-foreground">
-              Last 24 hours
-            </p>
-            <p className="text-xs text-muted-foreground">
-              To be implemented
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avg Response Time
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0ms</div>
-            <p className="text-xs text-muted-foreground">
-              Last 24 hours
-            </p>
-            <p className="text-xs text-muted-foreground">
-              To be implemented
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Endpoints</CardTitle>
-          <CardDescription>
-            List of all your webhook endpoints
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {userId && (
-            <EndpointList userId={userId} />
-          )}
-        </CardContent>
-      </Card>
-    </main>
+      <EndpointList userId={userId} />
+    </div>
   );
-} 
+}

@@ -1,16 +1,15 @@
 import { Button } from "@/components/ui/button";
 import GetStartedBtn from "@/home/get-started-btn";
 import { ArrowRight, Zap, Eye, Send } from "lucide-react";
-import Image from "next/image";
 import { Highlight } from "@/components/ui/Highlight";
 
 export function CatalogSection() {
   return (
-    <section 
+    <section
       className="py-24 px-2"
     >
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="mx-auto max-w-2xl">
           <div>
             <h2 className="text-3xl font-bold mb-6 text-center md:text-left">Start catching in <br className="md:hidden" /> <Highlight>3 Easy Steps</Highlight></h2>
             <ol 
@@ -41,19 +40,8 @@ export function CatalogSection() {
               </Button>
             </GetStartedBtn>
           </div>
-          <div 
-            className="bg-muted rounded-lg flex items-center justify-center text-4xl text-muted-foreground font-bold"
-          >
-            <Image
-              src="/home/details-page.png"
-              alt="Dashboard Preview"
-              width={600}
-              height={400}
-              className="rounded-lg w-full h-auto object-cover"
-            />
-          </div>
         </div>
       </div>
     </section>
   );
-} 
+}
