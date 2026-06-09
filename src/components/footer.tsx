@@ -7,15 +7,7 @@ export default function Footer() {
     <footer className="w-full border-t mt-8 py-8 text-sm text-gray-500 bg-white dark:bg-gray-900 dark:text-gray-400">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-          {/* Product */}
-          <div>
-            <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Product</h4>
-            <ul className="space-y-2">
-              <li><Link href="/pricing" className="hover:underline">Pricing</Link></li>
-            </ul>
-          </div>
-
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
           {/* Company */}
           <div>
             <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Company</h4>

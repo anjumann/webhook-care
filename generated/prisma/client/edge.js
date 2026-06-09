@@ -157,7 +157,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/anjuman/Desktop/dev/webhook-care/generated/prisma/client",
+      "value": "/Users/anjumanraj/Desktop/neo/webhook-care/generated/prisma/client",
       "fromEnvVar": null
     },
     "config": {
@@ -166,12 +166,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/anjuman/Desktop/dev/webhook-care/prisma/schema.prisma",
+    "sourceFilePath": "/Users/anjumanraj/Desktop/neo/webhook-care/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
