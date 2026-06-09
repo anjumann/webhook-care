@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Relay — Emerald Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="theme.css" />
+<link rel="stylesheet" href="layouts.css" />
+<link rel="stylesheet" href="emerald.css" />
+<style>
+  html, body { margin: 0; height: 100%; background: #f0eee9; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="Icons.jsx"></script>
+<script type="text/babel" src="prims.jsx"></script>
+<script type="text/babel" src="Screens.jsx"></script>
+<script type="text/babel" src="emerald-screens.jsx"></script>
+<script type="text/babel">
+  const { useState } = React;
+  const V = 'emerald';
+
+  const SCREENS = [
+    { id: 'endpoints',  label: 'Endpoints · list',        w: 1440, h: 772, comp: (p) => <Dashboard {...p} /> },
+    { id: 'detail',     label: 'Endpoint detail',          w: 1440, h: 884, comp: (p) => <EndpointDetail {...p} /> },
+    { id: 'inspector',  label: 'Request inspector',        w: 1440, h: 884, comp: (p) => <RequestInspector {...p} /> },
+    { id: 'requests',   label: 'Live requests',            w: 1440, h: 900, comp: (p) => <LiveRequests {...p} /> },
+    { id: 'playground', label: 'Playground · send test',   w: 1440, h: 868, comp: (p) => <Playground {...p} /> },
+    { id: 'create',     label: 'Create endpoint',          w: 1440, h: 900, comp: (p) => <CreateEndpoint {...p} /> },
+  ];
+
+  const BG = {
+    dark:  '#08110d',
+    light: '#eef6f1',
+  };
+
+  function ModeToggle({ mode, setMode }) {
+    const opt = (m, label, icon) => (
+      <button onClick={() => setMode(m)}
+        style={{ display:'flex', alignItems:'center', gap:7, height:34, padding:'0 16px', border:'none', cursor:'pointer',
+          borderRadius:9, fontFamily:'inherit', fontSize:13, fontWeight:600,
+          background: mode === m ? '#13241c' : 'transparent', color: mode === m ? '#fff' : 'rgba(28,40,34,.6)',
+          boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,.25)' : 'none', transition:'all .15s' }}>
+        <span style={{ width:15, height:15, display:'flex' }}>{icon}</span>{label}
+      </button>
+    );
+    return (
+      <div style={{ position:'fixed', top:16, left:'50%', transform:'translateX(-50%)', zIndex:200,
+        display:'flex', alignItems:'center', gap:4, padding:4, borderRadius:12, background:'rgba(255,255,255,.85)',
+        backdropFilter:'blur(8px)', boxShadow:'0 6px 24px rgba(20,40,30,.16), 0 0 0 1px rgba(0,0,0,.05)',
+        fontFamily:'-apple-system,system-ui,sans-serif' }}>
+        {opt('dark', 'Dark', Ico.moon)}
+        {opt('light', 'Light', Ico.sun)}
+      </div>
+    );
+  }
+
+  function App() {
+    const [mode, setMode] = useState('dark');
+    return (
+      <>
+        <ModeToggle mode={mode} setMode={setMode} />
+        <DesignCanvas>
+          <DCSection id="emerald" title="Relay · Emerald console"
+            subtitle="A full webhook-catcher flow in the Emerald sidebar direction — list, detail, inspector, live stream, playground & create. Toggle Dark / Light above.">
+            {SCREENS.map((s) => (
+              <DCArtboard key={s.id} id={'em-' + s.id} label={s.label} width={s.w} height={s.h} style={{ background: BG[mode] }}>
+                {s.comp({ v: V, mode })}
+              </DCArtboard>
+            ))}
+          </DCSection>
+        </DesignCanvas>
+      </>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

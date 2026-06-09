@@ -14,7 +14,7 @@ import { Copy, Edit, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { deleteEndpoint, useEndpoints } from "./api/endpoints";
-import toast from "react-hot-toast";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 export interface ForwardingUrl {

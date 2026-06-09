@@ -1,22 +1,17 @@
 "use client"
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-  } from "@/components/ui/breadcrumb"
-import { ChevronsRight } from "lucide-react";
-import { Fragment } from "react";
 
+/**
+ * Page heading (title + description). The breadcrumb trail now lives in the
+ * console topbar (components/console/console-breadcrumb.tsx), so this only
+ * renders the H1/description to avoid a duplicate trail. `routeList` is kept in
+ * the signature for backward compatibility with existing call sites.
+ */
 const CustomBreadcrumb = (
   {
-    routeList,
     header,
-    description
+    description,
   }: {
-    routeList: {
+    routeList?: {
       label: string;
       href: string;
     }[];
@@ -24,31 +19,14 @@ const CustomBreadcrumb = (
     description?: string;
   }
 ) => {
-
-
+  if (!header && !description) return null;
 
   return (
     <div className="flex flex-col gap-2 mt-6">
       {header && <h1 className="text-3xl font-bold">{header}</h1>}
       {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      <Breadcrumb>
-        <BreadcrumbList>
-        {routeList.map((route, idx) => (
-          <Fragment key={idx}>
-            <BreadcrumbItem key={route.href}>
-              {idx === routeList.length - 1 ? (
-                <BreadcrumbPage>{route.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink href={route.href}>{route.label}</BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
-            {idx < routeList.length - 1 && <BreadcrumbSeparator > <ChevronsRight /> </BreadcrumbSeparator> }
-          </Fragment>
-        ))}
-      </BreadcrumbList>
-    </Breadcrumb>
     </div>
-    )
+  )
 }
 
 export default CustomBreadcrumb;

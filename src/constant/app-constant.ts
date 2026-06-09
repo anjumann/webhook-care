@@ -4,33 +4,39 @@ export const APP_DESCRIPTION = "A modern webhook testing and debugging platform.
 
 export const APP_VERSION = "1.0.0";
 
+/**
+ * HTTP methods, recolored to the Emerald Console ramp.
+ * Methods render mono-bold; `color` is a Tailwind text token from the ramp
+ * (`text-c1..c4` / `text-warn` / `text-danger`). Most methods read in the
+ * brand accent; destructive/mutating verbs get a distinguishing hue.
+ */
 export const METHODS = {
     GET: {
         label: "GET",
-        color: "bg-blue-500",
+        color: "text-c2",
     },
     POST: {
         label: "POST",
-        color: "bg-green-500",
+        color: "text-primary",
     },
     PUT: {
         label: "PUT",
-        color: "bg-yellow-500",
+        color: "text-c3",
     },
     DELETE: {
         label: "DELETE",
-        color: "bg-red-500",
+        color: "text-danger",
     },
     PATCH: {
         label: "PATCH",
-        color: "bg-purple-500",
+        color: "text-warn",
     },
     OPTIONS: {
         label: "OPTIONS",
-        color: "bg-orange-500",
+        color: "text-c4",
     },
     HEAD: {
         label: "HEAD",
-        color: "bg-teal-500",
+        color: "text-dim",
     },
 }

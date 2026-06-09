@@ -4,39 +4,39 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t mt-8 py-8 text-sm text-gray-500 bg-white dark:bg-gray-900 dark:text-gray-400">
+    <footer className="w-full border-t border-border mt-8 py-8 text-sm text-dim bg-background">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
           {/* Company */}
           <div>
-            <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Company</h4>
+            <h4 className="font-semibold mb-3 text-foreground">Company</h4>
             <ul className="space-y-2">
-              <li><Link href="/about-us" className="hover:underline">About Us</Link></li>
-              <li><Link href="/contact-us" className="hover:underline">Contact</Link></li>
+              <li><Link href="/about-us" className="transition-colors hover:text-foreground">About Us</Link></li>
+              <li><Link href="/contact-us" className="transition-colors hover:text-foreground">Contact</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Legal</h4>
+            <h4 className="font-semibold mb-3 text-foreground">Legal</h4>
             <ul className="space-y-2">
-              <li><Link href="/privacy-policy" className="hover:underline">Privacy Policy</Link></li>
-              <li><Link href="/terms-and-conditions" className="hover:underline">Terms & Conditions</Link></li>
-              <li><Link href="/refund-policy" className="hover:underline">Refund Policy</Link></li>
+              <li><Link href="/privacy-policy" className="transition-colors hover:text-foreground">Privacy Policy</Link></li>
+              <li><Link href="/terms-and-conditions" className="transition-colors hover:text-foreground">Terms & Conditions</Link></li>
+              <li><Link href="/refund-policy" className="transition-colors hover:text-foreground">Refund Policy</Link></li>
             </ul>
           </div>
 
           {/* Connect */}
           <div>
-            <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Connect</h4>
+            <h4 className="font-semibold mb-3 text-foreground">Connect</h4>
             <ul className="space-y-2">
               <li>
                 <a
                   href="https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:underline"
+                  className="transition-colors hover:text-foreground"
                 >
                   Product Hunt
                 </a>
@@ -46,7 +46,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t pt-6 flex flex-col md:flex-row items-center justify-between">
+        <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between">
           <span>
             &copy; {new Date().getFullYear()} Webhook Care. All rights reserved.
           </span>

@@ -14,7 +14,7 @@ import { ChevronDown, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { useState } from "react";
 import { deleteRequest } from "./api/endpoints";
-import toast from "react-hot-toast";
+import { toast } from "@/lib/toast";
 import { METHODS } from "@/constant/app-constant";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { unwantedHeaders } from "@/constant";

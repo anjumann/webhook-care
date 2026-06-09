@@ -1,13 +1,8 @@
 import React from 'react';
-import Header from '@/components/header';
+import { Shell } from '@/components/console/shell';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className='max-w-7xl mx-auto'>
-      <Header />
-      <main className='mx-auto w-11/12'>{children}</main>
-    </div>
-  );
+  return <Shell>{children}</Shell>;
 };
 
-export default DashboardLayout; 
+export default DashboardLayout;

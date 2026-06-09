@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from 'react-hot-toast';
+import "sileo/styles.css";
+import { Toaster } from "@/components/console/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { APP_NAME } from "@/constant/app-constant";
 import { Analytics } from '@vercel/analytics/next';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const hankenGrotesk = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -60,8 +63,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body 
-        className={`${geistSans.variable} ${geistMono.variable} antialiased mx-auto`}
+      <body
+        className={`${hankenGrotesk.variable} ${jetBrainsMono.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -71,10 +74,7 @@ export default function RootLayout({
         >
 
           {children}
-          <Toaster
-            position="top-right"
-            reverseOrder={false}
-          />
+          <Toaster />
            <Analytics />
         </ThemeProvider>
       </body>

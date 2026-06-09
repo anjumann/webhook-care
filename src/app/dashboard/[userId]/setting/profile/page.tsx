@@ -14,7 +14,7 @@ import Image from "next/image"
 import { avatarFiles } from "@/constant"
 import { getProfile, updateProfile } from "@/profile/api"
 import CustomBreadcrumb from "@/components/custom-breadcrumb"
-import toast from "react-hot-toast"
+import { toast } from "@/lib/toast";
 
 // Define the schema for profile validation
 const profileFormSchema = z.object({
@@ -49,8 +49,8 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       if (!id) return
       const response = await getProfile(id)
-      form.setValue('userName', response.userName)
-      form.setValue('userImage', response.userImage.replace('/avatar/', ''))
+      form.setValue('userName', response.userName ?? "")
+      form.setValue('userImage', (response.userImage ?? `/avatar/${avatarFiles[0]}`).replace('/avatar/', ''))
     }
     fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,8 +66,8 @@ export default function ProfilePage() {
       toast.success('Profile updated successfully')
       form.reset(
         {
-          userName: result.userName,
-          userImage: result.userImage.replace('/avatar/', ''),
+          userName: result.userName ?? "",
+          userImage: (result.userImage ?? `/avatar/${avatarFiles[0]}`).replace('/avatar/', ''),
         }
       )
     } catch (error) {
