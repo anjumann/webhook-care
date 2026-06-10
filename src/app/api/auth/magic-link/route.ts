@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import { createMagicLink } from "@/services/auth";
 import { ok, badRequest, failFromError, tooManyRequests } from "@/lib/http";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
+import { resolveOrigin } from "@/lib/app-url";
 
 const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_KEY);
 
@@ -11,10 +12,6 @@ const schema = z.object({
   email: z.string().email(),
   userId: z.string().min(1),
 });
-
-function appUrl(): string {
-  return (process.env.APP_URL ?? "").replace(/\/$/, "");
-}
 
 /**
  * Send a magic link to claim / sign in to a dashboard. Always returns a uniform
@@ -39,7 +36,19 @@ export async function POST(request: NextRequest) {
     }
 
     const token = await createMagicLink(email, userId);
-    const link = `${appUrl()}/auth/verify?token=${encodeURIComponent(token)}`;
+    const origin = resolveOrigin({
+      configured: process.env.APP_URL,
+      forwardedHost: request.headers.get("x-forwarded-host"),
+      host: request.headers.get("host"),
+      forwardedProto: request.headers.get("x-forwarded-proto"),
+    });
+    if (!origin) {
+      // No APP_URL and no usable host header — refuse rather than email a
+      // domain-less, unclickable link.
+      console.error("Magic-link: could not resolve a public origin (set APP_URL).");
+      return failFromError(new Error("Server misconfigured"), "Magic-link origin:");
+    }
+    const link = `${origin}/auth/verify?token=${encodeURIComponent(token)}`;
 
     const { error } = await resend.emails.send({
       from: "update@projext.in",

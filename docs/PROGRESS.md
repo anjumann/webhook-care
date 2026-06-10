@@ -40,6 +40,7 @@ _Last updated: 2026-06-10._
 - [x] `/auth/verify` page, `ClaimAccount` UI, Sign out
 - [x] **Global 401 → sign-in prompt** — `guardedFetch` (`src/lib/guarded-fetch.ts`) fans out an `onUnauthorized` notification on any guarded `401`; `SignInDialogProvider` (mounted in the dashboard layout, below `SessionProvider`) listens and opens a magic-link dialog reusing `ClaimAccount`. Fixes the dead-end "Not authenticated" toast for email-claimed dashboards opened without a verified session (a claimed account no-ops `setAnonSession`, so no cookie → every owner route 401s). Wired into tokens/endpoints/profile client fetches. Subscriber registry (not `window` events) so it's no-op on public pages (provider scoped to `/dashboard`) and unit-testable in the node env. Unit-tested (`src/lib/guarded-fetch.test.ts`)
 - [x] Fixed empty `AUTH_SECRET` (was 500-ing the session route)
+- [x] **Fixed domain-less magic links** — when `APP_URL` was unset in prod the email link was built as `/auth/verify?token=…` (no host → unclickable). `resolveOrigin` (`src/lib/app-url.ts`) now prefers `APP_URL` and falls back to the request's `x-forwarded-host`/`host`, and the route refuses to email a link if no origin resolves. Unit-tested (`src/lib/app-url.test.ts`). **Deploy op: set `APP_URL=https://webhook.projext.in` in prod** (also needed by the QStash retention schedule)
 - [x] Shared profile SWR cache — sidebar/header update live on profile edit
 - [ ] Pre-expiry "export your webhooks" email (ties to B.3)
 - [ ] OAuth 2.1 for MCP token-less connect (Phase 2, optional)
@@ -89,7 +90,7 @@ _Last updated: 2026-06-10._
 - [x] `ServiceWorkerRegister` (prod-only) + `InstallPrompt` mounted
 
 ## Cross-cutting
-- [x] Vitest set up (`npm test`) — **95 tests** (redact, http, pagination, capture, endpoint update, ownership, auth crypto, avatar, export, api-token, MCP shaping/isolation, SSRF/proxy guard, ratelimit no-op + clientIp, guardedFetch 401 fan-out)
+- [x] Vitest set up (`npm test`) — **101 tests** (redact, http, pagination, capture, endpoint update, ownership, auth crypto, avatar, export, api-token, MCP shaping/isolation, SSRF/proxy guard, ratelimit no-op + clientIp, guardedFetch 401 fan-out)
 - [ ] Wire pagination UI ("load more") + server-side search on the detail page
 - [ ] Startup env validation (fail fast if `AUTH_SECRET` missing/empty)
 - [x] Rate limiting on the public webhook ingest (per-IP `ingest` bucket; see B.0) — enforced once `UPSTASH_REDIS_REST_URL`/`_TOKEN` are set

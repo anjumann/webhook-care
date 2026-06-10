@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -47,15 +48,36 @@ export function useSignInDialog() {
  */
 export function SignInDialogProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  // Once the user dismisses the prompt, passive background 401s (every page
+  // re-fetches profile/endpoints) must NOT keep re-popping it on every screen.
+  // Only an explicit `open()` (a user-initiated action) re-arms it.
+  const dismissed = useRef(false);
 
-  useEffect(() => onUnauthorized(() => setOpen(true)), []);
+  useEffect(
+    () =>
+      onUnauthorized(() => {
+        if (!dismissed.current) setOpen(true);
+      }),
+    []
+  );
+
+  function handleOpenChange(next: boolean) {
+    if (!next) dismissed.current = true;
+    setOpen(next);
+  }
 
   return (
     <SignInDialogContext.Provider
-      value={{ open: () => setOpen(true), close: () => setOpen(false) }}
+      value={{
+        open: () => {
+          dismissed.current = false;
+          setOpen(true);
+        },
+        close: () => handleOpenChange(false),
+      }}
     >
       {children}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
