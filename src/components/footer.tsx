@@ -1,72 +1,83 @@
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import { Webhook } from "lucide-react";
+import { APP_NAME } from "@/constant/app-constant";
+
+const PRODUCT_HUNT_URL =
+  "https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher";
+
+const linkGroups = [
+  {
+    heading: "Company",
+    links: [
+      { label: "About Us", href: "/about-us" },
+      { label: "Contact", href: "/contact-us" },
+    ],
+  },
+  {
+    heading: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms & Conditions", href: "/terms-and-conditions" },
+      { label: "Refund Policy", href: "/refund-policy" },
+    ],
+  },
+];
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-border mt-8 py-8 text-sm text-dim bg-background">
-      <div className="container mx-auto px-4">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
-          {/* Company */}
+    <footer className="border-t border-border bg-background text-sm text-dim">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          {/* Brand */}
           <div>
-            <h4 className="font-semibold mb-3 text-foreground">Company</h4>
-            <ul className="space-y-2">
-              <li><Link href="/about-us" className="transition-colors hover:text-foreground">About Us</Link></li>
-              <li><Link href="/contact-us" className="transition-colors hover:text-foreground">Contact</Link></li>
-            </ul>
+            <Link href="/" className="flex items-center gap-2.5">
+              <span className="flex size-8 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent2 text-accentfg">
+                <Webhook className="size-4" strokeWidth={2.2} />
+              </span>
+              <span className="text-base font-bold text-foreground">{APP_NAME}</span>
+            </Link>
+            <p className="mt-3 max-w-xs">
+              Catch, inspect, and forward webhooks. Free, no sign-up, 30-day
+              history.
+            </p>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h4 className="font-semibold mb-3 text-foreground">Legal</h4>
-            <ul className="space-y-2">
-              <li><Link href="/privacy-policy" className="transition-colors hover:text-foreground">Privacy Policy</Link></li>
-              <li><Link href="/terms-and-conditions" className="transition-colors hover:text-foreground">Terms & Conditions</Link></li>
-              <li><Link href="/refund-policy" className="transition-colors hover:text-foreground">Refund Policy</Link></li>
-            </ul>
-          </div>
+          {linkGroups.map((group) => (
+            <div key={group.heading}>
+              <h4 className="mb-3 font-semibold text-foreground">{group.heading}</h4>
+              <ul className="space-y-2">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="transition-colors hover:text-foreground">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
           {/* Connect */}
           <div>
-            <h4 className="font-semibold mb-3 text-foreground">Connect</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:text-foreground"
-                >
-                  Product Hunt
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between">
-          <span>
-            &copy; {new Date().getFullYear()} Webhook Care. All rights reserved.
-          </span>
-          
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <a
-              href="https://www.producthunt.com/posts/webhook-catcher?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-webhook-catcher"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <h4 className="mb-3 font-semibold text-foreground">Connect</h4>
+            <a href={PRODUCT_HUNT_URL} target="_blank" rel="noopener noreferrer">
               <Image
-                src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970283&theme=dark&t=1748547517762`}
-                alt="Webhook Catcher - Create instant disposable Webhooks to inspect & respond fast | Product Hunt"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970283&theme=dark&t=1748547517762"
+                alt="Webhook Catcher on Product Hunt"
                 width={150}
                 height={24}
               />
             </a>
           </div>
         </div>
+
+        <div className="mt-10 border-t border-border pt-6">
+          <span>
+            &copy; {new Date().getFullYear()} Webhook Catcher. All rights reserved.
+          </span>
+        </div>
       </div>
     </footer>
   );
-} 
+}

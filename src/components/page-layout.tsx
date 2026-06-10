@@ -14,11 +14,7 @@ export default function PageLayout({
 }: PageLayoutProps) {
   return (
     <main className="min-h-screen flex flex-col">
-      {showHeader && (
-        <div className="container mx-auto px-4">
-          <Header />
-        </div>
-      )}
+      {showHeader && <Header />}
       
       <div className="flex-1">
         {children}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Settings, KeyRound, Terminal, type LucideIcon } from "lucide-react";
+import { Activity, Settings, KeyRound, Terminal, Home, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEndpoints } from "@/endpoints/api/endpoints";
 
@@ -65,6 +65,12 @@ export function SidebarNav({
       key: "account",
       cap: "Account",
       items: [
+        {
+          label: "Home",
+          href: "/",
+          icon: Home,
+          active: false,
+        },
         {
           label: "Settings",
           href: `${base}/setting/profile`,

@@ -93,3 +93,13 @@ _Last updated: 2026-06-10._
 - [ ] Startup env validation (fail fast if `AUTH_SECRET` missing/empty)
 - [x] Rate limiting on the public webhook ingest (per-IP `ingest` bucket; see B.0) — enforced once `UPSTASH_REDIS_REST_URL`/`_TOKEN` are set
 - [ ] E2E/runtime verification of the full auth cookie flow in a browser
+
+## UI — Landing page redesign ✅
+- [x] Full rewrite of `src/app/page.tsx` (full rewrite, not a trim) — Emerald palette only, no red
+- [x] Header (`src/components/header.tsx`) now slim **sticky** + self-contained (owns container; updated `page-layout.tsx` call site): logo → `/`, theme toggle, Product Hunt badge, primary "Open Dashboard" CTA, avatar for known users
+- [x] New sections under `src/components/home/`: `HeroSection` (rewritten copy + faux `curl → captured request` visual), `BentoFeatures` (single asymmetric bento, emerald color-blocking; mixed product-mock + icon tiles — replaces both old feature sections), `HowItWorks` (3 steps), `FinalCta` (closing band)
+- [x] `Reveal` helper (framer-motion fade/rise on scroll) for light, consistent motion
+- [x] Footer (`src/components/footer.tsx`) redesigned: brand column + Company/Legal/Connect links + PH badge
+- [x] Removed redundant `FeaturesSection`/`FeaturesGrid`/`CatalogSection`/`FreeTrialSection`/`TestimonialsSection`
+- [x] Dashboard sidebar (`src/components/console/sidebar-nav.tsx`): added **Home** item to the ACCOUNT group → links to public landing `/`
+- [x] `tsc`, `npm run build` (/, statically prerendered), `npm test` (91) all green; pure-presentational UI → no new unit tests per testing policy
