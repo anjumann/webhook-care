@@ -21,9 +21,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Bot, Copy, KeyRound, Trash2 } from "lucide-react";
+import { Bot, Copy, KeyRound, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { guardedFetch } from "@/lib/guarded-fetch";
+import { CodeBlock } from "@/components/console/code-block";
+import type { Endpoint } from "@/endpoints/types";
 
 interface ApiTokenRow {
   id: string;
@@ -50,11 +52,48 @@ export default function TokensPage() {
     fetcher
   );
 
+  // Used only to pre-fill a real <endpointId> in the example snippets.
+  const { data: endpoints } = useSWR<Endpoint[]>(
+    ready && id ? `/api/endpoints?userId=${id}` : null,
+    fetcher
+  );
+
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [newToken, setNewToken] = useState<string | null>(null);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://your-app";
+
+  // When a token was just created we have the raw value exactly once — inject it
+  // (and a real endpoint id) into the snippets so they're copy-and-run ready.
+  const tokenValue = newToken ?? "wcat_your_token";
+  const endpointId = endpoints?.[0]?.id ?? "<endpointId>";
+  const filled = newToken !== null;
+
+  const restSnippet = `# List your endpoints
+curl ${origin}/api/v1/endpoints \\
+  -H "Authorization: Bearer ${tokenValue}"
+
+# Fetch captured requests for an endpoint (paginated + filterable)
+curl "${origin}/api/v1/endpoints/${endpointId}/requests?limit=25&method=POST" \\
+  -H "Authorization: Bearer ${tokenValue}"
+
+# Fetch one request in full
+curl ${origin}/api/v1/requests/<requestId> \\
+  -H "Authorization: Bearer ${tokenValue}"`;
+
+  const mcpAddSnippet = `# Claude Code / Claude Desktop (remote MCP over HTTP)
+claude mcp add --transport http webhook-catcher ${origin}/api/mcp \\
+  --header "Authorization: Bearer ${tokenValue}"`;
+
+  const mcpJsonSnippet = `{
+  "mcpServers": {
+    "webhook-catcher": {
+      "url": "${origin}/api/mcp",
+      "headers": { "Authorization": "Bearer ${tokenValue}" }
+    }
+  }
+}`;
 
   async function handleCreate() {
     if (!id || !name.trim()) return;
@@ -219,19 +258,16 @@ export default function TokensPage() {
             </p>
           </div>
 
-          <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs font-mono leading-relaxed">
-{`# List your endpoints
-curl ${origin}/api/v1/endpoints \\
-  -H "Authorization: Bearer wcat_your_token"
+          {filled && (
+            <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-accent-soft px-3 py-2 text-xs text-foreground">
+              <Sparkles className="h-3.5 w-3.5 flex-none text-primary" />
+              <span>
+                Snippets below are filled with your new token{endpoints?.[0] ? " and a real endpoint" : ""} — copy and run.
+              </span>
+            </div>
+          )}
 
-# Fetch captured requests for an endpoint (paginated + filterable)
-curl "${origin}/api/v1/endpoints/<endpointId>/requests?limit=25&method=POST" \\
-  -H "Authorization: Bearer wcat_your_token"
-
-# Fetch one request in full
-curl ${origin}/api/v1/requests/<requestId> \\
-  -H "Authorization: Bearer wcat_your_token"`}
-          </pre>
+          <CodeBlock code={restSnippet} label="curl example" />
 
           <div className="flex items-start gap-2 rounded-md border p-3 text-sm text-muted-foreground">
             <Bot className="mt-0.5 h-4 w-4 flex-none text-primary" />
@@ -245,24 +281,11 @@ curl ${origin}/api/v1/requests/<requestId> \\
             </span>
           </div>
 
-          <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs font-mono leading-relaxed">
-{`# Claude Code / Claude Desktop (remote MCP over HTTP)
-claude mcp add --transport http webhook-catcher ${origin}/api/mcp \\
-  --header "Authorization: Bearer wcat_your_token"`}
-          </pre>
+          <CodeBlock code={mcpAddSnippet} label="MCP add command" />
 
           <div className="space-y-1">
             <p className="text-sm font-medium">Generic MCP client config</p>
-            <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs font-mono leading-relaxed">
-{`{
-  "mcpServers": {
-    "webhook-catcher": {
-      "url": "${origin}/api/mcp",
-      "headers": { "Authorization": "Bearer wcat_your_token" }
-    }
-  }
-}`}
-            </pre>
+            <CodeBlock code={mcpJsonSnippet} label="MCP config" />
           </div>
         </CardContent>
       </Card>
