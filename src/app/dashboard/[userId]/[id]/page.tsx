@@ -1,23 +1,25 @@
 "use client"
 
-import {
-  EnhancedCard as Card,
-  EnhancedCardHeader as CardHeader,
-  EnhancedCardTitle as CardTitle,
-  EnhancedCardDescription as CardDescription,
-  EnhancedCardContent as CardContent,
-} from "@/components/enhanced-card";
 import { RequestList } from "@/endpoints/request-list";
 import { CopyButton } from "@/components/copy-button";
-import { useEffect, useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useGetEndpoint, deleteAllRequests } from "@/endpoints/api/endpoints";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelative } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, RefreshCcw, LoaderCircle, Eye, EyeOff, PencilIcon, Trash2, SearchIcon } from "lucide-react";
+import {
+  Activity,
+  Copy,
+  Pencil,
+  Play,
+  Download,
+  Trash2,
+  RefreshCcw,
+  Search,
+  ChevronDown,
+  MoreHorizontal,
+} from "lucide-react";
 import WebhookTestSection from "@/endpoints/webhook-test-section";
 import { ExportDialog } from "@/endpoints/export-dialog";
 import { toast } from "@/lib/toast";
@@ -30,10 +32,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AnimatedIconSwitch } from "@/framer-presets/animate-icon-switch";
-import { AnimatedShow } from "@/components/ui/animated-show";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Panel, PanelHead } from "@/components/console/panel";
+import { CodeBlock } from "@/components/console/code-block";
+import { MethodPill } from "@/components/console/method-pill";
+import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface EndpointDetailsPageProps {
@@ -44,90 +54,91 @@ interface EndpointDetailsPageProps {
 }
 
 export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps) {
-
   const searchParams = useSearchParams();
-  const isNew = searchParams?.get('isNew') === 'true' || false;
+  const isNew = searchParams?.get("isNew") === "true" || false;
   const router = useRouter();
+
+  const [param, setParam] = useState<{ userId: string; id: string } | null>(null);
+
   useEffect(() => {
     const getParams = async () => {
       const { userId, id } = await params;
       setParam({ userId, id });
-    }
+    };
     getParams();
   }, [params]);
 
-  const [param, setParam] = useState<{
-    userId: string;
-    id: string;
-  } | null>(null);
+  const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? "");
 
+  const [integrationOpen, setIntegrationOpen] = useState(false);
+  const [forwardingOpen, setForwardingOpen] = useState(true);
+  const [isTesting, setIsTesting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [exportOpen, setExportOpen] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
 
-  const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? '');
-  const [sectionVisibility, setSectionVisibility] = useState({
-    Integration: isNew,
-    forwardingURLs: true,
-  });
+  // Integration is the onboarding aid: open it only while there are no requests
+  // yet; once traffic is flowing, collapse it so the request log dominates.
+  // Runs once per load; never overrides a later manual toggle.
+  const didInitIntegration = useRef(false);
+  useEffect(() => {
+    if (!endpoints || didInitIntegration.current) return;
+    didInitIntegration.current = true;
+    setIntegrationOpen((endpoints.requests?.length ?? 0) === 0);
+  }, [endpoints]);
 
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
-  const [fullWebhookUrl, setFullWebhookUrl] = useState<string>('');
-  const [isTesting, setIsTesting] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [fullWebhookUrl, setFullWebhookUrl] = useState("");
+
+  useEffect(() => {
+    if (param?.userId && endpoints?.name) {
+      setFullWebhookUrl(window.location.origin + webhookUrl);
+    }
+  }, [webhookUrl, param?.userId, endpoints?.name]);
+
+  // First-run: open the testing playground when arriving fresh from create.
+  useEffect(() => {
+    if (isNew) setIsTesting(true);
+  }, [isNew]);
 
   const filteredRequests = useMemo(() => {
     const requests = endpoints?.requests ?? [];
     if (!searchQuery.trim()) return requests;
     const q = searchQuery.toLowerCase();
-    return requests.filter(req => JSON.stringify(req).toLowerCase().includes(q));
+    return requests.filter((req) => JSON.stringify(req).toLowerCase().includes(q));
   }, [endpoints?.requests, searchQuery]);
 
-  useEffect(() => {
-    // Set the full URL only on the client side
-    setFullWebhookUrl(window.location.origin + webhookUrl);
-  }, [webhookUrl]);
+  // Metrics over the loaded request set (last 24h window where relevant).
+  const last24 = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  // Calculate success rate for the last 24 hours
-  const calculateSuccessRate = () => {
-    if (!endpoints?.requests?.length) return '100%';
-    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const recentRequests = endpoints.requests.filter(
-      req => new Date(req.createdAt) > last24Hours
-    );
-    if (!recentRequests.length) return '100%';
-    const successfulRequests = recentRequests.filter(req => req.statusCode >= 200 && req.statusCode < 300);
-    return `${Math.round((successfulRequests.length / recentRequests.length) * 100)}%`;
+  const successRate = () => {
+    const reqs = endpoints?.requests ?? [];
+    const recent = reqs.filter((r) => new Date(r.createdAt) > last24());
+    if (!recent.length) return "—";
+    const ok = recent.filter((r) => r.statusCode >= 200 && r.statusCode < 300).length;
+    return `${Math.round((ok / recent.length) * 100)}%`;
   };
 
-  // Calculate average response time for the last 24 hours
-  const calculateAvgResponseTime = () => {
-    if (!endpoints?.requests?.length) return '0';
-    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const recentRequests = endpoints.requests.filter(
-      req => new Date(req.createdAt) > last24Hours
-    );
-    if (!recentRequests.length) return '0';
-    const avgTime = recentRequests.reduce((acc, req) => acc + req.duration, 0) / recentRequests.length;
-    return `${Math.round(avgTime)}`;
+  const avgResponseTime = () => {
+    const reqs = endpoints?.requests ?? [];
+    const recent = reqs.filter((r) => new Date(r.createdAt) > last24());
+    if (!recent.length) return "—";
+    const avg = recent.reduce((a, r) => a + r.duration, 0) / recent.length;
+    return `${Math.round(avg)}ms`;
   };
 
-  const formatLastActivity = () => {
-    if (!endpoints?.lastActivity) return 'Never';
-    return formatDistanceToNow(new Date(endpoints.lastActivity), { addSuffix: true });
-  };
+  const lastActivity = () =>
+    endpoints?.lastActivity ? formatRelative(new Date(endpoints.lastActivity)) : "Never";
 
   const routeList = [
+    { label: "Webhook Care", href: `/` },
+    { label: "Dashboard", href: `/dashboard/${param?.userId}` },
     {
-      label: "Webhook Care",
-      href: `/`,
-    },
-    {
-      label: "Dashboard",
-      href: `/dashboard/${param?.userId}`,
-    },
-    {
-      label: endpoints?.name || param?.id || '',
+      label: endpoints?.name || param?.id || "",
       href: `/dashboard/${param?.userId}/${param?.id}`,
     },
-  ]
+  ];
+
   const samplePayload = {
     type: "user.created",
     data: {
@@ -135,15 +146,13 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
       email: "john.doe@example.com",
       name: "John Doe",
       created_at: "2024-01-20T08:30:00Z",
-      metadata: {
-        source: "web_signup",
-        plan: "starter"
-      }
-    }
-  }
+      metadata: { source: "web_signup", plan: "starter" },
+    },
+  };
 
-  const curlCommand = `curl -X POST ${fullWebhookUrl} -H "Content-Type: application/json" -d '${JSON.stringify(samplePayload)}'`;
-
+  const curlCommand = `curl -X POST ${fullWebhookUrl} \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(samplePayload)}'`;
 
   const handleClearAll = async () => {
     if (!param?.id) return;
@@ -156,446 +165,272 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     }
   };
 
-  const toggleSection = (name: keyof typeof sectionVisibility) => {
-    setSectionVisibility(prev => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
+  const copyUrl = () => {
+    if (!fullWebhookUrl) return;
+    navigator.clipboard.writeText(fullWebhookUrl);
+    toast.success("Webhook URL copied");
   };
 
+  const hasRequests = (endpoints?.requests?.length ?? 0) > 0;
+
   return (
-    <main className="container py-6 space-y-6 hide-scrollbar">
-      {/* Header Section */}
-      <div className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
+    <main className="mx-auto max-w-[1180px] space-y-6 py-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        {isLoading ? (
           <div className="space-y-2">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-9 w-48" />
-                <Skeleton className="h-6 w-64" />
-              </>
-            ) : (
-              <div className="w-full flex items-center justify-between">
-                <CustomBreadcrumb
-                  header={endpoints?.name || param?.id}
-                  description="Monitor and manage your webhook endpoint"
-                  routeList={routeList}
-                />
-              </div>
-            )}
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="h-5 w-64" />
           </div>
-
-          <div className="flex items-center gap-3">
-            {/* <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => toast("Coming soon", {
-                    icon: "🚧",
-                  })}>
-                    <BookOpenIcon className="w-4 h-4 mr-2" />
-                    View Docs
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Read integration documentation
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider> */}
-
-            {/* <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => toast("Coming soon", {
-                    icon: "🚧",
-                  })}>
-                    <SettingsIcon className="w-4 h-4 mr-2" />
-                    Configure
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Manage webhook settings
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider> */}
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" className="cursor-pointer" size="icon" onClick={() => router.push(`/dashboard/${param?.userId}/${param?.id}/edit`)}>
-                    <PencilIcon className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Edit Endpoint
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <CopyButton text={fullWebhookUrl} label="Copy Webhook URL" variant="outline" isIcon={true} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  Copy Webhook URL
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline"  className="cursor-pointer" size="default" onClick={() => setIsTesting(!isTesting)}>
-                    <AnimatedIconSwitch
-                      show={isTesting}
-                      iconA={<LoaderCircle className="h-4 w-4" />}
-                      iconB={<CheckCircleIcon className="h-4 w-4" />}
-                    />
-                    Testing Playground
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Test the Webhook
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-
-        {
-          isTesting && (
-            <WebhookTestSection initialPayload={JSON.stringify(samplePayload)} url={fullWebhookUrl} isTesting={isTesting} />
-          )
-        }
-
-        {/* Integration Section */}
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col items-start gap-2">
-                <CardTitle>
-                  <ActivityIcon className="w-5 h-5 text-primary" />
-                  Integration Details
-                </CardTitle>
-                <CardDescription>
-                  Use these credentials to send webhook events to your endpoint
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="icon" onClick={() => toggleSection("Integration")} >
-                <AnimatedIconSwitch
-                  show= {!sectionVisibility.Integration}
-                  iconA={<EyeOff />}
-                  iconB={<Eye />}
-                />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <AnimatedShow show={sectionVisibility.Integration}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    Webhook URL
-                    <span className="text-xs text-muted-foreground">(Required)</span>
-                  </label>
-                  <div className="flex items-center gap-2 group">
-                    <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono border border-muted-foreground group-hover:bg-muted transition-colors">{fullWebhookUrl}</code>
-                    <CopyButton text={fullWebhookUrl} variant="outline" isIcon={true} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    Sample cURL
-                    <span className="text-xs text-muted-foreground">(Example)</span>
-                  </label>
-                  <div className="flex items-center gap-2 group">
-                    <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono border border-muted-foreground overflow-x-auto group-hover:bg-muted transition-colors">{curlCommand}</code>
-                    <CopyButton text={curlCommand} label="Copy cURL" variant="outline" isIcon={true} />
-                  </div>
-                </div>
-              </div>
-            </AnimatedShow>
-          </CardContent>
-        </Card>
-
-        {/* Forwarding URLs Section */}
-        {endpoints?.forwardingUrls && endpoints.forwardingUrls.length > 0 && (
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col items-start gap-2">
-                  <CardTitle>
-                    <ActivityIcon className="w-5 h-5 text-primary" />
-                    Forwarding URLs
-                  </CardTitle>
-                  <CardDescription>
-                    Requests to this endpoint will be forwarded to the following URLs
-                  </CardDescription>
-                </div>
-                <Button variant="outline" size="icon" onClick={() => toggleSection("forwardingURLs")} >
-                  <AnimatedIconSwitch
-                    show={!sectionVisibility.forwardingURLs}
-                    iconA={<EyeOff />}
-                    iconB={<Eye />}
-                  />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <AnimatedShow show={sectionVisibility.forwardingURLs}>
-                <div className="space-y-2">
-                  {endpoints.forwardingUrls.map((fw) => (
-                    <div key={fw.id} className="flex items-center gap-2">
-                      <span className="px-2 py-1 rounded bg-muted text-xs font-mono border border-muted-foreground">
-                        {fw.method}
-                      </span>
-                      <code className="flex-1 p-2 bg-muted/50 rounded-md text-sm font-mono border border-muted-foreground">{fw.url}</code>
-                      <CopyButton text={fw.url} variant="outline" />
-                    </div>
-                  ))}
-                </div>
-              </AnimatedShow>
-            </CardContent>
-          </Card>
+        ) : (
+          <CustomBreadcrumb
+            header={endpoints?.name || param?.id}
+            description="Monitor and manage your webhook endpoint"
+            routeList={routeList}
+          />
         )}
+
+        <div className="flex flex-shrink-0 items-center gap-2.5">
+          <Button
+            variant={isTesting ? "default" : "outline"}
+            className="gap-2"
+            onClick={() => setIsTesting((v) => !v)}
+          >
+            <Play className="size-4" />
+            Testing Playground
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => setExportOpen(true)}>
+            <Download className="size-4" />
+            Export
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" title="More actions">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/${param?.userId}/${param?.id}/edit`)}>
+                <Pencil className="size-4" /> Edit endpoint
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={copyUrl}>
+                <Copy className="size-4" /> Copy webhook URL
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!hasRequests}
+                onClick={() => setClearOpen(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="size-4" /> Clear all requests
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      {/* Metrics Section */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Quiet summary strip — replaces the 4 hero KPI cards */}
+      {!isLoading && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-dim">
+          <Stat value={(endpoints?.requestCount ?? 0).toLocaleString()} unit="requests" />
+          <span className="text-faint">·</span>
+          <Stat value={successRate()} unit="2xx · 24h" />
+          <span className="text-faint">·</span>
+          <Stat value={avgResponseTime()} unit="avg · 24h" />
+          <span className="text-faint">·</span>
+          <span>last {lastActivity()}</span>
+        </div>
+      )}
 
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Lifetime Requests</CardTitle>
-            <ActivityIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{endpoints?.requestCount || 0}</div>
-                <p className="text-xs text-muted-foreground">Total requests processed</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+      {isTesting && (
+        <WebhookTestSection
+          initialPayload={JSON.stringify(samplePayload)}
+          url={fullWebhookUrl}
+          isTesting={isTesting}
+        />
+      )}
 
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Delivery Success Rate</CardTitle>
-            <CheckCircleIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">{calculateSuccessRate()}</span>
-                  <span className="text-sm text-green-600 dark:text-green-500">
-                    <ArrowUpIcon className="h-4 w-4" />
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">Last 24 hours</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Response Time</CardTitle>
-            <AlertCircleIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">{calculateAvgResponseTime()}ms</span>
-                  <span className="text-sm text-green-600 dark:text-green-500">
-                    <ArrowDownIcon className="h-4 w-4" />
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">Last 24 hours</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card variant="metric">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Webhook Activity</CardTitle>
-            <ActivityIcon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{formatLastActivity()}</div>
-                <p className="text-xs text-muted-foreground">
-                  {endpoints?.lastActivity ? 'Most recent request received' : 'No requests yet'}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Analytics Section */}
-      {/* will implement in the future */}
-      {/* <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Success Rate Trend</CardTitle>
-            <CardDescription>
-              Webhook delivery success rate over the last 7 days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-[200px] flex items-center justify-center">
-                <Skeleton className="h-[200px] w-full" />
-              </div>
-            ) : (
-              <LineChart
-                data={endpoints?.requests || []}
-                dataKey="statusCode"
-                valueFormatter={(value) => `${value}%`}
-                showGridLines={false}
-                className="h-[200px]"
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Response Time Trend</CardTitle>
-            <CardDescription>
-              Average response time variations over the last 7 days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-[200px] flex items-center justify-center">
-                <Skeleton className="h-[200px] w-full" />
-              </div>
-            ) : (
-              <LineChart
-                data={endpoints?.requests || []}
-                dataKey="duration"
-                valueFormatter={(value) => `${value}ms`}
-                showGridLines={false}
-                className="h-[200px]"
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div> */}
-
-      {/* Request Log Section */}
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>
-                  <ActivityIcon className="w-5 h-5 text-primary" />
-                  Request History
-                </CardTitle>
-                <CardDescription>
-                  Detailed log of recent webhook requests and their outcomes
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => mutate()}
-                >
-                  <RefreshCcw className="w-4 h-4 mr-2" /> Refresh
-                </Button>
-                <ExportDialog
-                  userId={String(param?.userId ?? "")}
-                  endpointId={String(param?.id ?? "")}
-                  endpointName={endpoints?.name}
-                />
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!endpoints?.requests?.length}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" /> Clear All
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete all requests?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This permanently deletes every captured request for{" "}
-                        <strong>{endpoints?.name || "this endpoint"}</strong>. Pinned
-                        requests are deleted too. This cannot be undone — export first
-                        if you want a copy.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleClearAll}
-                        className="bg-destructive text-white hover:bg-destructive/90"
-                      >
-                        Delete all
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+      {/* Integration */}
+      <Panel>
+        <SectionToggle
+          title="Integration"
+          open={integrationOpen}
+          onToggle={() => setIntegrationOpen((v) => !v)}
+        />
+        {integrationOpen && (
+          <div className="space-y-4 p-5">
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-mid">Webhook URL</p>
+              <CodeBlock code={fullWebhookUrl || "…"} label="Webhook URL" />
             </div>
-            <div className="relative">
-              <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search requests (method, status, body, headers...)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-mid">Sample cURL</p>
+              <CodeBlock code={curlCommand} label="cURL command" />
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {endpoints?.requests?.length === 0 ? (
-            <div className="text-center py-12">
-              <ActivityIcon className="mx-auto h-12 w-12 text-muted-foreground/30" />
-              <h3 className="mt-4 text-lg font-semibold">No requests yet</h3>
-              <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-                Send your first webhook request to see the activity here. Use the integration details above to get started.
-              </p>
-              <Button className="mt-6" variant="outline" size="sm">
-                View Integration Guide
+        )}
+      </Panel>
+
+      {/* Forwarding */}
+      {endpoints?.forwardingUrls && endpoints.forwardingUrls.length > 0 && (
+        <Panel>
+          <SectionToggle
+            title="Forwarding"
+            count={endpoints.forwardingUrls.length}
+            open={forwardingOpen}
+            onToggle={() => setForwardingOpen((v) => !v)}
+          />
+          {forwardingOpen && (
+            <div className="space-y-2 p-5">
+              {endpoints.forwardingUrls.map((fw) => (
+                <div key={fw.id} className="flex items-center gap-2">
+                  <MethodPill method={fw.method} />
+                  <code className="min-w-0 flex-1 truncate rounded-md border border-border bg-inset px-3 py-2 font-mono text-[12.5px] text-mid">
+                    {fw.url}
+                  </code>
+                  <CopyButton text={fw.url} variant="outline" isIcon />
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+      )}
+
+      {/* Request History */}
+      <Panel>
+        <PanelHead
+          title="Request history"
+          count={isLoading ? undefined : filteredRequests.length}
+          right={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 text-dim"
+              title="Refresh"
+              onClick={() => mutate()}
+            >
+              <RefreshCcw className="size-4" />
+            </Button>
+          }
+        />
+
+        <div className="space-y-3 p-4">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-faint" />
+            <input
+              placeholder="Search requests (method, status, body, headers…)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-full rounded-md border border-border bg-inset pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-faint focus:border-accent-line focus:bg-card"
+            />
+          </div>
+
+          {isLoading ? (
+            <div className="py-12 text-center text-sm text-dim">Loading requests…</div>
+          ) : !hasRequests ? (
+            <div className="flex flex-col items-center gap-3 py-14 text-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-accent-soft text-primary">
+                <Activity className="size-5" strokeWidth={1.7} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold">No requests yet</p>
+                <p className="mx-auto max-w-sm text-[13px] text-dim">
+                  Send your first webhook to this endpoint — use the Integration URL above or open
+                  the Testing Playground.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setIsTesting(true)}>
+                <Play className="size-4" /> Open Testing Playground
               </Button>
             </div>
           ) : filteredRequests.length === 0 ? (
-            <div className="text-center py-12">
-              <SearchIcon className="mx-auto h-12 w-12 text-muted-foreground/30" />
-              <h3 className="mt-4 text-lg font-semibold">No matching requests</h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                No requests match &quot;{searchQuery}&quot;
-              </p>
+            <div className="flex flex-col items-center gap-2 py-14 text-center">
+              <Search className="size-8 text-faint" />
+              <p className="text-sm font-semibold">No matching requests</p>
+              <p className="text-[13px] text-dim">No requests match &quot;{searchQuery}&quot;.</p>
             </div>
           ) : (
             <RequestList mutate={mutate} requests={filteredRequests} />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </Panel>
+
+      {/* Overflow-menu actions (controlled) */}
+      <ExportDialog
+        userId={String(param?.userId ?? "")}
+        endpointId={String(param?.id ?? "")}
+        endpointName={endpoints?.name}
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        hideTrigger
+      />
+
+      <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete all requests?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes every captured request for{" "}
+              <strong>{endpoints?.name || "this endpoint"}</strong>. Pinned requests are deleted
+              too. This cannot be undone — export first if you want a copy.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearAll}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Delete all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
-} 
+}
+
+/** Compact inline metric: bold value + dim unit. */
+function Stat({ value, unit }: { value: string; unit: string }) {
+  return (
+    <span>
+      <span className="font-semibold text-foreground tabular-nums">{value}</span>{" "}
+      <span className="text-dim">{unit}</span>
+    </span>
+  );
+}
+
+/** Collapsible section header used by Integration / Forwarding panels. */
+function SectionToggle({
+  title,
+  count,
+  open,
+  onToggle,
+}: {
+  title: string;
+  count?: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      className={cn(
+        "flex w-full cursor-pointer items-center gap-2 px-[18px] py-[13px] text-left transition-colors hover:bg-elev2",
+        open && "border-b border-border"
+      )}
+    >
+      <span className="text-sm font-semibold">{title}</span>
+      {count != null && (
+        <span className="rounded-full border border-border px-[7px] py-px font-mono text-[11px] text-dim tabular-nums">
+          {count}
+        </span>
+      )}
+      <ChevronDown
+        className={cn("ml-auto size-4 flex-none text-dim transition-transform", open && "rotate-180")}
+      />
+    </button>
+  );
+}

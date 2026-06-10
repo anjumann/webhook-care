@@ -1,22 +1,20 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Copy, Trash2, Pin, PinOff } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Trash2,
+  Pin,
+  PinOff,
+} from "lucide-react";
+import { cn, formatRelative } from "@/lib/utils";
 import { useState } from "react";
 import { deleteRequest, setRequestPinned } from "./api/endpoints";
 import { toast } from "@/lib/toast";
-import { METHODS } from "@/constant/app-constant";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { MethodPill } from "@/components/console/method-pill";
+import { StatusPill } from "@/components/console/status-pill";
 import { unwantedHeaders } from "@/constant";
 import type { RequestRecord } from "@/endpoints/types";
 
@@ -30,211 +28,250 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // "Expires in N days" / "Kept" chip from a request's retention state.
 function expiryChip(
   request: Pick<RequestRecord, "pinned" | "expiresAt">
-): { text: string; variant: "secondary" | "outline" | "destructive" } | null {
-  if (request.pinned) return { text: "Kept", variant: "secondary" };
+): { text: string; tone: string } | null {
+  if (request.pinned) return { text: "Kept", tone: "bg-accent-soft text-primary" };
   if (!request.expiresAt) return null;
   const ms = new Date(request.expiresAt).getTime() - Date.now();
-  if (ms <= 0) return { text: "Expiring", variant: "destructive" };
+  if (ms <= 0) return { text: "Expiring", tone: "bg-danger-soft text-danger" };
   const days = Math.ceil(ms / DAY_MS);
-  return { text: days <= 1 ? "Expires <1d" : `Expires ${days}d`, variant: "outline" };
+  return {
+    text: days <= 1 ? "Expires <1d" : `Expires ${days}d`,
+    tone: "border border-border bg-elev2 text-dim",
+  };
 }
 
-// JSON Display Component
-function JsonDisplay({ data, title, onCopy }: { data: any; title: string; onCopy: () => void }) {
+// JSON viewer with copy + show-more.
+function JsonDisplay({
+  data,
+  title,
+  onCopy,
+}: {
+  data: unknown;
+  title: string;
+  onCopy: () => void;
+}) {
   const [isExpanded, setIsExpanded] = useState(true);
-  
+
   const jsonString = JSON.stringify(data, null, 2);
   const isLong = jsonString.length > 500;
-  const displayText = isExpanded ? jsonString : jsonString.slice(0, 500) + (isLong ? '...' : '');
+  const displayText = isExpanded ? jsonString : jsonString.slice(0, 500) + (isLong ? "…" : "");
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold">{title}</h4>
-        <div className="flex gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-[0.05em] text-faint">{title}</h4>
+        <div className="flex gap-1.5">
           {isLong && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs"
-            >
-              {isExpanded ? 'Show Less' : 'Show More'}
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-mid" onClick={() => setIsExpanded(!isExpanded)}>
+              {isExpanded ? "Show less" : "Show more"}
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={onCopy} className="text-xs">
-            Copy <Copy className="h-3 w-3 ml-1" />
+          <Button variant="ghost" size="sm" className="h-7 text-xs text-mid" onClick={onCopy}>
+            Copy <Copy className="ml-1 size-3" />
           </Button>
         </div>
       </div>
-      <ScrollArea className="h-[200px] w-full rounded-md border bg-muted/50">
-        <pre className="p-3 text-xs font-mono whitespace-pre-wrap break-words">
-          {displayText}
-        </pre>
-      </ScrollArea>
+      <pre className="scroll-thin max-h-[260px] overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-inset p-3 font-mono text-xs leading-relaxed">
+        {displayText}
+      </pre>
     </div>
   );
 }
 
-// Function to filter out unwanted headers
 const filterHeaders = (headers: Record<string, string>): Record<string, string> => {
-
-
-  const filteredHeaders: Record<string, string> = {};
-  
+  const filtered: Record<string, string> = {};
   Object.entries(headers).forEach(([key, value]) => {
-    if (!unwantedHeaders.includes(key.toLowerCase())) {
-      filteredHeaders[key] = value;
-    }
+    if (!unwantedHeaders.includes(key.toLowerCase())) filtered[key] = value;
   });
-
-  return filteredHeaders;
+  return filtered;
 };
 
+function RowAction({
+  title,
+  onClick,
+  danger,
+  children,
+}: {
+  title: string;
+  onClick: (e: React.MouseEvent) => void;
+  danger?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      className={cn(
+        "flex size-7 cursor-pointer items-center justify-center rounded-md border border-transparent text-dim transition-colors hover:border-border hover:bg-elev hover:text-foreground",
+        danger && "hover:border-danger-soft hover:bg-danger-soft hover:text-danger"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function RequestList({ requests, mutate }: RequestListProps) {
-  const [expandedRequests, setExpandedRequests] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-
-  const toggleRequest = (id: string) => {
-    const newExpanded = new Set(expandedRequests);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRequests(newExpanded);
+  const toggle = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   if (requests.length === 0) {
-    return (
-      <div className="text-center py-6 text-muted-foreground">
-        No requests received yet
-      </div>
-    );
+    return <div className="py-6 text-center text-sm text-dim">No requests received yet</div>;
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[40px]"></TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Expires</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {requests.map((request) => [
-            <TableRow
-              key={`${request.id}-row`}
-              className="cursor-pointer hover:bg-muted/50"
-              onClick={() => toggleRequest(request.id)}
-            >
-              <TableCell>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  {expandedRequests.has(request.id) ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" >{ METHODS[request.method as keyof typeof METHODS].label}</Badge>
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant={request.statusCode < 400 ? "default" : "destructive"}
-                >
-                  {request.statusCode}
-                </Badge>
-              </TableCell>
-              <TableCell>{request.duration}ms</TableCell>
-              <TableCell>{formatDate(new Date(request.createdAt))}</TableCell>
-              <TableCell>
-                {(() => {
-                  const chip = expiryChip(request);
-                  return chip ? (
-                    <Badge variant={chip.variant}>{chip.text}</Badge>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  );
-                })()}
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" className="h-6 w-6 cursor-pointer"
-                    title={request.pinned ? "Unpin (allow expiry)" : "Pin (keep forever)"}
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      try {
-                        await setRequestPinned(request.id, !request.pinned);
-                        mutate();
-                        toast.success(request.pinned ? "Request unpinned" : "Request pinned");
-                      } catch {
-                        toast.error("Failed to update pin");
-                      }
-                    }}
-                  >
-                    {request.pinned ? (
-                      <PinOff className="h-4 w-4" />
-                    ) : (
-                      <Pin className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
-                      toast.success("Payload copied to clipboard");
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 cursor-pointer"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      await deleteRequest(request.id);
-                      mutate();
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>,
-            expandedRequests.has(request.id) && (
-              <TableRow key={`${request.id}-expanded`}>
-                <TableCell colSpan={7} className="p-0">
-                  <div className="p-4 space-y-4">
-                    <JsonDisplay
-                      data={filterHeaders(request.headers)}
-                      title="Headers"
-                      onCopy={() => {
-                        const filteredHeaders = filterHeaders(request.headers);
-                        navigator.clipboard.writeText(JSON.stringify(filteredHeaders, null, 2));
-                        toast.success("Headers copied to clipboard");
-                      }}
-                    />
-                    <JsonDisplay
-                      data={request.body}
-                      title="Body"
-                      onCopy={() => {
-                        navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
-                        toast.success("Body copied to clipboard");
-                      }}
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            )
-          ].filter(Boolean))}
-        </TableBody>
-      </Table>
+    <div className="overflow-x-auto rounded-md border border-border">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr>
+            <th className="w-9 border-b border-border px-3 py-2.5" />
+            {["Method", "Status", "Duration", "Time", "Expires"].map((h) => (
+              <th
+                key={h}
+                className="border-b border-border px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.05em] text-faint"
+              >
+                {h}
+              </th>
+            ))}
+            <th className="border-b border-border px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {requests.map((request) => {
+            const isOpen = expanded.has(request.id);
+            const chip = expiryChip(request);
+            return (
+              <RequestRow
+                key={request.id}
+                request={request}
+                isOpen={isOpen}
+                chip={chip}
+                onToggle={() => toggle(request.id)}
+                mutate={mutate}
+              />
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
-} 
+}
+
+function RequestRow({
+  request,
+  isOpen,
+  chip,
+  onToggle,
+  mutate,
+}: {
+  request: RequestRecord;
+  isOpen: boolean;
+  chip: { text: string; tone: string } | null;
+  onToggle: () => void;
+  mutate: () => void;
+}) {
+  return (
+    <>
+      <tr className="group cursor-pointer border-t border-border transition-colors hover:bg-elev2" onClick={onToggle}>
+        <td className="px-3 py-3 align-middle text-dim">
+          {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+        </td>
+        <td className="px-3 py-3 align-middle">
+          <MethodPill method={request.method} />
+        </td>
+        <td className="px-3 py-3 align-middle">
+          <StatusPill code={request.statusCode} />
+        </td>
+        <td className="px-3 py-3 align-middle text-[13px] tabular-nums text-mid">{request.duration}ms</td>
+        <td className="px-3 py-3 align-middle text-[13px] text-mid">
+          {formatRelative(new Date(request.createdAt))}
+        </td>
+        <td className="px-3 py-3 align-middle">
+          {chip ? (
+            <span className={cn("inline-flex items-center rounded-full px-2 py-[3px] text-[11px] font-semibold", chip.tone)}>
+              {chip.text}
+            </span>
+          ) : (
+            <span className="text-xs text-dim">—</span>
+          )}
+        </td>
+        <td className="px-3 py-3 align-middle">
+          <div className="flex justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+            <RowAction
+              title={request.pinned ? "Unpin (allow expiry)" : "Pin (keep forever)"}
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await setRequestPinned(request.id, !request.pinned);
+                  mutate();
+                  toast.success(request.pinned ? "Request unpinned" : "Request pinned");
+                } catch {
+                  toast.error("Failed to update pin");
+                }
+              }}
+            >
+              {request.pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+            </RowAction>
+            <RowAction
+              title="Copy payload"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
+                toast.success("Payload copied to clipboard");
+              }}
+            >
+              <Copy className="size-3.5" strokeWidth={1.7} />
+            </RowAction>
+            <RowAction
+              title="Delete request"
+              danger
+              onClick={async (e) => {
+                e.stopPropagation();
+                await deleteRequest(request.id);
+                mutate();
+              }}
+            >
+              <Trash2 className="size-3.5" strokeWidth={1.7} />
+            </RowAction>
+          </div>
+        </td>
+      </tr>
+      {isOpen && (
+        <tr className="border-t border-border bg-inset/40">
+          <td colSpan={7} className="p-0">
+            <div className="space-y-4 p-4">
+              <JsonDisplay
+                data={filterHeaders(request.headers)}
+                title="Headers"
+                onCopy={() => {
+                  navigator.clipboard.writeText(JSON.stringify(filterHeaders(request.headers), null, 2));
+                  toast.success("Headers copied to clipboard");
+                }}
+              />
+              <JsonDisplay
+                data={request.body}
+                title="Body"
+                onCopy={() => {
+                  navigator.clipboard.writeText(JSON.stringify(request.body, null, 2));
+                  toast.success("Body copied to clipboard");
+                }}
+              />
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}

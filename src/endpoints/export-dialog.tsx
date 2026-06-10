@@ -42,6 +42,11 @@ interface ExportDialogProps {
   multiSelect?: boolean;
   /** Trigger button label (defaults to "Export"). */
   triggerLabel?: string;
+  /** Controlled-open mode (e.g. opened from an overflow menu). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Hide the built-in trigger button (when opened externally). */
+  hideTrigger?: boolean;
 }
 
 /**
@@ -58,8 +63,13 @@ export function ExportDialog({
   endpointName,
   multiSelect = false,
   triggerLabel = "Export",
+  open: openProp,
+  onOpenChange,
+  hideTrigger = false,
 }: ExportDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => (onOpenChange ? onOpenChange(next) : setInternalOpen(next));
   const [busy, setBusy] = useState(false);
 
   const [scope, setScope] = useState<Scope>(endpointId ? "this" : "all");
@@ -156,11 +166,13 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <DownloadIcon className="w-4 h-4 mr-2" /> {triggerLabel}
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <DownloadIcon className="w-4 h-4 mr-2" /> {triggerLabel}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Export webhooks</DialogTitle>

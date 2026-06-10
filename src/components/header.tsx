@@ -4,17 +4,23 @@ import { useUser } from '@/hooks/useUser';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
 import { useProfile } from '@/profile/api';
-import { ModeToggle } from './theme-toggle';
 import { APP_NAME } from '@/constant/app-constant';
 import Image from 'next/image';
 import { Webhook } from 'lucide-react';
 import GetStartedBtn from '@/home/get-started-btn';
 import { Button } from './ui/button';
 
+const NAV_LINKS = [
+    { label: 'Features', href: '/#features' },
+    { label: 'Try it', href: '/#playground' },
+];
+
 /**
- * Public marketing header — sticky, self-contained (owns its container).
- * Logo links home; right side carries theme toggle, the Product Hunt badge,
- * a primary CTA, and (for known users) a profile avatar.
+ * Public marketing header — a floating glass bar (marketing pages are
+ * forced-dark, so there is no theme toggle here; the dashboard keeps its own).
+ * Logo links home; center nav anchors into the landing sections; right side
+ * carries the Product Hunt badge, primary CTA, and (for known users) a
+ * profile avatar.
  */
 const Header: React.FC = () => {
     const user = useUser();
@@ -24,16 +30,28 @@ const Header: React.FC = () => {
     const { profile } = useProfile(user?.id);
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-            <div className="container mx-auto flex items-center justify-between px-4 py-3">
+        <header className="sticky top-3 z-50 px-3">
+            <div className="glass container mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5">
                 <Link href="/" aria-label={APP_NAME}>
                     <div className="flex items-center gap-3">
                         <span className="flex size-9 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent2 text-accentfg shadow-[0_4px_14px_var(--accent-soft)]">
                             <Webhook className="size-5" strokeWidth={2.2} />
                         </span>
-                        <h1 className="hidden text-xl font-bold tracking-tight md:block">{APP_NAME}</h1>
+                        <h1 className="hidden text-lg font-bold tracking-tight md:block">{APP_NAME}</h1>
                     </div>
                 </Link>
+
+                <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+                    {NAV_LINKS.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className="rounded-lg px-3 py-1.5 text-sm font-medium text-mid transition-colors hover:bg-accent-soft/50 hover:text-foreground"
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                </nav>
 
                 <div className="flex items-center gap-2 md:gap-3">
                     <a
@@ -49,8 +67,6 @@ const Header: React.FC = () => {
                             height={24}
                         />
                     </a>
-
-                    <ModeToggle />
 
                     <GetStartedBtn>
                         <Button size="sm">Open Dashboard</Button>

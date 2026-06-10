@@ -59,6 +59,58 @@ export function getRequest(id: string) {
   return prisma.request.findUnique({ where: { id } });
 }
 
+/** Fields the live relay streams to a local `wcat listen` client. */
+const RELAY_SELECT = {
+  id: true,
+  method: true,
+  headers: true,
+  body: true,
+  rawBody: true,
+  contentType: true,
+  query: true,
+  createdAt: true,
+} satisfies Prisma.RequestSelect;
+
+export type RelayRequest = Prisma.RequestGetPayload<{ select: typeof RELAY_SELECT }>;
+
+/**
+ * The id of the newest request for an endpoint, or null when it has none yet.
+ * The live relay uses this as its *starting* cursor so a fresh `wcat listen`
+ * only forwards captures that arrive after it connects — it never replays
+ * history. Backed by the `([endpointId, createdAt])` index.
+ */
+export async function latestRequestId(
+  endpointId: string
+): Promise<string | null> {
+  const row = await prisma.request.findFirst({
+    where: { endpointId },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { id: true },
+  });
+  return row?.id ?? null;
+}
+
+/**
+ * Tail an endpoint's requests *forward* in time for the live relay: rows
+ * strictly after `afterId`, oldest-first, bounded by `take`. The cursor is the
+ * last delivered id, so a reconnecting listener resumes exactly where it left
+ * off — that closes the gap across the SSE stream's max-duration reconnect
+ * without ever loading the unbounded table.
+ */
+export function requestsAfter(
+  endpointId: string,
+  afterId: string | null,
+  take = 50
+): Promise<RelayRequest[]> {
+  return prisma.request.findMany({
+    where: { endpointId },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    take: Math.min(Math.max(1, take), 200),
+    ...(afterId ? { cursor: { id: afterId }, skip: 1 } : {}),
+    select: RELAY_SELECT,
+  });
+}
+
 export interface CursorRange {
   since?: Date;
   until?: Date;

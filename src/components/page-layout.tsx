@@ -13,7 +13,8 @@ export default function PageLayout({
   showFooter = true 
 }: PageLayoutProps) {
   return (
-    <main className="min-h-screen flex flex-col">
+    // Marketing/legal pages share the landing's forced-dark glass identity.
+    <main className="dark flex min-h-screen flex-col bg-background text-foreground">
       {showHeader && <Header />}
       
       <div className="flex-1">

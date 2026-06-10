@@ -1,97 +1,79 @@
-import { Zap, Send, Eye } from "lucide-react";
+import { Copy, Send, SearchCode } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { StepConnector } from "./StepConnector";
+import { SectionHeading } from "./SectionHeading";
 
-const steps = [
+/**
+ * How it works — three numbered glass cards (simplelist-style), each with a
+ * tiny visual instead of an abstract icon row.
+ */
+
+const STEPS = [
   {
-    icon: Zap,
-    title: "Create your endpoint",
-    body: "Instantly generate a unique webhook URL — no account, no config.",
-    snippet: (
-      <>
-        <span className="text-dim">›</span> https://wcat.dev/
-        <span className="text-primary">abc123</span>
-      </>
+    icon: Copy,
+    title: "Mint your URL",
+    body: "One click in the dashboard — no account, no config. The endpoint is live before the page finishes loading.",
+    visual: (
+      <div className="glass-inset flex items-center justify-between rounded-lg px-3 py-2.5 font-mono text-[11.5px]">
+        <span className="truncate text-primary">https://wcat.dev/u/ord-7f2</span>
+        <Copy className="ml-2 size-3.5 flex-none text-dim" />
+      </div>
     ),
   },
   {
     icon: Send,
-    title: "Send a webhook",
-    body: "Point your service at the URL, or fire a test with the ready-made cURL.",
-    snippet: (
-      <>
-        <span className="text-dim">$</span> curl -X{" "}
-        <span className="text-accent2">POST</span> …/abc123
-      </>
+    title: "Point anything at it",
+    body: "Paste it into Stripe, GitHub, your cron job — or just curl it from the terminal to see the loop close.",
+    visual: (
+      <div className="glass-inset rounded-lg px-3 py-2.5 font-mono text-[11.5px] text-mid">
+        <span className="text-dim">$ </span>curl -X POST{" "}
+        <span className="text-primary">…/u/ord-7f2</span> -d{" "}
+        <span className="text-accent2">&apos;{"{…}"}&apos;</span>
+      </div>
     ),
   },
   {
-    icon: Eye,
-    title: "Inspect & forward",
-    body: "Read the full request, replay it, and forward it to your localhost.",
-    snippet: (
-      <>
-        <span className="rounded bg-accent-soft px-1 font-semibold text-primary">
+    icon: SearchCode,
+    title: "Inspect, replay, forward",
+    body: "The request is already on screen. Read it, fire it again, or relay it to localhost and step through your handler.",
+    visual: (
+      <div className="glass-inset flex items-center gap-2.5 rounded-lg px-3 py-2.5 font-mono text-[11px]">
+        <span className="rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-primary">
           POST
-        </span>{" "}
-        /abc123 <span className="text-ok">200</span>
-      </>
+        </span>
+        <span className="flex-1 truncate text-foreground/90">caught · just now</span>
+        <span className="live-pulse" />
+      </div>
     ),
   },
 ];
 
-/**
- * "How it works" — a connected 3-step pipeline. Numbered emerald nodes joined
- * by an animated connector, each step grounded by a mono snippet so the columns
- * carry weight at full screen width instead of floating in empty space.
- */
 export function HowItWorks() {
   return (
-    <section className="border-y border-border bg-elev/40">
-      <div className="container mx-auto px-4 py-16 lg:py-24">
-        <Reveal>
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-              how it works
-            </span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-              Start catching in 3 steps
-            </h2>
-            <p className="mt-3 text-lg text-mid">
-              From zero to your first captured request in under a minute.
-            </p>
-          </div>
-        </Reveal>
+    <section className="container mx-auto max-w-6xl px-4 py-20">
+      <SectionHeading
+        pill="How it works"
+        title="Zero to caught in under a minute"
+        sub="No SDK, no signup, no YAML. The slowest step is your provider’s settings page."
+      />
 
-        <div className="relative mx-auto mt-16 max-w-5xl">
-          <StepConnector />
-          <ol className="grid gap-12 md:grid-cols-3 md:gap-8">
-            {steps.map((step, i) => (
-              <Reveal key={step.title} delay={0.15 + i * 0.12}>
-                <li className="flex flex-col items-center text-center md:items-start md:text-left">
-                  {/* node */}
-                  <span className="relative z-10 rounded-full bg-background p-1.5">
-                    <span className="flex size-11 items-center justify-center rounded-full bg-primary text-accentfg shadow-[0_6px_20px_var(--accent-soft)]">
-                      <step.icon className="size-5" strokeWidth={2} />
-                    </span>
-                  </span>
-
-                  <div className="mt-5 flex items-center gap-2">
-                    <span className="font-mono text-sm font-semibold text-primary">
-                      0{i + 1}
-                    </span>
-                    <h3 className="text-lg font-semibold">{step.title}</h3>
-                  </div>
-                  <p className="mt-2 max-w-xs text-mid md:max-w-none">{step.body}</p>
-
-                  <code className="mt-4 inline-flex max-w-full items-center overflow-x-auto whitespace-nowrap rounded-lg border border-border bg-inset px-3 py-2 font-mono text-[12.5px] text-mid">
-                    {step.snippet}
-                  </code>
-                </li>
-              </Reveal>
-            ))}
-          </ol>
-        </div>
+      <div className="relative mt-12 grid gap-5 md:grid-cols-3">
+        {/* connector line behind the number chips */}
+        <div
+          aria-hidden
+          className="absolute left-[16%] right-[16%] top-7 hidden border-t border-dashed border-border2 md:block"
+        />
+        {STEPS.map((step, i) => (
+          <Reveal key={step.title} delay={i * 0.08}>
+            <div className="glass relative flex h-full flex-col rounded-2xl p-6 pt-10 text-center">
+              <span className="glass-inset absolute -top-0 left-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl font-mono text-lg font-bold text-primary">
+                {i + 1}
+              </span>
+              <h3 className="text-lg font-bold tracking-tight">{step.title}</h3>
+              <p className="mt-2 flex-1 text-sm text-mid">{step.body}</p>
+              <div className="mt-5 text-left">{step.visual}</div>
+            </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );

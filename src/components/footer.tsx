@@ -26,7 +26,16 @@ const linkGroups = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-background text-sm text-dim">
+    <footer className="relative border-t border-border text-sm text-dim">
+      {/* faint emerald rise so the page ends with light, not a hard edge */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(70% 100% at 50% 120%, var(--accent-soft), transparent 70%)",
+        }}
+      />
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}

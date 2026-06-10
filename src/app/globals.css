@@ -356,3 +356,89 @@ body, * {
 .scroll-thin {
   scrollbar-width: thin !important;
 }
+
+/* ============================================================
+   Landing glass system — dark-only marketing surfaces.
+   The landing forces `.dark` on its subtree, so these read the
+   dark token ramp; they are not designed for light mode.
+   ============================================================ */
+
+/* translucent panel: blur + inner top highlight + deep drop */
+.glass {
+  background: color-mix(in srgb, var(--card) 66%, transparent);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border: 1px solid color-mix(in srgb, var(--accent2) 13%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 60px -28px rgba(0, 0, 0, 0.6);
+}
+
+/* quieter inner surface for mocks nested inside a .glass card */
+.glass-inset {
+  background: color-mix(in srgb, var(--inset) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent2) 9%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* pill section label (FEATURES / HOW IT WORKS / …) */
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--accent2) 18%, transparent);
+  background: color-mix(in srgb, var(--card) 55%, transparent);
+  padding: 0.3rem 0.85rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mid);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* logo marquee — two rows drifting in opposite directions */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 36s linear infinite;
+}
+.marquee-track.reverse {
+  animation-direction: reverse;
+}
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* slow vertical float for the hero console */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.float-slow {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+/* travelling dash along SVG forwarding paths */
+@keyframes dash-flow {
+  to { stroke-dashoffset: -28; }
+}
+.dash-flow {
+  stroke-dasharray: 6 8;
+  animation: dash-flow 1.1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .float-slow,
+  .dash-flow {
+    animation: none;
+  }
+}
