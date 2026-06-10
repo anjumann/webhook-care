@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as endpoints from "@/services/endpoints";
-import { ok, notFound, badRequest, failFromError } from "@/lib/http";
+import { requireOwnerOfEndpoint } from "@/services/auth";
+import { ok, notFound, badRequest, fail, failFromError } from "@/lib/http";
 import { MAX_PAGE_SIZE } from "@/services/requests";
 
 export async function GET(
@@ -10,6 +11,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const auth = await requireOwnerOfEndpoint(id);
+    if (!auth.ok) return fail(auth.message, auth.status);
+
     const sp = new URL(request.url).searchParams;
 
     const limit = sp.get("limit") ? Number(sp.get("limit")) : 50;
@@ -46,6 +50,9 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const auth = await requireOwnerOfEndpoint(id);
+    if (!auth.ok) return fail(auth.message, auth.status);
+
     const parsed = updateSchema.safeParse(await request.json());
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
@@ -66,6 +73,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const auth = await requireOwnerOfEndpoint(id);
+    if (!auth.ok) return fail(auth.message, auth.status);
     return ok(await endpoints.deleteEndpoint(id));
   } catch (error) {
     return failFromError(error, "Error deleting endpoint:");

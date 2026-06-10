@@ -24,11 +24,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Plus, Trash2, Sparkles } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getEndpoint } from './api/endpoints'
+import { useSession } from '@/components/auth/session-provider'
 
 export default function EndpointEditForm({ id }: { id?: string }) {
 
     const router = useRouter();
     const user = useUser();
+    const { ready } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +91,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
     });
 
     useEffect(() => {
-        if (id) {
+        if (id && ready) {
             const getEndpointData = async () => {
                 const endpoint = await getEndpoint(id)
                 form.reset({
@@ -101,7 +103,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
             getEndpointData()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id])
+    }, [id, ready])
 
 
     async function onSubmit(data: EndpointFormValues) {

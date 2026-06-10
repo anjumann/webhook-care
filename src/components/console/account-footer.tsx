@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, User, Sun, Moon } from "lucide-react";
+import { ChevronDown, User, Sun, Moon, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useUser } from "@/hooks/useUser";
-import { getProfile } from "@/profile/api";
+import { useProfile } from "@/profile/api";
+import { useSession } from "@/components/auth/session-provider";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -26,18 +26,14 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export function AccountFooter({ userId }: { userId?: string }) {
   const user = useUser();
   const id = userId ?? user.id;
+  const { ready } = useSession();
   const { setTheme } = useTheme();
-  const [profile, setProfile] = React.useState<{
-    userName?: string;
-    userImage?: string;
-  } | null>(null);
+  const { profile } = useProfile(id, ready);
 
-  React.useEffect(() => {
-    if (!id) return;
-    getProfile(id)
-      .then(setProfile)
-      .catch(() => {});
-  }, [id]);
+  async function signOut() {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    window.location.href = "/";
+  }
 
   const name = profile?.userName ? cap(profile.userName) : "Local workspace";
   const initial = (profile?.userName?.[0] ?? "W").toUpperCase();
@@ -87,6 +83,11 @@ export function AccountFooter({ userId }: { userId?: string }) {
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           <Moon className="size-4" />
           Dark
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={signOut}>
+          <LogOut className="size-4" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

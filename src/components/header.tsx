@@ -1,9 +1,9 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useUser } from '@/hooks/useUser';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
-import { getProfile } from '@/profile/api';
+import { useProfile } from '@/profile/api';
 import { ModeToggle } from './theme-toggle';
 import { APP_NAME } from '@/constant/app-constant';
 import Image from 'next/image';
@@ -11,16 +11,10 @@ import { Webhook } from 'lucide-react';
 
 const Header: React.FC = () => {
     const user = useUser();
-
-    const [profile, setProfile] = useState<any>(null)
-    useEffect(() => {
-        const updateProfile = async () => {
-            if (!user?.id) return
-            const response = await getProfile(user?.id)
-            setProfile(response)
-        }
-        updateProfile()
-    }, [user?.id])
+    // Shared profile cache — updates from the settings page reflect here live.
+    // Best-effort: the route is owner-guarded, so it simply yields nothing on
+    // pages without a session (retries disabled in the hook).
+    const { profile } = useProfile(user?.id);
 
 
     return (
@@ -53,7 +47,7 @@ const Header: React.FC = () => {
                     </a>
                     <Link href={`/dashboard/${user?.id}/setting/profile`}>
                         <Avatar className='size-10' >
-                            <AvatarImage src={`/avatar/${profile?.userImage}` || user?.imageUrl} className='object-cover' />
+                            <AvatarImage src={profile?.userImage ? `/avatar/${profile.userImage}` : user?.imageUrl} className='object-cover' />
                             <AvatarFallback>
                                 A
                             </AvatarFallback>

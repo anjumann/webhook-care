@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as requests from "@/services/requests";
-import { ok, badRequest, failFromError } from "@/lib/http";
+import { requireOwnerOfRequest } from "@/services/auth";
+import { ok, badRequest, fail, failFromError } from "@/lib/http";
 
 export async function DELETE(
   request: NextRequest,
@@ -9,6 +10,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const auth = await requireOwnerOfRequest(id);
+    if (!auth.ok) return fail(auth.message, auth.status);
     return ok(await requests.deleteRequest(id));
   } catch (error) {
     return failFromError(error, "Error deleting request:");
@@ -24,6 +27,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const auth = await requireOwnerOfRequest(id);
+    if (!auth.ok) return fail(auth.message, auth.status);
     const parsed = patchSchema.safeParse(await request.json());
     if (!parsed.success) return badRequest("pinned (boolean) required");
     return ok(await requests.setPinned(id, parsed.data.pinned));

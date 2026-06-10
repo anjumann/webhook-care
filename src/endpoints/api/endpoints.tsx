@@ -1,5 +1,6 @@
 import useSWR from 'swr';
 import type { Endpoint, EndpointWithRequests } from '@/endpoints/types';
+import { useSession } from '@/components/auth/session-provider';
 
 // Fetcher function for SWR
 const fetcher = async (url: string) => {
@@ -11,8 +12,10 @@ const fetcher = async (url: string) => {
 };
 
 export function useEndpoints(userId: string) {
+  // Wait for the anonymous session cookie before hitting guarded routes.
+  const { ready } = useSession();
   const { data, error, isLoading, mutate } = useSWR<Endpoint[]>(
-    userId ? `/api/endpoints?userId=${userId}` : null,
+    ready && userId ? `/api/endpoints?userId=${userId}` : null,
     fetcher
   );
 
@@ -35,8 +38,9 @@ export async function deleteEndpoint(id: string) {
 }
 
 export function useGetEndpoint(id: string) {
+  const { ready } = useSession();
   const { data, error, isLoading, mutate } = useSWR<EndpointWithRequests>(
-    `/api/endpoints/${id}`,
+    ready && id ? `/api/endpoints/${id}` : null,
     fetcher
   );
 

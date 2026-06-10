@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as endpoints from "@/services/endpoints";
-import { created, ok, badRequest, failFromError } from "@/lib/http";
+import { requireOwner } from "@/services/auth";
+import { created, ok, badRequest, fail, failFromError } from "@/lib/http";
 
 const forwardingUrlSchema = z.object({
   url: z.string().url(),
@@ -21,6 +22,9 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
     }
+    const auth = await requireOwner(parsed.data.userId);
+    if (!auth.ok) return fail(auth.message, auth.status);
+
     const endpoint = await endpoints.createEndpoint(parsed.data);
     return created(endpoint);
   } catch (error) {
@@ -32,6 +36,8 @@ export async function GET(request: NextRequest) {
   try {
     const userId = new URL(request.url).searchParams.get("userId");
     if (!userId) return badRequest("User ID is required");
+    const auth = await requireOwner(userId);
+    if (!auth.ok) return fail(auth.message, auth.status);
     return ok(await endpoints.listEndpoints(userId));
   } catch (error) {
     return failFromError(error, "Error fetching endpoints:");

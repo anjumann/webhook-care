@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as users from "@/services/users";
-import { ok, badRequest, failFromError } from "@/lib/http";
+import { requireOwner } from "@/services/auth";
+import { ok, badRequest, fail, failFromError } from "@/lib/http";
 
 const updateSchema = z.object({
   userId: z.string().min(1),
@@ -15,6 +16,8 @@ export async function PUT(request: NextRequest) {
     if (!parsed.success) {
       return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
     }
+    const auth = await requireOwner(parsed.data.userId);
+    if (!auth.ok) return fail(auth.message, auth.status);
     return ok(await users.updateProfile(parsed.data));
   } catch (error) {
     return failFromError(error, "Error updating user profile:");
@@ -25,6 +28,8 @@ export async function GET(request: NextRequest) {
   try {
     const userId = new URL(request.url).searchParams.get("userId");
     if (!userId) return badRequest("User ID is required");
+    const auth = await requireOwner(userId);
+    if (!auth.ok) return fail(auth.message, auth.status);
     return ok(await users.getUser(userId));
   } catch (error) {
     return failFromError(error, "Error fetching user profile:");

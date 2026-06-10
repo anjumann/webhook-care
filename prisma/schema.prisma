@@ -9,13 +9,44 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  userName  String?
-  userId    String     @unique
-  userImage String?
-  endpoints Endpoint[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  userName        String?
+  userId          String     @unique
+  userImage       String?
+  email           String?    @unique // optional magic-link claim for recovery / cross-device
+  emailVerifiedAt DateTime?
+  endpoints       Endpoint[]
+  sessions        Session[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+/// A pending magic-link. Only the hash of the token is stored; single-use.
+model MagicLink {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  tokenHash String    @unique
+  userId    String // the ULID requesting the claim/login
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+/// A verified login session (cross-device). Only the token hash is stored.
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId    String
+  tokenHash String   @unique
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Endpoint {

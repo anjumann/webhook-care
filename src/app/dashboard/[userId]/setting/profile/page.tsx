@@ -13,6 +13,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import Image from "next/image"
 import { avatarFiles } from "@/constant"
 import { getProfile, updateProfile } from "@/profile/api"
+import { useSession } from "@/components/auth/session-provider"
+import { ClaimAccount } from "@/components/auth/claim-account"
 import CustomBreadcrumb from "@/components/custom-breadcrumb"
 import { toast } from "@/lib/toast";
 
@@ -29,12 +31,14 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export default function ProfilePage() {
   const { id } = useUser()
+  const { ready } = useSession()
 
 
 
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [claimedEmail, setClaimedEmail] = useState<string | null>(null)
 
 
   const form = useForm<ProfileFormValues>({
@@ -47,14 +51,19 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!id) return
-      const response = await getProfile(id)
-      form.setValue('userName', response.userName ?? "")
-      form.setValue('userImage', (response.userImage ?? `/avatar/${avatarFiles[0]}`).replace('/avatar/', ''))
+      if (!id || !ready) return
+      try {
+        const response = await getProfile(id)
+        form.setValue('userName', response.userName ?? "")
+        form.setValue('userImage', (response.userImage ?? `/avatar/${avatarFiles[0]}`).replace('/avatar/', ''))
+        setClaimedEmail(response.email ?? null)
+      } catch {
+        /* not signed in / no access — leave defaults */
+      }
     }
     fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  }, [id, ready])
   async function onSubmit(data: ProfileFormValues) {
     if (!id) return
 
@@ -165,6 +174,19 @@ export default function ProfilePage() {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-3 py-5">
+          <div>
+            <h3 className="text-[15px] font-semibold">Save your dashboard</h3>
+            <p className="text-[13px] text-mid">
+              Add an email to recover this dashboard and access it from other
+              devices. Optional — your data stays anonymous until you do.
+            </p>
+          </div>
+          <ClaimAccount claimedEmail={claimedEmail} />
         </CardContent>
       </Card>
     </div>

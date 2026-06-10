@@ -28,12 +28,12 @@ beforeEach(() => {
 });
 
 describe("clampLimit", () => {
-  it("defaults when missing or NaN", () => {
+  it("falls back to the default for missing/NaN/zero (treated as 'no limit given')", () => {
     expect(clampLimit()).toBe(DEFAULT_PAGE_SIZE);
     expect(clampLimit(Number.NaN)).toBe(DEFAULT_PAGE_SIZE);
+    expect(clampLimit(0)).toBe(DEFAULT_PAGE_SIZE);
   });
-  it("clamps to [1, MAX_PAGE_SIZE] and floors", () => {
-    expect(clampLimit(0)).toBe(1);
+  it("clamps positives to [1, MAX_PAGE_SIZE] and floors fractions", () => {
     expect(clampLimit(-5)).toBe(1);
     expect(clampLimit(10.9)).toBe(10);
     expect(clampLimit(9999)).toBe(MAX_PAGE_SIZE);
