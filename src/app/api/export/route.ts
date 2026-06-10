@@ -25,7 +25,8 @@ import {
   CSV_HEADER,
   type ExportOptions,
 } from "@/services/export";
-import { badRequest, fail } from "@/lib/http";
+import { badRequest, fail, tooManyRequests } from "@/lib/http";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -51,6 +52,10 @@ export async function POST(request: NextRequest) {
 
   const auth = await requireOwner(userId);
   if (!auth.ok) return fail(auth.message, auth.status);
+
+  // Exports are heavy (full stream of an account's requests) — throttle per user.
+  const gate = await rateLimit("export", userId);
+  if (!gate.success) return tooManyRequests("Too many exports. Please try again later.");
 
   const endpoints = await listEndpointsForExport(userId, endpointIds);
   const options: ExportOptions = { includeHeaders, includeBody, redact, format };

@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 import { createMagicLink } from "@/services/auth";
-import { ok, badRequest, failFromError } from "@/lib/http";
+import { ok, badRequest, failFromError, tooManyRequests } from "@/lib/http";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_KEY);
 
@@ -26,6 +27,17 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return badRequest("A valid email is required");
 
     const { email, userId } = parsed.data;
+
+    // Throttle per IP and per email to stop enumeration / link spam. A 429
+    // reveals nothing about whether the email exists.
+    const [ipGate, emailGate] = await Promise.all([
+      rateLimit("magicLink", `ip:${clientIp(request)}`),
+      rateLimit("magicLink", `email:${email.toLowerCase()}`),
+    ]);
+    if (!ipGate.success || !emailGate.success) {
+      return tooManyRequests("Too many sign-in attempts. Please try again later.");
+    }
+
     const token = await createMagicLink(email, userId);
     const link = `${appUrl()}/auth/verify?token=${encodeURIComponent(token)}`;
 

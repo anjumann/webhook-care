@@ -232,13 +232,36 @@ curl ${origin}/api/v1/requests/<requestId> \\
   -H "Authorization: Bearer wcat_your_token"`}
           </pre>
 
-          <div className="flex items-start gap-2 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2 rounded-md border p-3 text-sm text-muted-foreground">
             <Bot className="mt-0.5 h-4 w-4 flex-none text-primary" />
             <span>
               <strong className="text-foreground">Connect an AI agent (MCP):</strong>{" "}
-              the same token will let agents like Claude connect to your webhooks
-              over the Model Context Protocol — <em>coming in the next phase.</em>
+              the same token lets agents like Claude connect to your webhooks over
+              the Model Context Protocol — read-only tools{" "}
+              <code>list_endpoints</code>, <code>get_requests</code>,{" "}
+              <code>get_request</code>. Add the server below, then ask your agent
+              to list your endpoints.
             </span>
+          </div>
+
+          <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs font-mono leading-relaxed">
+{`# Claude Code / Claude Desktop (remote MCP over HTTP)
+claude mcp add --transport http webhook-catcher ${origin}/api/mcp \\
+  --header "Authorization: Bearer wcat_your_token"`}
+          </pre>
+
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Generic MCP client config</p>
+            <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs font-mono leading-relaxed">
+{`{
+  "mcpServers": {
+    "webhook-catcher": {
+      "url": "${origin}/api/mcp",
+      "headers": { "Authorization": "Bearer wcat_your_token" }
+    }
+  }
+}`}
+            </pre>
           </div>
         </CardContent>
       </Card>

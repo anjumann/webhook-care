@@ -21,6 +21,7 @@ import {
   sanitizeName,
   updateEndpoint,
   isEndpointOwnedBy,
+  findEndpointIdForOwner,
 } from "@/services/endpoints";
 
 beforeEach(() => vi.clearAllMocks());
@@ -82,5 +83,38 @@ describe("isEndpointOwnedBy", () => {
 
     prismaMock.endpoint.findFirst.mockResolvedValue(null);
     await expect(isEndpointOwnedBy("e1", "intruder")).resolves.toBe(false);
+  });
+});
+
+describe("findEndpointIdForOwner", () => {
+  it("always scopes by userId and resolves a plain name (never casts it to an id)", async () => {
+    prismaMock.endpoint.findFirst.mockResolvedValue({ id: "e1" });
+    await expect(findEndpointIdForOwner("u1", "my-endpoint")).resolves.toBe("e1");
+
+    // A non-ObjectId string must NOT be queried against the ObjectId `id` field
+    // (MongoDB throws "Malformed ObjectID"); only the name branch is used.
+    expect(prismaMock.endpoint.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "u1", OR: [{ name: "my-endpoint" }] },
+      })
+    );
+  });
+
+  it("matches by id too when the input is a 24-hex ObjectId", async () => {
+    prismaMock.endpoint.findFirst.mockResolvedValue({ id: "507f1f77bcf86cd799439011" });
+    await findEndpointIdForOwner("u1", "507f1f77bcf86cd799439011");
+    expect(prismaMock.endpoint.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: "u1",
+          OR: [{ name: "507f1f77bcf86cd799439011" }, { id: "507f1f77bcf86cd799439011" }],
+        },
+      })
+    );
+  });
+
+  it("returns null when nothing matches", async () => {
+    prismaMock.endpoint.findFirst.mockResolvedValue(null);
+    await expect(findEndpointIdForOwner("u1", "missing")).resolves.toBeNull();
   });
 });

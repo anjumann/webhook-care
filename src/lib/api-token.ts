@@ -8,6 +8,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { sha256, randomToken } from "@/lib/auth";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const TOKEN_PREFIX = "wcat_";
 
@@ -73,8 +74,8 @@ export type TokenAuth =
   | { ok: false; status: number; message: string };
 
 /**
- * Guard a versioned REST route: require a valid bearer PAT carrying `scope`.
- * Updates `lastUsedAt` (non-blocking) on success.
+ * Guard a versioned REST route: require a valid bearer PAT carrying `scope`,
+ * then rate-limit per token. Updates `lastUsedAt` (non-blocking) on success.
  */
 export async function requireToken(
   request: Request,
@@ -86,6 +87,10 @@ export async function requireToken(
   }
   if (!token.scopes.includes(scope)) {
     return { ok: false, status: 403, message: `Token missing required scope: ${scope}` };
+  }
+  const gate = await rateLimit("token", token.id);
+  if (!gate.success) {
+    return { ok: false, status: 429, message: "Rate limit exceeded for this token" };
   }
   touchToken(token.id);
   return { ok: true, userId: token.userId, tokenId: token.id };

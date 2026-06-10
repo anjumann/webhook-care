@@ -15,7 +15,7 @@ _Last updated: 2026-06-10._
 - [x] `src/lib/http.ts` (response helpers + `failFromError`)
 - [x] Cursor pagination for requests (+ `@@index([endpointId, createdAt])`)
 - [x] Bug fixes — avatar double-prefix, profile URL trailing spaces, playground `JSON.parse`, header avatar `src`
-- [ ] `src/lib/ratelimit.ts` (Upstash — Redis env still disabled)
+- [x] `src/lib/ratelimit.ts` (Upstash sliding-window) — **no-op when Redis env absent, fails open on Redis error** (never drops legit traffic); buckets: `ingest` (100/min/IP), `magicLink` (5/h per IP + per email), `token` (120/min/token), `export` (10/h/user), `apiClient` (60/min/user); `clientIp()` from proxy headers. Wired into webhook ingest, `/api/auth/magic-link`, `/api/export`, `/api/tools/http`, `requireToken` (REST `/v1/*`), and the MCP auth callback (429 before any tool). Enforced path needs live Upstash creds (deploy-time op); no-op + fail-open + `clientIp` unit-tested, fail-open runtime-verified
 - [x] `src/lib/api-token.ts` (PAT resolver — `generateToken`/`resolveToken`/`requireToken`, used by REST + MCP)
 
 ## B.1 — Retention (30-day auto-delete) ✅
@@ -60,14 +60,26 @@ _Last updated: 2026-06-10._
 - [x] "Using your token" section (REST `curl` examples) + MCP "coming next phase" note (no dead link)
 - [x] **Smoke-tested end-to-end** (dev, real token): valid token → 200 owner data; missing/bad → 401; **cross-user endpoint/request → 404 (isolation holds)**; `lastUsedAt` audit fires; create → 201 raw-once; list never leaks `tokenHash`
 
-## B.5 — MCP server
-- [ ] `src/app/api/mcp/route.ts` (`createMcpHandler` + `withMcpAuth`, Node runtime)
-- [ ] Tools: `list_endpoints`, `get_requests`, `get_request` (+ optional `search_requests`)
-- [ ] Per-token rate limit + `lastUsedAt`; truncate/redact tool output
-- [ ] Settings → "Connect an agent" snippets; MCP Inspector validation
+## B.5 — MCP server ✅
+- [x] `src/app/api/mcp/route.ts` — `createMcpHandler` + `withMcpAuth` (`mcp-handler` 1.1 / `@modelcontextprotocol/sdk` 1.29), Node runtime, `maxDuration=300`, Streamable HTTP only (`disableSse`, fixed `streamableHttpEndpoint:"/api/mcp"` — no `[transport]` segment)
+- [x] Tools: `list_endpoints`, `get_requests`, `get_request` — all delegate to `src/services/mcp.ts` (same service layer as REST + dashboard); `registerTool` API
+- [x] `src/services/mcp.ts` — owner-scoped shaping: redaction (headers + body), body truncation in list output (`MAX_LIST_BODY_CHARS`, "call get_request for full body"), graceful tool errors (`{error}` → `isError`), `findEndpointIdForOwner` resolves id-or-name **scoped to userId**
+- [x] `lastUsedAt` audit on each connect (`touchToken`); `requests:read` scope required via `withMcpAuth(required)`
+- [x] Settings → "Connect an agent": real `claude mcp add` + generic JSON config snippets (replaced the "coming next phase" note)
+- [x] **Smoke-tested end-to-end** (dev, real SDK client over Streamable HTTP): no token / `endpoints:read`-only → 401; tool discovery; `list_endpoints` (no `userId` leak); `get_requests` by name w/ redacted headers; `get_request` full + redacted body; **cross-user endpoint/request → tool error (isolation holds)**; missing id → graceful error
+- [x] Unit tests — `src/services/mcp.test.ts` (redaction/truncation/isolation/auth-shape) + `findEndpointIdForOwner` ObjectId-guard tests (**74 tests** total)
+- [ ] Per-token rate limit (deferred — gated on Upstash Redis being enabled; see B.0; REST routes share the same gap)
+- [ ] (optional, Phase 2) OAuth 2.1 metadata route for token-less connect
 
-## B.6 — Basic API Client (standalone)
-- [ ] New `/dashboard/[userId]/api-client` section (arbitrary method/URL/headers/body → response)
+## B.6 — Basic API Client (standalone) ✅
+- [x] New `/dashboard/[userId]/api-client` section (arbitrary method/URL/headers/body → response) + sidebar nav link (Terminal icon)
+- [x] **Server-side proxy** `POST /api/tools/http` — arbitrary URLs can't be fetched client-side (CORS) and we need response metadata; Node runtime, `maxDuration=30`
+- [x] **SSRF guarded** (`src/services/http-proxy.ts`, pure + tested): http(s) only; blocks `localhost`/`.local`/`.internal` + private/loopback/link-local/CGNAT/metadata IP literals (v4 CIDRs + v6 ULA/link-local/mapped); **DNS-resolves the host and re-checks every resolved IP** (catches public hostname → private IP). `requireOwner` session-guarded (not an open proxy). Request timeout (15s) + capped response read (2 MB, flags `truncated`)
+- [x] UI (`src/components/console/api-client.tsx`): method select, editable URL, header key/value rows, JSON body + beautify, **Send** → status (color-toned) + duration + size + content-type + collapsible response headers + pretty body; `@/lib/toast` for errors
+- [x] **Minimal persistence (v1)** — single request, no save/history (per docs recommendation); reused the playground UX patterns, decoupled from the locked URL
+- [x] Unit tests — `src/services/http-proxy.test.ts` (URL parse, hostname + address blocking, header shaping); **86 tests** total
+- [x] **Smoke-tested end-to-end** (dev): no session → 401; cross-user → 403; literal SSRF (metadata/localhost/127.0.0.1) → 400; **DNS-rebind (`127.0.0.1.nip.io`) → 400**; bad scheme → 400; real `GET example.com` → 200 with full metadata
+- Residual risk (documented): DNS-rebinding TOCTOU between our lookup and fetch's own resolution — acceptable for an authenticated free-tier tool
 
 ## B.7 — PWA / Installable app ✅
 - [x] `public/site.webmanifest` (standalone, theme/bg, icon set)
@@ -75,8 +87,8 @@ _Last updated: 2026-06-10._
 - [x] `ServiceWorkerRegister` (prod-only) + `InstallPrompt` mounted
 
 ## Cross-cutting
-- [x] Vitest set up (`npm test`) — **34 tests** (redact, http, pagination, capture, endpoint update, ownership, auth crypto, avatar)
+- [x] Vitest set up (`npm test`) — **91 tests** (redact, http, pagination, capture, endpoint update, ownership, auth crypto, avatar, export, api-token, MCP shaping/isolation, SSRF/proxy guard, ratelimit no-op + clientIp)
 - [ ] Wire pagination UI ("load more") + server-side search on the detail page
 - [ ] Startup env validation (fail fast if `AUTH_SECRET` missing/empty)
-- [ ] Rate limiting on the public webhook ingest
+- [x] Rate limiting on the public webhook ingest (per-IP `ingest` bucket; see B.0) — enforced once `UPSTASH_REDIS_REST_URL`/`_TOKEN` are set
 - [ ] E2E/runtime verification of the full auth cookie flow in a browser

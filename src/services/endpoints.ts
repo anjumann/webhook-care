@@ -147,6 +147,28 @@ export function deleteEndpoint(id: string) {
   return prisma.endpoint.delete({ where: { id } });
 }
 
+/**
+ * Resolve an endpoint id-or-name to its id, scoped to the owner. The `userId`
+ * filter is always applied so an agent can never resolve another user's
+ * endpoint by guessing its id or name. Returns null when nothing matches.
+ */
+export async function findEndpointIdForOwner(
+  userId: string,
+  idOrName: string
+): Promise<string | null> {
+  // On MongoDB `id` is an ObjectId; passing a name string to it throws
+  // "Malformed ObjectID". Only match by id when the input is a 24-hex ObjectId.
+  const looksLikeId = /^[a-f0-9]{24}$/i.test(idOrName);
+  const found = await prisma.endpoint.findFirst({
+    where: {
+      userId,
+      OR: [{ name: idOrName }, ...(looksLikeId ? [{ id: idOrName }] : [])],
+    },
+    select: { id: true },
+  });
+  return found?.id ?? null;
+}
+
 /** Owner check for guards: does this endpoint belong to this userId? */
 export async function isEndpointOwnedBy(
   endpointId: string,

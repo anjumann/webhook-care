@@ -3,6 +3,7 @@ import { findEndpointForIngest } from "@/services/endpoints";
 import { captureRequest } from "@/services/requests";
 import { redactHeaders, redactBody } from "@/lib/redact";
 import { parseError } from "@/lib/error";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 type Params = { userId: string; name: string };
 
@@ -49,6 +50,19 @@ async function handleWebhook(request: Request, { userId, name }: Params) {
   const startTime = Date.now();
 
   try {
+    // Abuse guard on the public write path (per IP). No-op unless Redis is
+    // configured; one awaited call, fails open — keeps the hot path lean.
+    const gate = await rateLimit("ingest", clientIp(request));
+    if (!gate.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((gate.reset - Date.now()) / 1000))) },
+        }
+      );
+    }
+
     const endpoint = await findEndpointForIngest(userId, name);
     if (!endpoint) {
       return NextResponse.json({ error: "Endpoint not found" }, { status: 404 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Settings, KeyRound, type LucideIcon } from "lucide-react";
+import { Activity, Settings, KeyRound, Terminal, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEndpoints } from "@/endpoints/api/endpoints";
 
@@ -28,7 +28,8 @@ export function SidebarNav({
   const isSettings = pathname.includes("/setting");
   const isTokens = pathname.includes("/setting/tokens");
   const isProfile = isSettings && !isTokens;
-  const isEndpoints = pathname.startsWith(base) && !isSettings;
+  const isApiClient = pathname.includes("/api-client");
+  const isEndpoints = pathname.startsWith(base) && !isSettings && !isApiClient;
 
   const allGroups: {
     key: "workspace" | "account";
@@ -51,6 +52,12 @@ export function SidebarNav({
           icon: Activity,
           active: isEndpoints,
           count: endpoints?.length,
+        },
+        {
+          label: "API Client",
+          href: `${base}/api-client`,
+          icon: Terminal,
+          active: isApiClient,
         },
       ],
     },
