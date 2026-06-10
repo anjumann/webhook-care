@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:ttl-index": "node scripts/ensure-ttl-index.mjs",
+    "db:email-index": "node scripts/ensure-email-index.mjs",
     "postinstall": "prisma generate",
     "prepare": "husky"
   },

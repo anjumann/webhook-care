@@ -37,6 +37,9 @@ is `docs/` (not the root `README.md`, which is the original aspirational PRD).
 - `npx tsc --noEmit` — fast typecheck without a full build.
 - `npm run db:ttl-index` — (re)create the Mongo TTL index on `Request.expiresAt`
   (Prisma can't express TTL for MongoDB; this is the retention safety net).
+- `npm run db:email-index` — (re)create the **partial** unique index on
+  `User.email` (string emails only). Required before `prisma db push` (see the
+  email-index gotcha below). Run it as a deploy step, like `db:ttl-index`.
 
 > **`npm install` needs `--legacy-peer-deps`** — there's a pre-existing
 > `date-fns@4` vs `react-day-picker@8` peer conflict. A bare `npm install`
@@ -158,6 +161,17 @@ as a cleanup pass.
 - **`archiver` v8 is pure ESM** — there's no default `archiver("zip")` factory;
   use `new ZipArchive({ … })` (named export). Stream it to the response via
   `Readable.toWeb(...)`; never buffer a whole export in memory.
+- **`User.email` uniqueness is a PARTIAL index, not Prisma `@unique`.** Almost
+  all users are anonymous (`email: null`); a plain `@unique` builds a non-sparse
+  unique index that `prisma db push` can't create (`E11000 dup key … email:
+  null`) — and would wrongly allow only one anonymous user. So the schema keeps
+  `email` plain (no `@unique`) and `scripts/ensure-email-index.mjs`
+  (`npm run db:email-index`) owns a partial unique index (`User_email_key`,
+  `partialFilterExpression: { email: { $type: "string" } }`). **Don't re-add
+  `@unique` to `email`** — unlike the TTL trick, Prisma compares
+  `partialFilterExpression` and reissues `createIndex`, hitting
+  `IndexKeySpecsConflict` (code 86). Because there's no `@unique`, query email
+  with `findFirst`, not `findUnique`. Deploy order: `db:email-index` → `db push`.
 - **Mongo TTL / index drift:** Prisma doesn't model TTL indexes for MongoDB, and
   Mongo rejects two indexes with the same key. The TTL script reuses the existing
   `Request_expiresAt_idx` name so Prisma stays satisfied. Known quirk: the dev

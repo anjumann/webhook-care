@@ -13,7 +13,12 @@ model User {
   userName        String?
   userId          String     @unique
   userImage       String?
-  email           String?    @unique // optional magic-link claim for recovery / cross-device
+  // Uniqueness is enforced by a PARTIAL unique index (string emails only) that
+  // Prisma's MongoDB connector can't express — see scripts/ensure-email-index.mjs
+  // (`npm run db:email-index`). A plain `@unique` here builds a non-sparse index
+  // that collides on the many anonymous users with `email: null`. Keep this
+  // field plain so `db push` doesn't try to (re)create that index.
+  email           String? // optional magic-link claim for recovery / cross-device
   emailVerifiedAt DateTime?
   endpoints       Endpoint[]
   sessions        Session[]

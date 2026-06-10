@@ -194,7 +194,9 @@ export async function verifyMagicLink(
   });
 
   const email = link.email.toLowerCase();
-  const canonical = await prisma.user.findUnique({ where: { email } });
+  // `email` is unique via a partial DB index, not Prisma `@unique` (see
+  // schema), so use findFirst — findUnique isn't available without `@unique`.
+  const canonical = await prisma.user.findFirst({ where: { email } });
 
   let targetUserId = link.userId;
   if (canonical && canonical.userId !== link.userId) {

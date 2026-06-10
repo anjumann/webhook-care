@@ -31,6 +31,7 @@ _Last updated: 2026-06-10._
 
 ## B.2 — Magic-link identity + auth guards (P0) ✅
 - [x] Schema: `User.email` / `emailVerifiedAt`, `MagicLink`, `Session`
+- [x] `User.email` uniqueness via a **partial** unique index (`scripts/ensure-email-index.mjs` / `npm run db:email-index`), NOT Prisma `@unique` — a plain unique index can't build over the ~1.5k anonymous `email: null` users (`E11000`). Query with `findFirst`. Unblocks `prisma db push`. (Deploy order: `db:email-index` → `db push`.)
 - [x] `src/lib/auth.ts` — HMAC-signed session token, `sha256`, `randomToken`, cookie opts
 - [x] `src/services/auth.ts` — `resolveSession`, `requireOwner(...)`, `setAnonSession`, verified sessions, magic links (+ endpoint merge)
 - [x] Routes: `POST /api/auth/{session,magic-link,verify,logout}`
