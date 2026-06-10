@@ -1,4 +1,5 @@
 import useSWR, { mutate as globalMutate } from 'swr'
+import { guardedFetch } from '@/lib/guarded-fetch'
 
 export interface Profile {
   userName?: string | null
@@ -11,7 +12,7 @@ export const profileKey = (userId?: string | null) =>
   userId ? `/api/user/profile?userId=${encodeURIComponent(userId)}` : null
 
 const fetcher = async (url: string): Promise<Profile> => {
-  const response = await fetch(url)
+  const response = await guardedFetch(url)
   if (!response.ok) throw new Error('Failed to get profile')
   return response.json()
 }
@@ -36,7 +37,7 @@ export const revalidateProfile = (userId?: string | null) =>
   globalMutate(profileKey(userId))
 
 export const updateProfile = async (userId: string, userName: string, userImage: string) => {
-  const response = await fetch(`/api/user/profile`, {
+  const response = await guardedFetch(`/api/user/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ export const updateProfile = async (userId: string, userName: string, userImage:
 }
 
 export const getProfile = async (userId: string) => {
-  const response = await fetch(
+  const response = await guardedFetch(
     `/api/user/profile?userId=${encodeURIComponent(userId)}`,
     { method: 'GET' }
   )

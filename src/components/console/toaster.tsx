@@ -16,9 +16,9 @@ export function Toaster() {
   React.useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
-  const theme = resolvedTheme === "light" ? "light" : "dark";
+  const theme = resolvedTheme !== "light" ? "light" : "dark";
 
-  return <SileoToaster key={theme} position="top-right" theme={theme} />;
+  return <SileoToaster key={theme} position="top-center" theme={"light"} />;
 }
 
 export default Toaster;

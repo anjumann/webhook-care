@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Bot, Copy, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { guardedFetch } from "@/lib/guarded-fetch";
 
 interface ApiTokenRow {
   id: string;
@@ -35,7 +36,7 @@ interface ApiTokenRow {
 }
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const res = await guardedFetch(url);
   if (!res.ok) throw new Error("Failed to load tokens");
   return res.json();
 };
@@ -59,7 +60,7 @@ export default function TokensPage() {
     if (!id || !name.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/tokens", {
+      const res = await guardedFetch("/api/tokens", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: id, name: name.trim() }),
@@ -82,7 +83,7 @@ export default function TokensPage() {
 
   async function handleRevoke(tokenId: string) {
     try {
-      const res = await fetch(`/api/tokens/${tokenId}`, { method: "DELETE" });
+      const res = await guardedFetch(`/api/tokens/${tokenId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to revoke token");
       mutate();
       toast.success("Token revoked");

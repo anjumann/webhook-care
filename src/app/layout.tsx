@@ -23,12 +23,12 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: APP_NAME,
   description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
-  metadataBase: new URL('https://your-domain.com'),
+  metadataBase: new URL('https://webhook.projext.in/'),
   manifest: '/site.webmanifest',
   openGraph: {
     title: APP_NAME,
     description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
-    url: 'https://your-domain.com',
+    url: 'https://webhook.projext.in/',
     siteName: APP_NAME,
     images: [
       {
