@@ -11,7 +11,7 @@ _Last updated: 2026-06-10._
 - [x] Consolidated shared types in `src/endpoints/types.ts` (no drift copies)
 - [x] Service layer `src/services/{users,endpoints,requests}.ts`
 - [x] Routes refactored to validate (Zod) → service → `lib/http` responses
-- [x] `src/lib/redact.ts` (secret-header/body redaction)
+- [x] `src/lib/redact.ts` (secret-header/body redaction) — **now also redacts Vercel proxy/infra credentials** leaked on the ingest path: whole-value `x-vercel-oidc-token` + `x-vercel-sc-headers` (embedded `Authorization`), and a value-scrubber strips the `sig=` HMAC directive from the RFC 7239 `forwarded` header while keeping `for=`/`host=`/`proto=` (caught via MCP `get_request` review)
 - [x] `src/lib/http.ts` (response helpers + `failFromError`)
 - [x] Cursor pagination for requests (+ `@@index([endpointId, createdAt])`)
 - [x] Bug fixes — avatar double-prefix, profile URL trailing spaces, playground `JSON.parse`, header avatar `src`
@@ -90,7 +90,7 @@ _Last updated: 2026-06-10._
 - [x] `ServiceWorkerRegister` (prod-only) + `InstallPrompt` mounted
 
 ## Cross-cutting
-- [x] Vitest set up (`npm test`) — **101 tests** (redact, http, pagination, capture, endpoint update, ownership, auth crypto, avatar, export, api-token, MCP shaping/isolation, SSRF/proxy guard, ratelimit no-op + clientIp, guardedFetch 401 fan-out)
+- [x] Vitest set up (`npm test`) — **105 tests** (redact incl. Vercel infra-header redaction + `forwarded` sig scrub, http, pagination, capture, endpoint update, ownership, auth crypto, avatar, export, api-token, MCP shaping/isolation, SSRF/proxy guard, ratelimit no-op + clientIp, guardedFetch 401 fan-out)
 - [ ] Wire pagination UI ("load more") + server-side search on the detail page
 - [ ] Startup env validation (fail fast if `AUTH_SECRET` missing/empty)
 - [x] Rate limiting on the public webhook ingest (per-IP `ingest` bucket; see B.0) — enforced once `UPSTASH_REDIS_REST_URL`/`_TOKEN` are set

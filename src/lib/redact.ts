@@ -38,7 +38,25 @@ const SECRET_HEADER_PATTERNS: readonly string[] = [
   "x-shopify-hmac*",
   "x-slack-signature",
   "x-twilio-signature",
+  // Vercel proxy/infra credentials injected on the ingest path. These carry
+  // signed JWTs / bearer tokens (OIDC token, and an embedded `Authorization`
+  // inside `x-vercel-sc-headers`). `x-vercel-proxy-signature` is already covered
+  // by the `x-*-signature` glob above.
+  "x-vercel-oidc-token",
+  "x-vercel-sc-headers",
 ];
+
+/**
+ * Headers that are mostly useful debugging context but embed a secret directive
+ * we must scrub in place. Maps header name (lowercase) → value transformer.
+ *
+ * `forwarded` (RFC 7239) carries legitimate routing info (`for=`, `host=`,
+ * `proto=`) plus a Vercel `sig=` HMAC that base64-decodes to a bearer token —
+ * we keep the routing directives and redact only the signature.
+ */
+const HEADER_VALUE_SCRUBBERS: Record<string, (value: string) => string> = {
+  forwarded: (value) => value.replace(/(\bsig=)[^;]+/gi, `$1${REDACTED}`),
+};
 
 /** Body keys (case-insensitive, substring) whose values look like secrets. */
 const SECRET_BODY_KEYS: readonly string[] = [
@@ -79,7 +97,15 @@ export function redactHeaders(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(headers)) {
-    out[key] = isSecretHeader(key) ? REDACTED : value;
+    if (isSecretHeader(key)) {
+      out[key] = REDACTED;
+      continue;
+    }
+    const lower = key.toLowerCase();
+    out[key] =
+      typeof value === "string" && Object.hasOwn(HEADER_VALUE_SCRUBBERS, lower)
+        ? HEADER_VALUE_SCRUBBERS[lower](value)
+        : value;
   }
   return out;
 }

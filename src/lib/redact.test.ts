@@ -16,10 +16,21 @@ describe("isSecretHeader", () => {
     expect(isSecretHeader("X-Custom-Signature")).toBe(true);
   });
 
+  it("flags Vercel infra credential headers", () => {
+    expect(isSecretHeader("x-vercel-oidc-token")).toBe(true);
+    expect(isSecretHeader("X-Vercel-OIDC-Token")).toBe(true);
+    expect(isSecretHeader("x-vercel-sc-headers")).toBe(true);
+    // proxy signature is covered by the x-*-signature glob
+    expect(isSecretHeader("x-vercel-proxy-signature")).toBe(true);
+  });
+
   it("leaves ordinary headers untouched", () => {
     expect(isSecretHeader("content-type")).toBe(false);
     expect(isSecretHeader("user-agent")).toBe(false);
     expect(isSecretHeader("x-request-id")).toBe(false);
+    // routing context we intentionally keep (value is scrubbed, name isn't secret)
+    expect(isSecretHeader("forwarded")).toBe(false);
+    expect(isSecretHeader("x-vercel-proxy-signature-ts")).toBe(false);
   });
 });
 
@@ -33,6 +44,30 @@ describe("redactHeaders", () => {
     expect(out.authorization).toBe("[REDACTED]");
     expect(out["x-hub-signature"]).toBe("[REDACTED]");
     expect(out["content-type"]).toBe("application/json");
+  });
+
+  it("redacts whole-value Vercel infra credential headers", () => {
+    const out = redactHeaders({
+      "x-vercel-oidc-token": "eyJ0eXAiOiJKV1Qi.payload.sig",
+      "x-vercel-sc-headers": '{"Authorization":"Bearer eyJabc.def.ghi"}',
+    });
+    expect(out["x-vercel-oidc-token"]).toBe("[REDACTED]");
+    expect(out["x-vercel-sc-headers"]).toBe("[REDACTED]");
+  });
+
+  it("scrubs only the sig= directive from the forwarded header", () => {
+    const out = redactHeaders({
+      forwarded:
+        "for=103.5.135.50;host=webhook.example.com;proto=https;sig=0QmVhcmVyIHNlY3JldA==;exp=1781117795",
+    });
+    expect(out.forwarded).toBe(
+      "for=103.5.135.50;host=webhook.example.com;proto=https;sig=[REDACTED];exp=1781117795"
+    );
+  });
+
+  it("leaves a forwarded header without sig= untouched", () => {
+    const out = redactHeaders({ forwarded: "for=1.2.3.4;proto=https" });
+    expect(out.forwarded).toBe("for=1.2.3.4;proto=https");
   });
 
   it("does not mutate the input object", () => {
