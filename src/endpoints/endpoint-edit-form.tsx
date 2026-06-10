@@ -56,6 +56,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
             .string()
             .max(1000, { message: "Description must not exceed 1000 characters." })
             .optional(),
+        retentionDays: z.string().optional(),
         forwardingUrls: z.array(forwardingRuleSchema).optional(),
     })
 
@@ -64,6 +65,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
     const defaultValues: Partial<EndpointFormValues> = {
         name: "",
         description: "",
+        retentionDays: "30",
         forwardingUrls: [],
     }
 
@@ -97,6 +99,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
                 form.reset({
                     name: endpoint?.name || "",
                     description: endpoint?.description || "",
+                    retentionDays: String(endpoint?.retentionDays ?? 30),
                     forwardingUrls: endpoint?.forwardingUrls || [],
                 })
             }
@@ -124,6 +127,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
                         userId: user.id,
                         name: data.name,
                         description: data.description,
+                        retentionDays: Number(data.retentionDays ?? 30),
                         forwardingUrls: data.forwardingUrls,
                     }),
                 });
@@ -261,6 +265,37 @@ export default function EndpointEditForm({ id }: { id?: string }) {
                                     </FormItem>
                                 )}
                             />
+
+                            {id && (
+                                <FormField
+                                    control={form.control}
+                                    name="retentionDays"
+                                    render={({ field }) => (
+                                        <FormItem className="w-48">
+                                            <FormLabel>Retention</FormLabel>
+                                            <FormControl>
+                                                <Select
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="30 days" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="1">24 hours</SelectItem>
+                                                        <SelectItem value="7">7 days</SelectItem>
+                                                        <SelectItem value="30">30 days</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormControl>
+                                            <FormDescription>
+                                                How long captured requests are kept before auto-deletion. Pinned requests are always kept.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
 
                             {/* Forwarding Rules Dynamic Array */}
                             <div>

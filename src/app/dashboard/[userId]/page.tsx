@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { EndpointList } from "@/endpoints/endpoint-list";
+import { ExportDialog } from "@/endpoints/export-dialog";
 import { createOrGetUser } from "@/dashboard/action";
 import { EnvPill } from "@/components/console/env-pill";
 
@@ -37,6 +38,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           <EnvPill label="Local workspace" className="mt-[9px]" />
         </div>
         <div className="ml-auto flex flex-shrink-0 items-center gap-2.5">
+          <ExportDialog userId={userId} multiSelect triggerLabel="Export" />
           <Link
             href={`/dashboard/${userId}/endpoint/create`}
             className="inline-flex h-[34px] items-center gap-[7px] rounded-sm bg-gradient-to-br from-primary to-accent2 px-3.5 text-[13px] font-semibold text-accentfg shadow-[0_5px_16px_var(--accent-soft)] transition-shadow hover:shadow-[0_6px_20px_var(--accent-line)]"

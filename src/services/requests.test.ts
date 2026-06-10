@@ -5,7 +5,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const prismaMock = vi.hoisted(() => ({
   request: {
     findMany: vi.fn(),
+    findUnique: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
+    deleteMany: vi.fn(),
+    count: vi.fn(),
   },
   endpoint: {
     update: vi.fn(),
@@ -19,6 +23,8 @@ import {
   clampLimit,
   listRequests,
   captureRequest,
+  setPinned,
+  deleteExpiredRequests,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
 } from "@/services/requests";
@@ -113,5 +119,84 @@ describe("captureRequest", () => {
     );
     // both ops handed to a single transaction
     expect(prismaMock.$transaction).toHaveBeenCalledWith(["create-op", "update-op"]);
+  });
+});
+
+describe("setPinned", () => {
+  it("pinning nulls out expiresAt so the row is exempt from the sweep + TTL", async () => {
+    prismaMock.request.update.mockResolvedValue({ id: "r1", pinned: true });
+    await setPinned("r1", true);
+    expect(prismaMock.request.update).toHaveBeenCalledWith({
+      where: { id: "r1" },
+      data: { pinned: true, expiresAt: null },
+    });
+    // no read needed when pinning
+    expect(prismaMock.request.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("unpinning recomputes expiresAt from the endpoint's retention window", async () => {
+    const createdAt = new Date("2026-06-01T00:00:00Z");
+    prismaMock.request.findUnique.mockResolvedValue({
+      createdAt,
+      endpoint: { retentionDays: 7 },
+    });
+    prismaMock.request.update.mockResolvedValue({ id: "r1", pinned: false });
+
+    await setPinned("r1", false);
+
+    const expected = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+    expect(prismaMock.request.update).toHaveBeenCalledWith({
+      where: { id: "r1" },
+      data: { pinned: false, expiresAt: expected },
+    });
+  });
+});
+
+describe("deleteExpiredRequests", () => {
+  it("dry run counts would-be deletions without deleting", async () => {
+    prismaMock.request.count.mockResolvedValue(42);
+    const res = await deleteExpiredRequests({ dryRun: true });
+
+    expect(res).toEqual({ deleted: 0, wouldDelete: 42, passes: 0, dryRun: true });
+    expect(prismaMock.request.deleteMany).not.toHaveBeenCalled();
+    // only unpinned + expired rows are counted
+    const where = prismaMock.request.count.mock.calls[0][0].where;
+    expect(where.pinned).toBe(false);
+    expect(where.expiresAt).toHaveProperty("lte");
+  });
+
+  it("deletes a single partial batch and stops", async () => {
+    prismaMock.request.findMany.mockResolvedValueOnce([{ id: "a" }, { id: "b" }]);
+    prismaMock.request.deleteMany.mockResolvedValue({ count: 2 });
+
+    const res = await deleteExpiredRequests({ batchSize: 1000 });
+
+    expect(res).toMatchObject({ deleted: 2, passes: 1, dryRun: false });
+    expect(prismaMock.request.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["a", "b"] } },
+    });
+    // partial page (2 < 1000) → no second findMany
+    expect(prismaMock.request.findMany).toHaveBeenCalledTimes(1);
+  });
+
+  it("loops full batches until a short page, accumulating the count", async () => {
+    prismaMock.request.findMany
+      .mockResolvedValueOnce([{ id: "a" }, { id: "b" }]) // full page
+      .mockResolvedValueOnce([{ id: "c" }]); // short page → stop
+    prismaMock.request.deleteMany
+      .mockResolvedValueOnce({ count: 2 })
+      .mockResolvedValueOnce({ count: 1 });
+
+    const res = await deleteExpiredRequests({ batchSize: 2 });
+
+    expect(res).toMatchObject({ deleted: 3, passes: 2 });
+    expect(prismaMock.request.deleteMany).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops cleanly when nothing is expired", async () => {
+    prismaMock.request.findMany.mockResolvedValueOnce([]);
+    const res = await deleteExpiredRequests();
+    expect(res).toMatchObject({ deleted: 0, passes: 0 });
+    expect(prismaMock.request.deleteMany).not.toHaveBeenCalled();
   });
 });

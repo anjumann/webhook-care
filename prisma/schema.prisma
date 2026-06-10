@@ -17,6 +17,7 @@ model User {
   emailVerifiedAt DateTime?
   endpoints       Endpoint[]
   sessions        Session[]
+  apiTokens       ApiToken[]
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
@@ -47,6 +48,23 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+/// A Personal Access Token for the read-only Agent REST API + MCP server.
+/// Only the sha256 hash is stored; the raw `wcat_…` token is shown once.
+model ApiToken {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  user       User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId     String // owner ULID
+  name       String // human label, e.g. "Claude agent"
+  tokenHash  String    @unique // sha256(raw token)
+  prefix     String // e.g. "wcat_a1b2" for UI display only
+  scopes     String[] // ["endpoints:read","requests:read"]
+  lastUsedAt DateTime?
+  expiresAt  DateTime? // optional expiry
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Endpoint {

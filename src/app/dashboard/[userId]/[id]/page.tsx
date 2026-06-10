@@ -17,8 +17,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, RefreshCcw, LoaderCircle, Eye, EyeOff, PencilIcon, Trash2, SearchIcon } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon, ActivityIcon, CheckCircleIcon, AlertCircleIcon, RefreshCcw, LoaderCircle, Eye, EyeOff, PencilIcon, Trash2, SearchIcon } from "lucide-react";
 import WebhookTestSection from "@/endpoints/webhook-test-section";
+import { ExportDialog } from "@/endpoints/export-dialog";
+import { toast } from "@/lib/toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { AnimatedIconSwitch } from "@/framer-presets/animate-icon-switch";
 import { AnimatedShow } from "@/components/ui/animated-show";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -132,38 +145,15 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
   const curlCommand = `curl -X POST ${fullWebhookUrl} -H "Content-Type: application/json" -d '${JSON.stringify(samplePayload)}'`;
 
 
-  const handleExport = () => {
-    if (!endpoints?.requests) return;
-
-    // Prepare the data for export
-    const exportData = endpoints.requests.map(request => ({
-      id: request.id,
-      method: request.method,
-      statusCode: request.statusCode,
-      duration: request.duration,
-      createdAt: request.createdAt,
-      headers: request.headers,
-      body: request.body,
-      response: request.response,
-      query: request.query
-    }));
-
-    // Create blob and download
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `webhook-requests-${endpoints.name || param?.id}-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  };
-
   const handleClearAll = async () => {
     if (!param?.id) return;
-    await deleteAllRequests(param.id);
-    mutate();
+    try {
+      await deleteAllRequests(param.id);
+      mutate();
+      toast.success("All requests deleted");
+    } catch {
+      toast.error("Failed to delete requests");
+    }
   };
 
   const toggleSection = (name: keyof typeof sectionVisibility) => {
@@ -531,22 +521,43 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                 >
                   <RefreshCcw className="w-4 h-4 mr-2" /> Refresh
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExport}
-                >
-                  <DownloadIcon className="w-4 h-4 mr-2" /> Export
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearAll}
-                  disabled={!endpoints?.requests?.length}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" /> Clear All
-                </Button>
+                <ExportDialog
+                  userId={String(param?.userId ?? "")}
+                  endpointId={String(param?.id ?? "")}
+                  endpointName={endpoints?.name}
+                />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!endpoints?.requests?.length}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Clear All
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete all requests?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently deletes every captured request for{" "}
+                        <strong>{endpoints?.name || "this endpoint"}</strong>. Pinned
+                        requests are deleted too. This cannot be undone — export first
+                        if you want a copy.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleClearAll}
+                        className="bg-destructive text-white hover:bg-destructive/90"
+                      >
+                        Delete all
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
             <div className="relative">

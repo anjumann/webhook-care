@@ -71,6 +71,18 @@ export async function deleteRequest(id: string) {
   return response.json();
 }
 
+export async function setRequestPinned(id: string, pinned: boolean) {
+  const response = await fetch(`/api/requests/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pinned }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update request');
+  }
+  return response.json();
+}
+
 export async function deleteAllRequests(endpointId: string) {
   const response = await fetch(`/api/requests?endpointId=${endpointId}`, {
     method: 'DELETE',

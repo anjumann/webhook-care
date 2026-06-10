@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Settings, type LucideIcon } from "lucide-react";
+import { Activity, Settings, KeyRound, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEndpoints } from "@/endpoints/api/endpoints";
 
@@ -26,6 +26,8 @@ export function SidebarNav({
   const base = userId ? `/dashboard/${userId}` : "/dashboard";
 
   const isSettings = pathname.includes("/setting");
+  const isTokens = pathname.includes("/setting/tokens");
+  const isProfile = isSettings && !isTokens;
   const isEndpoints = pathname.startsWith(base) && !isSettings;
 
   const allGroups: {
@@ -60,7 +62,13 @@ export function SidebarNav({
           label: "Settings",
           href: `${base}/setting/profile`,
           icon: Settings,
-          active: isSettings,
+          active: isProfile,
+        },
+        {
+          label: "API Tokens",
+          href: `${base}/setting/tokens`,
+          icon: KeyRound,
+          active: isTokens,
         },
       ],
     },

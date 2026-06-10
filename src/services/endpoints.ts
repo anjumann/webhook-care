@@ -21,6 +21,22 @@ export function listEndpoints(userId: string) {
   });
 }
 
+/**
+ * Endpoints (with forwarding URLs) for a ZIP export, optionally narrowed to a
+ * selected set. The `userId` filter is always applied so a caller can never
+ * export another user's endpoint by passing its id.
+ */
+export function listEndpointsForExport(userId: string, endpointIds?: string[]) {
+  return prisma.endpoint.findMany({
+    where: {
+      userId,
+      ...(endpointIds && endpointIds.length ? { id: { in: endpointIds } } : {}),
+    },
+    include: { forwardingUrls: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 /** Lightweight lookup the public webhook ingest uses on its hot path. */
 export function findEndpointForIngest(userId: string, name: string) {
   return prisma.endpoint.findFirst({
