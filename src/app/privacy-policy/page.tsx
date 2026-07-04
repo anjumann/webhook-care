@@ -133,6 +133,30 @@ export default function PrivacyPolicyPage() {
                   <li>Analytics cookies to understand usage patterns</li>
                   <li>Preference cookies to remember your settings</li>
                 </ul>
+                <h4>Product analytics (PostHog)</h4>
+                <p>
+                  We use PostHog to measure how the product is used so we can
+                  prioritize improvements. PostHog sets cookies/local storage and
+                  processes usage events on our behalf. We deliberately limit what
+                  is sent:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Never your webhook content.</strong> Captured request
+                    bodies, headers, and secrets are never sent to analytics —
+                    events carry only identifiers, counts, and feature flags.
+                  </li>
+                  <li>
+                    You are pseudonymous by default (an anonymous account id). If
+                    you claim your account with a magic link, we attach your{" "}
+                    <strong>email</strong> to your analytics profile so we can
+                    support you; anonymous visitors have no profile.
+                  </li>
+                  <li>
+                    No session recording and no autocapture — we send only a
+                    curated set of product events.
+                  </li>
+                </ul>
                 <p>You can control cookie preferences through your browser settings.</p>
               </CardContent>
             </Card>

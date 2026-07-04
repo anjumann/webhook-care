@@ -3,6 +3,8 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { track, applyClaimIdentity } from "@/lib/analytics";
+import { buildClaimIdentity } from "@/lib/analytics-core";
 
 type Status = "verifying" | "success" | "error";
 
@@ -39,6 +41,20 @@ function VerifyInner() {
         // as the signed-in account (handles the merge case too).
         const existing = get();
         set({ id: data.userId, imageUrl: existing?.imageUrl ?? "zoro.jpg" });
+
+        // Stitch analytics identity: identify as the canonical ULID (with email,
+        // now that the user is verified) and alias the pre-claim anon id so
+        // earlier anonymous events fold into the same person (spec §5).
+        applyClaimIdentity(
+          buildClaimIdentity({
+            userId: data.userId,
+            previousUserId: existing?.id,
+            email: data.email,
+            verified: true,
+          }),
+        );
+        track("account_claimed");
+
         setStatus("success");
         router.replace(`/dashboard/${data.userId}`);
       } catch {
