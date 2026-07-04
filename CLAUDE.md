@@ -72,9 +72,11 @@ A change is "done" only when all of these are green/updated:
 1. `npx tsc --noEmit` clean, `npm test` green, **and `npm run build` passes**
    (the build also runs ESLint — an unused import will fail it).
 2. New behaviour has unit tests for its pure logic (see Testing policy).
-3. **Update `docs/PROGRESS.md`** — it tracks the `docs/04-implementation-plan.md`
-   build plan. Tick the boxes you completed and add brief notes. `docs/` is the
-   source of truth for plans; keep it in sync with reality.
+3. **Update `docs/BACKLOG.md`** — the living plan (ranked by ROI). Check off what
+   you shipped and add brief notes; move items between Now/Someday/Parked as
+   reality changes. `docs/` is the source of truth for plans; keep it in sync.
+   (The old build log is frozen at `docs/archive/PROGRESS.md` — history, not the
+   tracker. `docs/ARCHITECTURE.md` is the living "how it works" reference.)
 4. Schema changed? `prisma generate` ran, and any Mongo-only concern (TTL,
    indexes Prisma can't model) is handled via a `scripts/*` step + documented.
 

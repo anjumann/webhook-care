@@ -1,46 +1,44 @@
 # Webhook Catcher — Documentation
 
-All product, architecture, and planning docs for Webhook Catcher, in reading
-order. Start at the top for a guided path, or jump to whatever you need.
+**Webhook Catcher** — catch, inspect, and forward webhooks. Next.js 15 + React 19,
+MongoDB via Prisma, Tailwind v4 + shadcn/ui. Anonymous-first identity, all-free,
+30-day retention. This `docs/` folder is the current source of truth (the root
+`README.md` is the original aspirational PRD).
 
-| # | Doc | What it is | Read it when… |
-|---|-----|-----------|----------------|
-| 00 | [Product Overview](./00-product-overview.md) | PM snapshot — feature list (existing + new) with status | You want the one-page "what are we building" view |
-| 01 | [Architecture](./01-architecture.md) | How the app works **today** — webhooks, localStorage identity, payload storage, every page/route | You need to understand the current codebase |
-| 02 | [Audit & Roadmap](./02-audit-and-roadmap.md) | Honest audit (bugs, security, UX) + prioritized roadmap, incl. the 30-day retention design | You want to know what to fix and in what order |
-| 03 | [Feature Designs](./03-feature-designs.md) | Detailed designs: magic-link identity, ZIP export, agent API | You're about to build identity / export / agent access |
-| 04 | [Implementation Plan](./04-implementation-plan.md) | MCP server design + full checkbox build plan for every workstream | You're ready to write code |
-| UI | [UI Redesign](./UI%20redesign/README.md) | Full visual + structural redesign to the "Relay · Emerald Console" — tokens, components, screens, build plan | You're re-skinning/re-laying-out the app |
-| PRD | [Product Requirements (DX Layer)](./PRD/README.md) | DX-focused PRDs, one per surface — personas, flows, states, acceptance criteria, metrics, phasing | You're deciding *what* each surface should do and how it should feel |
+## Start here
 
-> The repo's root `README.md` is the original Product Requirements Document
-> (partly aspirational). These `docs/` are the current, accurate source of truth.
+| Doc | What it is |
+|---|---|
+| [**ARCHITECTURE.md**](./ARCHITECTURE.md) | How the app works **today** — layering, data model, the ingest hot path, auth guards, all surfaces (REST/MCP/relay/API-client/PWA), retention. |
+| [**BACKLOG.md**](./BACKLOG.md) | The one list of what's **left to build**, ranked by ROI. Now/Next · Someday · Parked · deploy ops. |
+| [**specs/**](./specs/) | Full PRD specs for the surfaces that are **not yet built** — build from these. |
+| [**archive/**](./archive/) | Finished / superseded planning docs — original architecture, audit, feature designs, shipped PRDs, the UI-redesign system, and `PROGRESS.md` (the full build log). Historical, not current. |
 
----
+## The 30-second status
 
-## Scope & key decisions (current)
+- **Backend (B.0–B.8): done** — service layer, auth, retention, ZIP export, Agent
+  REST, MCP server, relay + `wcat` CLI, API client, PWA. See `archive/PROGRESS.md`.
+- **Differentiator (agent-native access): shipped.**
+- **Product analytics (PostHog): instrumented.** SDK + proxy + identity (P0a) and
+  the full event taxonomy incl. server events + privacy-policy line (P0b + P0c
+  privacy) are done. Only remaining Tier-0 work is building the funnel/adoption/
+  retention **insights in the PostHog UI**. Spec: [`specs/16`](./specs/16-analytics-posthog.md).
+- **Core loop shipped:** the north-star **"watch it land live"** now works — an
+  owner-guarded SSE stream (`/api/endpoints/[id]/stream`) prepends captures into
+  the inspector in real time (Live toggle, on by default).
+- **Activation:** **1-click first-run onboarding** ships — a brand-new browser is
+  auto-given a starter endpoint and dropped on its detail page (no form).
+- **Inspector power tools:** **copy-as-cURL**, **one-click provider samples /
+  send-test**, and detail **pagination + server-side search** are shipped (all
+  instrumented).
+- **Remaining product gap:** **replay** (re-POST a stored request) and the first-
+  request **"aha" celebration** (now unblocked by the live stream). See
+  [`BACKLOG.md`](./BACKLOG.md).
+- **Parked:** AI payload analysis, typed Slack/Discord integrations (see backlog
+  for why).
 
-- **All-free product.** No paid tiers; the `/pricing` page was removed.
-- **Retention:** webhooks auto-delete after **30 days** for everyone, via an
-  Upstash QStash midnight schedule. On the QStash free tier (1,000 msg/day) this
-  runs as a **single nightly batched job**, with a MongoDB TTL index as the
-  safety net. (See `02` §6.)
-- **Identity:** anonymous-first (ULID), with **optional email / magic-link**
-  claim for recovery and cross-device access. (See `03` §1.)
-- **Forwarding:** kept **as-is** (fire-and-forget) — durable-forwarding upgrade
-  deferred while free.
-- **Webhook Playground:** kept as-is (endpoint-scoped test tool).
+## Day-to-day engineering contract
 
-## New features being added
-
-1. 30-day auto-retention (Upstash) · 2. Email/magic-link identity ·
-3. ZIP export · 4. Agent REST API · 5. MCP server ·
-6. Basic standalone API client · 7. PWA / installable app
-
-See `00-product-overview.md` for the full list with status, and
-`04-implementation-plan.md` for the build checklist.
-
-## Suggested build order
-
-`foundations → identity/guards → retention → export → token API → MCP server →
-API client → PWA`. Rationale in `04-implementation-plan.md` §B.8.
+See [`../CLAUDE.md`](../CLAUDE.md) — commands, testing policy, definition of done,
+performance/security acceptance criteria, and the gotchas (partial email index,
+Mongo TTL, SSRF proxy, MCP, rate-limiting fail-open).
