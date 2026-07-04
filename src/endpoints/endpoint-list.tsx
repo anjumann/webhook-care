@@ -19,6 +19,9 @@ import {
 import { cn, formatRelative } from "@/lib/utils";
 import { deleteEndpoint, useEndpoints } from "./api/endpoints";
 import { toast } from "@/lib/toast";
+import { track } from "@/lib/analytics";
+import { generateStarterName } from "@/lib/starter-name";
+import { guardedFetch } from "@/lib/guarded-fetch";
 import { KpiCard } from "@/components/console/kpi-card";
 import { Panel, PanelHead } from "@/components/console/panel";
 import { Segments } from "@/components/console/segments";
@@ -58,6 +61,54 @@ export function EndpointList({ userId }: EndpointListProps) {
   // Actions are visible on every row by default; once the cursor enters the
   // table we switch to per-row reveal so only the hovered row shows its actions.
   const [tableHovered, setTableHovered] = React.useState(false);
+  // First-run activation: while we auto-create the starter endpoint we show a
+  // "setting you up" state instead of the empty state, then route to its detail.
+  const [settingUp, setSettingUp] = React.useState(false);
+  const autoCreateRan = React.useRef(false);
+
+  // 1-click onboarding (spec 02 §3): the very first time a browser lands with
+  // zero endpoints, auto-create a friendly starter and drop the user straight on
+  // its detail page (playground open via ?isNew=true) — no form. Guarded by a
+  // localStorage flag so it fires once per browser and never re-creates after a
+  // deliberate delete-all or on refresh.
+  React.useEffect(() => {
+    if (autoCreateRan.current || isLoading || !userId) return;
+    if ((endpoints?.length ?? 0) > 0) return;
+    let onboarded = false;
+    try {
+      onboarded = localStorage.getItem("wcat_onboarded") === "1";
+    } catch {
+      /* private mode — treat as not-onboarded, but still guard via the ref */
+    }
+    if (onboarded) return;
+
+    autoCreateRan.current = true;
+    setSettingUp(true);
+    (async () => {
+      try {
+        const name = generateStarterName();
+        const res = await guardedFetch("/api/endpoints", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, name }),
+        });
+        if (!res.ok) throw new Error("create failed");
+        const endpoint = await res.json();
+        try {
+          localStorage.setItem("wcat_onboarded", "1");
+        } catch {
+          /* best-effort */
+        }
+        track("endpoint_created", { has_forwarding: false, source: "onboarding" });
+        track("onboarding_completed", { steps: 1 });
+        router.push(`/dashboard/${userId}/${endpoint.id}?isNew=true`);
+      } catch {
+        // Non-fatal: fall back to the manual empty state (Create endpoint).
+        setSettingUp(false);
+        toast.error("Couldn't set up a starter endpoint — create one to begin.");
+      }
+    })();
+  }, [isLoading, endpoints, userId, router]);
 
   const origin =
     typeof window !== "undefined" ? window.location.origin : "https://your-app";
@@ -176,8 +227,12 @@ export function EndpointList({ userId }: EndpointListProps) {
           }
         />
 
-        {isLoading ? (
-          <TableSkeleton />
+        {isLoading || (settingUp && total === 0) ? (
+          settingUp && total === 0 ? (
+            <SettingUpState />
+          ) : (
+            <TableSkeleton />
+          )
         ) : filtered.length === 0 ? (
           <EmptyState userId={userId} hasAny={total > 0} filtering={!!q} />
         ) : (
@@ -384,6 +439,22 @@ function TableSkeleton() {
           <div className="h-5 w-16 animate-pulse rounded-full bg-elev2" />
         </div>
       ))}
+    </div>
+  );
+}
+
+function SettingUpState() {
+  return (
+    <div className="flex flex-col items-center gap-4 px-6 py-20 text-center">
+      <div className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-primary">
+        <Zap className="size-6 animate-pulse" strokeWidth={1.7} />
+      </div>
+      <div className="space-y-1.5">
+        <p className="text-[15px] font-semibold">Setting up your first endpoint…</p>
+        <p className="max-w-xs text-[13px] text-dim">
+          Creating a starter webhook URL so you can capture a request in seconds.
+        </p>
+      </div>
     </div>
   );
 }
