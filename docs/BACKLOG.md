@@ -104,9 +104,18 @@ Full spec: [`specs/16`](./specs/16-analytics-posthog.md).
   Smoke: unauth request is JSON-404'd **before** any stream (guard proven).
   _Residual: happy-path browser verification (EventSource render) is a manual
   step; the "aha" celebration on first live row (spec 02 §5.2) is still open._
-- [ ] **Replay** — re-POST a stored request. **Open design Q:** replay to the
-  *endpoint* (re-ingest) or to the *forwarding target*? Decide before building.
-  Spec: [`specs/05`](./specs/05-endpoint-detail-inspector.md). _~3–5h._
+- [x] **Replay** — DONE. Decision: replay to the **forwarding target(s)** (not
+  re-ingest). New `services/replay.ts` (`replayToForwarding` + pure
+  `buildReplayHeaders`/`buildReplayBody`, tested): resends the stored request
+  (verbatim `rawBody`, redacted headers minus transport/host, method preserved)
+  to every forwarding URL on the endpoint, **awaited**, returning per-target
+  status only (never the target's body; redirects not followed; 10s timeout).
+  Route `POST /api/requests/[id]/replay` (owner-guarded + per-user rate-limited
+  via a new `replay` bucket). Inspector row gains a **Replay** action (shown only
+  when the endpoint has forwarding), fires `request_replayed{target:"forwarding"}`.
+  Same trust model as the existing ingest forward (owner-configured URLs).
+  _Known limit: redacted signature headers won't pass downstream verification —
+  same as the relay._
 
 ### Tier 3 — polish / consistency
 

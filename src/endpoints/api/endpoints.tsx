@@ -96,6 +96,25 @@ export async function deleteRequest(id: string) {
   return response.json();
 }
 
+export interface ReplayTargetResult {
+  url: string;
+  ok: boolean;
+  status?: number;
+  error?: string;
+}
+
+/** Replay a captured request to its endpoint's forwarding target(s). */
+export async function replayRequest(id: string): Promise<ReplayTargetResult[]> {
+  const response = await guardedFetch(`/api/requests/${id}/replay`, {
+    method: 'POST',
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to replay request');
+  }
+  return (data.results ?? []) as ReplayTargetResult[];
+}
+
 export async function setRequestPinned(id: string, pinned: boolean) {
   const response = await guardedFetch(`/api/requests/${id}`, {
     method: 'PATCH',

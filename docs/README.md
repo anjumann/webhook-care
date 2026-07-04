@@ -31,9 +31,11 @@ MongoDB via Prisma, Tailwind v4 + shadcn/ui. Anonymous-first identity, all-free,
 - **Inspector power tools:** **copy-as-cURL**, **one-click provider samples /
   send-test**, and detail **pagination + server-side search** are shipped (all
   instrumented).
-- **Remaining product gap:** **replay** (re-POST a stored request) and the first-
-  request **"aha" celebration** (now unblocked by the live stream). See
-  [`BACKLOG.md`](./BACKLOG.md).
+- **Replay:** shipped — resend a captured request to its endpoint's forwarding
+  target(s) from the inspector.
+- **Remaining product gap:** the first-request **"aha" celebration** (now
+  unblocked by the live stream); otherwise mostly Tier-3 polish (a11y, redesign
+  remainder) + the PostHog-UI insights. See [`BACKLOG.md`](./BACKLOG.md).
 - **Parked:** AI payload analysis, typed Slack/Discord integrations (see backlog
   for why).
 

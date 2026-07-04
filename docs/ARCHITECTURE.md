@@ -77,8 +77,12 @@ The public webhook ingest is the **only** intentionally-open write path.
   Inspector power tools: **copy-as-cURL** (per captured request, via `buildCurl`)
   and a playground with **one-click provider samples** (Stripe/GitHub/Shopify/
   Custom) that POST real traffic to the endpoint and refresh the list on land.
-  The request log is **server-paginated** ("Load more" via a `createdAt`+`id`
-  cursor) with **server-side search** (`buildRequestSearchFilter`): a debounced
+  **Replay** (`POST /api/requests/[id]/replay` → `services/replay`) resends a
+  captured request to its endpoint's forwarding target(s) — awaited, per-target
+  status only (never the target's body), same owner-configured URLs the ingest
+  forward already uses. The request log is **server-paginated** ("Load more" via
+  a `createdAt`+`id` cursor) with **server-side search** (`buildRequestSearchFilter`):
+  a debounced
   term folds into the SWR key and matches `rawBody`/`method`/`contentType`
   case-insensitively (+ exact `statusCode` for integer queries). Json columns
   (`body`/`headers`/`query`) are excluded — the Mongo+Prisma connector can't

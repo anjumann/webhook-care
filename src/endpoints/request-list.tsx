@@ -9,10 +9,11 @@ import {
   Pin,
   PinOff,
   TerminalSquare,
+  Repeat2,
 } from "lucide-react";
 import { cn, formatRelative } from "@/lib/utils";
 import { useState } from "react";
-import { deleteRequest, setRequestPinned } from "./api/endpoints";
+import { deleteRequest, setRequestPinned, replayRequest } from "./api/endpoints";
 import { toast } from "@/lib/toast";
 import { track } from "@/lib/analytics";
 import { buildCurl } from "@/lib/curl";
@@ -26,6 +27,8 @@ interface RequestListProps {
   mutate: () => void;
   /** The endpoint's full webhook URL — used to build "Copy as cURL". */
   webhookUrl?: string;
+  /** Whether the endpoint has forwarding targets — gates the Replay action. */
+  hasForwarding?: boolean;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -118,7 +121,7 @@ function RowAction({
   );
 }
 
-export function RequestList({ requests, mutate, webhookUrl }: RequestListProps) {
+export function RequestList({ requests, mutate, webhookUrl, hasForwarding }: RequestListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) => {
@@ -170,6 +173,7 @@ export function RequestList({ requests, mutate, webhookUrl }: RequestListProps) 
                 onToggle={() => toggle(request.id)}
                 mutate={mutate}
                 webhookUrl={webhookUrl}
+                hasForwarding={hasForwarding}
               />
             );
           })}
@@ -186,6 +190,7 @@ function RequestRow({
   onToggle,
   mutate,
   webhookUrl,
+  hasForwarding,
 }: {
   request: RequestRecord;
   isOpen: boolean;
@@ -193,7 +198,9 @@ function RequestRow({
   onToggle: () => void;
   mutate: () => void;
   webhookUrl?: string;
+  hasForwarding?: boolean;
 }) {
+  const [replaying, setReplaying] = useState(false);
   return (
     <>
       <tr className="group cursor-pointer border-t border-border transition-colors hover:bg-elev2" onClick={onToggle}>
@@ -238,6 +245,36 @@ function RequestRow({
             >
               {request.pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
             </RowAction>
+            {hasForwarding && (
+              <RowAction
+                title={replaying ? "Replaying…" : "Replay to forwarding target(s)"}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (replaying) return;
+                  setReplaying(true);
+                  try {
+                    const results = await replayRequest(request.id);
+                    track("request_replayed", { target: "forwarding" });
+                    const okCount = results.filter((r) => r.ok).length;
+                    if (okCount === results.length) {
+                      toast.success(
+                        results.length === 1
+                          ? `Replayed → ${results[0]?.status ?? "sent"}`
+                          : `Replayed to ${okCount} targets`
+                      );
+                    } else {
+                      toast.error(`Replayed: ${okCount}/${results.length} targets succeeded`);
+                    }
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Replay failed");
+                  } finally {
+                    setReplaying(false);
+                  }
+                }}
+              >
+                <Repeat2 className="size-3.5" strokeWidth={1.7} />
+              </RowAction>
+            )}
             <RowAction
               title="Copy as cURL"
               onClick={(e) => {

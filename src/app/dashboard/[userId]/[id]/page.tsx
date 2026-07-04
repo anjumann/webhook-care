@@ -454,7 +454,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
             </div>
           ) : (
             <>
-              <RequestList mutate={mutate} requests={displayRequests} webhookUrl={fullWebhookUrl} />
+              <RequestList
+                mutate={mutate}
+                requests={displayRequests}
+                webhookUrl={fullWebhookUrl}
+                hasForwarding={(endpoints?.forwardingUrls?.length ?? 0) > 0}
+              />
               {cursor && (
                 <div className="flex justify-center pt-1">
                   <Button
