@@ -20,11 +20,46 @@ export interface ListRequestsParams {
   method?: string;
   status?: number;
   since?: Date;
+  /** Free-text search — see `buildRequestSearchFilter`. */
+  search?: string;
 }
 
 export function clampLimit(limit?: number): number {
   if (!limit || Number.isNaN(limit)) return DEFAULT_PAGE_SIZE;
   return Math.min(Math.max(1, Math.floor(limit)), MAX_PAGE_SIZE);
+}
+
+/**
+ * Build the `where.OR` clause for free-text request search. Server-side (never
+ * client-side over a loaded page) and scale-safe: it targets the **String**
+ * columns only —
+ *   - `rawBody` — the verbatim payload, always stored at ingest, so this covers
+ *     body text for every content-type (JSON, form, XML, plain);
+ *   - `method` and `contentType`;
+ *   - `statusCode` — matched exactly when the query is a pure integer.
+ *
+ * `body`/`headers`/`query` are Mongo `Json` columns: Prisma's Mongo connector
+ * doesn't reliably support case-insensitive text filtering inside them, so we
+ * don't pretend to. `contains` uses `mode:"insensitive"` (RegEx under the Mongo
+ * connector). Returns `undefined` for an empty query so callers can spread it.
+ * Pure + unit-tested.
+ */
+export function buildRequestSearchFilter(
+  search?: string
+): Prisma.RequestWhereInput | undefined {
+  const q = search?.trim();
+  if (!q) return undefined;
+
+  const insensitive = { contains: q, mode: "insensitive" as const };
+  const or: Prisma.RequestWhereInput[] = [
+    { rawBody: insensitive },
+    { method: insensitive },
+    { contentType: insensitive },
+  ];
+  // A pure-integer query also matches the status code exactly.
+  if (/^\d+$/.test(q)) or.push({ statusCode: Number(q) });
+
+  return { OR: or };
 }
 
 export async function listRequests(
@@ -37,6 +72,8 @@ export async function listRequests(
   if (params.method) where.method = params.method.toUpperCase();
   if (typeof params.status === "number") where.statusCode = params.status;
   if (params.since) where.createdAt = { gte: params.since };
+  const searchFilter = buildRequestSearchFilter(params.search);
+  if (searchFilter) Object.assign(where, searchFilter);
 
   const items = await prisma.request.findMany({
     where,
@@ -108,6 +145,49 @@ export function requestsAfter(
     take: Math.min(Math.max(1, take), 200),
     ...(afterId ? { cursor: { id: afterId }, skip: 1 } : {}),
     select: RELAY_SELECT,
+  });
+}
+
+/**
+ * Fields the dashboard **live inspector** streams. A superset of `RELAY_SELECT`:
+ * it adds `statusCode`/`duration`/`pinned`/`expiresAt` so a streamed row renders
+ * a full inspector table row (status pill, duration, expiry chip) without a
+ * follow-up fetch. Still no `response` — the list view never shows it.
+ */
+const LIVE_SELECT = {
+  id: true,
+  method: true,
+  headers: true,
+  body: true,
+  rawBody: true,
+  contentType: true,
+  query: true,
+  statusCode: true,
+  duration: true,
+  pinned: true,
+  expiresAt: true,
+  createdAt: true,
+} satisfies Prisma.RequestSelect;
+
+export type LiveRequest = Prisma.RequestGetPayload<{ select: typeof LIVE_SELECT }>;
+
+/**
+ * Tail an endpoint's requests forward for the dashboard live inspector — same
+ * keyset-forward pattern as `requestsAfter` (oldest-first after `afterId`,
+ * bounded), but selecting the richer inspector fields. Backed by the
+ * `([endpointId, createdAt])` index; never loads the unbounded table.
+ */
+export function liveRequestsAfter(
+  endpointId: string,
+  afterId: string | null,
+  take = 50
+): Promise<LiveRequest[]> {
+  return prisma.request.findMany({
+    where: { endpointId },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    take: Math.min(Math.max(1, take), 200),
+    ...(afterId ? { cursor: { id: afterId }, skip: 1 } : {}),
+    select: LIVE_SELECT,
   });
 }
 

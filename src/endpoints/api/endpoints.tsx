@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import type { Endpoint, EndpointWithRequests } from '@/endpoints/types';
+import type { Endpoint, EndpointWithRequests, RequestRecord } from '@/endpoints/types';
 import { useSession } from '@/components/auth/session-provider';
 import { guardedFetch } from '@/lib/guarded-fetch';
 
@@ -38,10 +38,16 @@ export async function deleteEndpoint(id: string) {
   return response.json();
 }
 
-export function useGetEndpoint(id: string) {
+export function useGetEndpoint(id: string, search?: string) {
   const { ready } = useSession();
+  // Server-side search: the term is part of the SWR key, so changing it refetches
+  // a fresh first page (never filters a loaded page client-side).
+  const q = search?.trim();
+  const key = ready && id
+    ? `/api/endpoints/${id}${q ? `?search=${encodeURIComponent(q)}` : ""}`
+    : null;
   const { data, error, isLoading, mutate } = useSWR<EndpointWithRequests>(
-    ready && id ? `/api/endpoints/${id}` : null,
+    key,
     fetcher
   );
 
@@ -51,6 +57,24 @@ export function useGetEndpoint(id: string) {
     isError: error,
     mutate,
   };
+}
+
+/**
+ * Fetch one more page of an endpoint's requests (cursor pagination), optionally
+ * filtered by the same search term. Used by the detail page's "Load more".
+ */
+export async function fetchRequestPage(
+  id: string,
+  opts: { cursor: string; search?: string; limit?: number }
+): Promise<{ requests: RequestRecord[]; nextCursor: string | null }> {
+  const sp = new URLSearchParams({ cursor: opts.cursor });
+  if (opts.limit) sp.set("limit", String(opts.limit));
+  const q = opts.search?.trim();
+  if (q) sp.set("search", q);
+  const response = await guardedFetch(`/api/endpoints/${id}?${sp.toString()}`);
+  if (!response.ok) throw new Error("Failed to load more requests");
+  const data = (await response.json()) as EndpointWithRequests;
+  return { requests: data.requests ?? [], nextCursor: data.nextCursor ?? null };
 }
 
 export async function getEndpoint(id: string) {
