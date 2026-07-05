@@ -54,6 +54,8 @@ export interface Endpoint {
 /** An endpoint loaded with a (paginated) page of its requests. */
 export interface EndpointWithRequests extends Endpoint {
   requests: RequestRecord[];
+  /** Cursor for the next page of `requests`, or null when fully loaded. */
+  nextCursor?: string | null;
 }
 
 /** Standard shape for cursor-paginated list responses. */

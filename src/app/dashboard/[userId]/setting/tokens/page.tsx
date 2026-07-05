@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Bot, Copy, KeyRound, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { track } from "@/lib/analytics";
 import { guardedFetch } from "@/lib/guarded-fetch";
 import { CodeBlock } from "@/components/console/code-block";
 import type { Endpoint } from "@/endpoints/types";
@@ -112,6 +113,7 @@ claude mcp add --transport http webhook-catcher ${origin}/api/mcp \\
       setNewToken(data.token); // shown exactly once
       setName("");
       mutate();
+      track("token_created");
       toast.success("Token created — copy it now");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to create token");
@@ -132,7 +134,7 @@ claude mcp add --transport http webhook-catcher ${origin}/api/mcp \\
   }
 
   const routeList = [
-    { label: "Webhook Care", href: `/` },
+    { label: "Webhook Catcher", href: `/` },
     { label: "Dashboard", href: `/dashboard/${id}` },
     { label: "API Tokens", href: `/dashboard/${id}/setting/tokens` },
   ];

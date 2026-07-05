@@ -8,11 +8,15 @@ import {
   Trash2,
   Pin,
   PinOff,
+  TerminalSquare,
+  Repeat2,
 } from "lucide-react";
 import { cn, formatRelative } from "@/lib/utils";
 import { useState } from "react";
-import { deleteRequest, setRequestPinned } from "./api/endpoints";
+import { deleteRequest, setRequestPinned, replayRequest } from "./api/endpoints";
 import { toast } from "@/lib/toast";
+import { track } from "@/lib/analytics";
+import { buildCurl } from "@/lib/curl";
 import { MethodPill } from "@/components/console/method-pill";
 import { StatusPill } from "@/components/console/status-pill";
 import { unwantedHeaders } from "@/constant";
@@ -21,6 +25,10 @@ import type { RequestRecord } from "@/endpoints/types";
 interface RequestListProps {
   requests: RequestRecord[];
   mutate: () => void;
+  /** The endpoint's full webhook URL — used to build "Copy as cURL". */
+  webhookUrl?: string;
+  /** Whether the endpoint has forwarding targets — gates the Replay action. */
+  hasForwarding?: boolean;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -113,16 +121,20 @@ function RowAction({
   );
 }
 
-export function RequestList({ requests, mutate }: RequestListProps) {
+export function RequestList({ requests, mutate, webhookUrl, hasForwarding }: RequestListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) => {
+    const willExpand = !expanded.has(id);
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
+    // Fire only on expand — opening a row is the "inspected" signal. Kept out of
+    // the state updater so it doesn't double-fire under StrictMode.
+    if (willExpand) track("request_inspected");
   };
 
   if (requests.length === 0) {
@@ -160,6 +172,8 @@ export function RequestList({ requests, mutate }: RequestListProps) {
                 chip={chip}
                 onToggle={() => toggle(request.id)}
                 mutate={mutate}
+                webhookUrl={webhookUrl}
+                hasForwarding={hasForwarding}
               />
             );
           })}
@@ -175,13 +189,18 @@ function RequestRow({
   chip,
   onToggle,
   mutate,
+  webhookUrl,
+  hasForwarding,
 }: {
   request: RequestRecord;
   isOpen: boolean;
   chip: { text: string; tone: string } | null;
   onToggle: () => void;
   mutate: () => void;
+  webhookUrl?: string;
+  hasForwarding?: boolean;
 }) {
+  const [replaying, setReplaying] = useState(false);
   return (
     <>
       <tr className="group cursor-pointer border-t border-border transition-colors hover:bg-elev2" onClick={onToggle}>
@@ -215,6 +234,8 @@ function RequestRow({
                 e.stopPropagation();
                 try {
                   await setRequestPinned(request.id, !request.pinned);
+                  // Fire only when pinning — the retention-feature-use signal.
+                  if (!request.pinned) track("request_pinned");
                   mutate();
                   toast.success(request.pinned ? "Request unpinned" : "Request pinned");
                 } catch {
@@ -223,6 +244,54 @@ function RequestRow({
               }}
             >
               {request.pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+            </RowAction>
+            {hasForwarding && (
+              <RowAction
+                title={replaying ? "Replaying…" : "Replay to forwarding target(s)"}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (replaying) return;
+                  setReplaying(true);
+                  try {
+                    const results = await replayRequest(request.id);
+                    track("request_replayed", { target: "forwarding" });
+                    const okCount = results.filter((r) => r.ok).length;
+                    if (okCount === results.length) {
+                      toast.success(
+                        results.length === 1
+                          ? `Replayed → ${results[0]?.status ?? "sent"}`
+                          : `Replayed to ${okCount} targets`
+                      );
+                    } else {
+                      toast.error(`Replayed: ${okCount}/${results.length} targets succeeded`);
+                    }
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Replay failed");
+                  } finally {
+                    setReplaying(false);
+                  }
+                }}
+              >
+                <Repeat2 className="size-3.5" strokeWidth={1.7} />
+              </RowAction>
+            )}
+            <RowAction
+              title="Copy as cURL"
+              onClick={(e) => {
+                e.stopPropagation();
+                const command = buildCurl({
+                  url: webhookUrl ?? "",
+                  method: request.method,
+                  headers: request.headers,
+                  body: request.body,
+                  query: request.query,
+                });
+                navigator.clipboard.writeText(command);
+                track("copy_curl_clicked");
+                toast.success("Copied as cURL");
+              }}
+            >
+              <TerminalSquare className="size-3.5" strokeWidth={1.7} />
             </RowAction>
             <RowAction
               title="Copy payload"

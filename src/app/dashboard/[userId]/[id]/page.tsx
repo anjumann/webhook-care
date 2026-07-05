@@ -3,7 +3,8 @@
 import { RequestList } from "@/endpoints/request-list";
 import { CopyButton } from "@/components/copy-button";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { useGetEndpoint, deleteAllRequests } from "@/endpoints/api/endpoints";
+import { useGetEndpoint, deleteAllRequests, fetchRequestPage } from "@/endpoints/api/endpoints";
+import type { RequestRecord } from "@/endpoints/types";
 import { formatRelative } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomBreadcrumb from "@/components/custom-breadcrumb";
@@ -20,9 +21,11 @@ import {
   ChevronDown,
   MoreHorizontal,
 } from "lucide-react";
+import { useRequestStream } from "@/hooks/useRequestStream";
 import WebhookTestSection from "@/endpoints/webhook-test-section";
 import { ExportDialog } from "@/endpoints/export-dialog";
 import { toast } from "@/lib/toast";
+import { track } from "@/lib/analytics";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,14 +71,85 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     getParams();
   }, [params]);
 
-  const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? "");
-
   const [integrationOpen, setIntegrationOpen] = useState(false);
   const [forwardingOpen, setForwardingOpen] = useState(true);
   const [isTesting, setIsTesting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
+
+  // Debounce the search box, then fetch server-side (never filter a loaded page).
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedSearch) track("request_search");
+  }, [debouncedSearch]);
+
+  const { endpoints, isLoading, mutate } = useGetEndpoint(param?.id ?? "", debouncedSearch);
+
+  // Cursor pagination: the base SWR fetch is page 1; "Load more" appends pages.
+  // Reset the appended pages whenever the base result changes (new search, or a
+  // mutate() after pin/delete) and seed the cursor from that page.
+  const [appended, setAppended] = useState<RequestRecord[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Live inspector: rows streamed via SSE, newest-first, prepended to the list.
+  const [liveOn, setLiveOn] = useState(true);
+  const [liveRows, setLiveRows] = useState<RequestRecord[]>([]);
+
+  useEffect(() => {
+    // A new base page (search change / mutate / refetch) supersedes the appended
+    // and live buffers — the refetched page 1 already includes the newest rows,
+    // so clearing here prevents unbounded growth and stale duplicates.
+    setAppended([]);
+    setCursor(endpoints?.nextCursor ?? null);
+    setLiveRows([]);
+  }, [endpoints]);
+
+  // Stream is on by default (the "watch it land live" north-star), paused during
+  // a search (the stream doesn't apply the filter) or when toggled off.
+  const streamEnabled = liveOn && !debouncedSearch && Boolean(endpoints?.id);
+  const { status: liveStatus } = useRequestStream(endpoints?.id, {
+    enabled: streamEnabled,
+    onRequest: (row) =>
+      setLiveRows((prev) => [row, ...prev.filter((r) => r.id !== row.id)]),
+  });
+
+  // Compose the visible list: live (newest) → page 1 → loaded-more, deduped by id.
+  const displayRequests = useMemo(() => {
+    const seen = new Set<string>();
+    const out: RequestRecord[] = [];
+    for (const r of [...liveRows, ...(endpoints?.requests ?? []), ...appended]) {
+      if (seen.has(r.id)) continue;
+      seen.add(r.id);
+      out.push(r);
+    }
+    return out;
+  }, [liveRows, endpoints?.requests, appended]);
+
+  async function loadMore() {
+    if (!param?.id || !cursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await fetchRequestPage(param.id, {
+        cursor,
+        search: debouncedSearch,
+        limit: 50,
+      });
+      setAppended((prev) => [...prev, ...page.requests]);
+      setCursor(page.nextCursor);
+      track("pagination_load_more");
+    } catch {
+      toast.error("Couldn't load more requests");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   // Integration is the onboarding aid: open it only while there are no requests
   // yet; once traffic is flowing, collapse it so the request log dominates.
@@ -86,6 +160,32 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     didInitIntegration.current = true;
     setIntegrationOpen((endpoints.requests?.length ?? 0) === 0);
   }, [endpoints]);
+
+  // Activation signal: the moment an endpoint first has a captured request.
+  // Fired at most once per endpoint per browser (localStorage-gated) with the
+  // time from endpoint creation to its oldest request — the <60s core-loop
+  // measure (spec §6). Uses the oldest request so it's accurate even if the user
+  // only opens the detail page later.
+  const fwrFired = useRef(false);
+  useEffect(() => {
+    // Skip while a search is active — the loaded page is a filtered subset, so
+    // its oldest row isn't the endpoint's true first request.
+    if (fwrFired.current || !endpoints || debouncedSearch) return;
+    const reqs = endpoints.requests ?? [];
+    if (reqs.length === 0) return;
+    fwrFired.current = true;
+    try {
+      const gateKey = `wcat_fwr_${endpoints.id}`;
+      if (localStorage.getItem(gateKey)) return;
+      const created = new Date(endpoints.createdAt).getTime();
+      const oldest = Math.min(...reqs.map((r) => new Date(r.createdAt).getTime()));
+      const seconds = Math.max(0, Math.round((oldest - created) / 1000));
+      track("first_webhook_received", { seconds_since_create: seconds });
+      localStorage.setItem(gateKey, "1");
+    } catch {
+      /* localStorage may be unavailable (private mode) — best-effort */
+    }
+  }, [endpoints, debouncedSearch]);
 
   const webhookUrl = `/api/webhook/${param?.userId}/${endpoints?.name}`;
   const [fullWebhookUrl, setFullWebhookUrl] = useState("");
@@ -100,13 +200,6 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
   useEffect(() => {
     if (isNew) setIsTesting(true);
   }, [isNew]);
-
-  const filteredRequests = useMemo(() => {
-    const requests = endpoints?.requests ?? [];
-    if (!searchQuery.trim()) return requests;
-    const q = searchQuery.toLowerCase();
-    return requests.filter((req) => JSON.stringify(req).toLowerCase().includes(q));
-  }, [endpoints?.requests, searchQuery]);
 
   // Metrics over the loaded request set (last 24h window where relevant).
   const last24 = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -131,7 +224,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     endpoints?.lastActivity ? formatRelative(new Date(endpoints.lastActivity)) : "Never";
 
   const routeList = [
-    { label: "Webhook Care", href: `/` },
+    { label: "Webhook Catcher", href: `/` },
     { label: "Dashboard", href: `/dashboard/${param?.userId}` },
     {
       label: endpoints?.name || param?.id || "",
@@ -171,7 +264,10 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     toast.success("Webhook URL copied");
   };
 
-  const hasRequests = (endpoints?.requests?.length ?? 0) > 0;
+  // "Does this endpoint have any requests at all" — from the total counter, so
+  // it stays true even when an active search returns an empty page.
+  const hasAnyRequests = (endpoints?.requestCount ?? 0) > 0;
+  const isSearching = debouncedSearch.length > 0;
 
   return (
     <main className="mx-auto max-w-[1180px] space-y-6 py-6">
@@ -191,6 +287,12 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
         )}
 
         <div className="flex flex-shrink-0 items-center gap-2.5">
+          <LiveToggle
+            on={liveOn}
+            status={liveStatus}
+            searching={!!debouncedSearch}
+            onToggle={() => setLiveOn((v) => !v)}
+          />
           <Button
             variant={isTesting ? "default" : "outline"}
             className="gap-2"
@@ -218,7 +320,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                disabled={!hasRequests}
+                disabled={!hasAnyRequests}
                 onClick={() => setClearOpen(true)}
                 className="text-destructive focus:text-destructive"
               >
@@ -247,6 +349,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
           initialPayload={JSON.stringify(samplePayload)}
           url={fullWebhookUrl}
           isTesting={isTesting}
+          onSent={() => mutate()}
         />
       )}
 
@@ -300,7 +403,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
       <Panel>
         <PanelHead
           title="Request history"
-          count={isLoading ? undefined : filteredRequests.length}
+          count={isLoading ? undefined : displayRequests.length}
           right={
             <Button
               variant="ghost"
@@ -318,7 +421,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-faint" />
             <input
-              placeholder="Search requests (method, status, body, headers…)"
+              placeholder="Search requests (body, method, status, content-type…)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-9 w-full rounded-md border border-border bg-inset pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-faint focus:border-accent-line focus:bg-card"
@@ -327,7 +430,13 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
 
           {isLoading ? (
             <div className="py-12 text-center text-sm text-dim">Loading requests…</div>
-          ) : !hasRequests ? (
+          ) : displayRequests.length === 0 && isSearching ? (
+            <div className="flex flex-col items-center gap-2 py-14 text-center">
+              <Search className="size-8 text-faint" />
+              <p className="text-sm font-semibold">No matching requests</p>
+              <p className="text-[13px] text-dim">No requests match &quot;{debouncedSearch}&quot;.</p>
+            </div>
+          ) : displayRequests.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-14 text-center">
               <div className="flex size-12 items-center justify-center rounded-full bg-accent-soft text-primary">
                 <Activity className="size-5" strokeWidth={1.7} />
@@ -343,14 +452,29 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
                 <Play className="size-4" /> Open Testing Playground
               </Button>
             </div>
-          ) : filteredRequests.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-14 text-center">
-              <Search className="size-8 text-faint" />
-              <p className="text-sm font-semibold">No matching requests</p>
-              <p className="text-[13px] text-dim">No requests match &quot;{searchQuery}&quot;.</p>
-            </div>
           ) : (
-            <RequestList mutate={mutate} requests={filteredRequests} />
+            <>
+              <RequestList
+                mutate={mutate}
+                requests={displayRequests}
+                webhookUrl={fullWebhookUrl}
+                hasForwarding={(endpoints?.forwardingUrls?.length ?? 0) > 0}
+              />
+              {cursor && (
+                <div className="flex justify-center pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? "Loading…" : "Load more"}
+                    {!loadingMore && <ChevronDown className="size-4" />}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </Panel>
@@ -387,6 +511,58 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
         </AlertDialogContent>
       </AlertDialog>
     </main>
+  );
+}
+
+/** Live-stream toggle + status pill for the inspector header. */
+function LiveToggle({
+  on,
+  status,
+  searching,
+  onToggle,
+}: {
+  on: boolean;
+  status: "closed" | "connecting" | "open";
+  searching: boolean;
+  onToggle: () => void;
+}) {
+  const live = on && !searching;
+  const dot = !live
+    ? "bg-faint"
+    : status === "open"
+      ? "bg-primary animate-pulse"
+      : "bg-c2 animate-pulse";
+  const label = searching
+    ? "Live paused"
+    : !on
+      ? "Paused"
+      : status === "open"
+        ? "Live"
+        : "Connecting…";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={searching}
+      aria-pressed={live}
+      title={
+        searching
+          ? "Live pauses while searching"
+          : on
+            ? "Pause the live stream"
+            : "Resume the live stream"
+      }
+      className={cn(
+        "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors",
+        live
+          ? "border-accent-line bg-accent-soft text-primary"
+          : "border-border text-dim hover:bg-elev2",
+        searching && "cursor-not-allowed opacity-60"
+      )}
+    >
+      <span className={cn("size-2 rounded-full", dot)} />
+      {label}
+    </button>
   );
 }
 

@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/lib/toast";
+import { track } from "@/lib/analytics";
+import { buildExportProps } from "@/lib/analytics-core";
 import { useEndpoints } from "./api/endpoints";
 
 type Scope = "this" | "all";
@@ -155,6 +157,17 @@ export function ExportDialog({
       a.remove();
       URL.revokeObjectURL(url);
 
+      track(
+        "export_performed",
+        buildExportProps({
+          multiSelect,
+          scope,
+          selectedCount: selected.size,
+          totalCount: allIds.length,
+          redacted: hideSensitive,
+          format,
+        }),
+      );
       toast.success("Export downloaded");
       setOpen(false);
     } catch (e) {

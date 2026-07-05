@@ -26,6 +26,7 @@ export async function GET(
       method: sp.get("method") ?? undefined,
       status,
       since,
+      search: sp.get("search") ?? undefined,
     });
 
     if (!endpoint) return notFound("Endpoint not found");

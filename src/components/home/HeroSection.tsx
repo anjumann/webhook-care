@@ -62,7 +62,7 @@ export function HeroSection() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <GetStartedBtn>
+            <GetStartedBtn cta="hero">
               <Button size="lg" className="group">
                 Mint your endpoint
                 <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-0.5" />
@@ -74,7 +74,7 @@ export function HeroSection() {
           </div>
 
           <ul className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-dim">
-            {["30-day history", "Replay & edit", "REST API + MCP"].map(
+            {["30-day history", "Replay & edit", "MCP for your AI agent"].map(
               (item) => (
                 <li key={item} className="flex items-center gap-1.5">
                   <Check className="size-4 text-primary" strokeWidth={2.4} />

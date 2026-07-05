@@ -208,7 +208,7 @@ export function HeroConsole() {
               <span className="size-2.5 rounded-full bg-faint/60" />
             </span>
             <span className="font-mono text-[12px] text-mid">
-              wcat.dev<span className="text-primary">/u/ord-7f2</span>
+              webhook.projext.in<span className="text-primary">/…/orders</span>
             </span>
           </div>
           <span className="flex items-center gap-1.5 font-mono text-[11px] text-dim">

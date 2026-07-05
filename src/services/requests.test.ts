@@ -22,6 +22,8 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 import {
   clampLimit,
   listRequests,
+  buildRequestSearchFilter,
+  liveRequestsAfter,
   captureRequest,
   setPinned,
   deleteExpiredRequests,
@@ -88,6 +90,69 @@ describe("listRequests", () => {
       statusCode: 500,
       createdAt: { gte: since },
     });
+  });
+
+  it("merges the search OR clause into the where (keyset still applies)", async () => {
+    prismaMock.request.findMany.mockResolvedValue([]);
+    await listRequests("e1", { search: "charge.succeeded" });
+    const arg = prismaMock.request.findMany.mock.calls[0][0];
+    expect(arg.where.endpointId).toBe("e1");
+    expect(arg.where.OR).toEqual([
+      { rawBody: { contains: "charge.succeeded", mode: "insensitive" } },
+      { method: { contains: "charge.succeeded", mode: "insensitive" } },
+      { contentType: { contains: "charge.succeeded", mode: "insensitive" } },
+    ]);
+  });
+});
+
+describe("liveRequestsAfter", () => {
+  it("tails forward (oldest-first) with a bounded take and no cursor at the tail start", async () => {
+    prismaMock.request.findMany.mockResolvedValue([]);
+    await liveRequestsAfter("e1", null, 50);
+    const arg = prismaMock.request.findMany.mock.calls[0][0];
+    expect(arg.where).toEqual({ endpointId: "e1" });
+    expect(arg.orderBy).toEqual([{ createdAt: "asc" }, { id: "asc" }]);
+    expect(arg.take).toBe(50);
+    expect(arg.cursor).toBeUndefined();
+    // selects the richer inspector fields (incl. statusCode/duration/pinned)
+    expect(arg.select).toMatchObject({ statusCode: true, duration: true, pinned: true });
+  });
+
+  it("resumes after a cursor with skip:1 and clamps the take to <=200", async () => {
+    prismaMock.request.findMany.mockResolvedValue([]);
+    await liveRequestsAfter("e1", "cur", 9999);
+    const arg = prismaMock.request.findMany.mock.calls[0][0];
+    expect(arg.cursor).toEqual({ id: "cur" });
+    expect(arg.skip).toBe(1);
+    expect(arg.take).toBe(200);
+  });
+});
+
+describe("buildRequestSearchFilter", () => {
+  it("returns undefined for empty / whitespace-only queries", () => {
+    expect(buildRequestSearchFilter()).toBeUndefined();
+    expect(buildRequestSearchFilter("")).toBeUndefined();
+    expect(buildRequestSearchFilter("   ")).toBeUndefined();
+  });
+
+  it("searches rawBody/method/contentType case-insensitively", () => {
+    const f = buildRequestSearchFilter("  Stripe  ");
+    // trims the query
+    expect(f).toEqual({
+      OR: [
+        { rawBody: { contains: "Stripe", mode: "insensitive" } },
+        { method: { contains: "Stripe", mode: "insensitive" } },
+        { contentType: { contains: "Stripe", mode: "insensitive" } },
+      ],
+    });
+  });
+
+  it("adds an exact statusCode match only for pure-integer queries", () => {
+    const numeric = buildRequestSearchFilter("404");
+    expect(numeric?.OR).toContainEqual({ statusCode: 404 });
+
+    const mixed = buildRequestSearchFilter("40x");
+    expect(mixed?.OR).not.toContainEqual(expect.objectContaining({ statusCode: expect.anything() }));
   });
 });
 

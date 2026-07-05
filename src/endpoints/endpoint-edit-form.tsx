@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
 import { z } from "zod"
@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getEndpoint } from './api/endpoints'
 import { useSession } from '@/components/auth/session-provider'
 import { Panel, PanelHead } from '@/components/console/panel'
+import { track } from '@/lib/analytics'
 
 export default function EndpointEditForm({ id }: { id?: string }) {
 
@@ -102,6 +103,11 @@ export default function EndpointEditForm({ id }: { id?: string }) {
 
     const nameValue = form.watch("name");
 
+    // How many forwarding rules the endpoint had when the form loaded (0 for
+    // create). Lets us fire `forwarding_url_added` only when the saved set
+    // actually grows — not on every re-save of an endpoint that already forwards.
+    const initialFwdCount = useRef(0);
+
     // Open the forwarding section once rules exist (e.g. loaded on edit); never
     // auto-closes, so a user who collapses it keeps it collapsed.
     useEffect(() => {
@@ -112,6 +118,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
         if (id && ready) {
             const getEndpointData = async () => {
                 const endpoint = await getEndpoint(id)
+                initialFwdCount.current = endpoint?.forwardingUrls?.length ?? 0
                 form.reset({
                     name: endpoint?.name || "",
                     description: endpoint?.description || "",
@@ -155,6 +162,9 @@ export default function EndpointEditForm({ id }: { id?: string }) {
                 const result = await response.json();
                 if (!result.id) return;
 
+                const fwdCount = data.forwardingUrls?.length ?? 0;
+                if (fwdCount > initialFwdCount.current) track("forwarding_url_added");
+
                 router.push(`/dashboard/${user.id}/${result.id}${!id ? '?isNew=true' : ''}`);
             } catch (error) {
                 console.error(`Error updating endpoint:`, error);
@@ -187,6 +197,10 @@ export default function EndpointEditForm({ id }: { id?: string }) {
             const result = await response.json();
             if (!result.id) return;
 
+            const hasForwarding = (data.forwardingUrls?.length ?? 0) > 0;
+            track("endpoint_created", { has_forwarding: hasForwarding, source: "create_form" });
+            if (hasForwarding) track("forwarding_url_added");
+
             router.push(`/dashboard/${user.id}/${result.id}${!id ? '?isNew=true' : ''}`);
         } catch (error) {
             console.error(`Error ${id ? 'updating' : 'creating'} endpoint:`, error);
@@ -198,7 +212,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
 
     const routeList = [
         {
-            label: "Webhook Care",
+            label: "Webhook Catcher",
             href: `/`,
         },
         {

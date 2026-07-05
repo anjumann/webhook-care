@@ -14,7 +14,7 @@ const STEPS = [
     body: "One click in the dashboard — no account, no config. The endpoint is live before the page finishes loading.",
     visual: (
       <div className="glass-inset flex items-center justify-between rounded-lg px-3 py-2.5 font-mono text-[11.5px]">
-        <span className="truncate text-primary">https://wcat.dev/u/ord-7f2</span>
+        <span className="truncate text-primary">https://webhook.projext.in/…/orders</span>
         <Copy className="ml-2 size-3.5 flex-none text-dim" />
       </div>
     ),
@@ -26,7 +26,7 @@ const STEPS = [
     visual: (
       <div className="glass-inset rounded-lg px-3 py-2.5 font-mono text-[11.5px] text-mid">
         <span className="text-dim">$ </span>curl -X POST{" "}
-        <span className="text-primary">…/u/ord-7f2</span> -d{" "}
+        <span className="text-primary">…/orders</span> -d{" "}
         <span className="text-accent2">&apos;{"{…}"}&apos;</span>
       </div>
     ),

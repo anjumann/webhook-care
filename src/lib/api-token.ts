@@ -6,9 +6,16 @@
  * One resolver here = one auth source of truth for REST + MCP, mirroring how the
  * session guards live in `@/services/auth`.
  */
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sha256, randomToken } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
+import { captureServer, shouldSample } from "@/lib/analytics-server";
+import { normalizeRestRoute } from "@/lib/analytics-core";
+
+// Sample REST calls so a high-traffic agent doesn't flood analytics; ~half is
+// plenty to measure adoption. Deterministic sampler keyed per-invocation.
+const REST_SAMPLE_RATE = 0.5;
 
 export const TOKEN_PREFIX = "wcat_";
 
@@ -93,5 +100,24 @@ export async function requireToken(
     return { ok: false, status: 429, message: "Rate limit exceeded for this token" };
   }
   touchToken(token.id);
+
+  // Adoption signal (spec §6). Off the response path via `after()`, sampled, and
+  // the route is a masked template — no ids/secrets. Best-effort: analytics must
+  // never break the REST path, so the whole block is guarded.
+  try {
+    if (shouldSample(`${token.userId}:${Date.now()}`, REST_SAMPLE_RATE)) {
+      const route = normalizeRestRoute(new URL(request.url).pathname);
+      after(() =>
+        captureServer({
+          distinctId: token.userId,
+          event: "rest_api_called",
+          properties: { route },
+        }),
+      );
+    }
+  } catch {
+    /* analytics is best-effort */
+  }
+
   return { ok: true, userId: token.userId, tokenId: token.id };
 }

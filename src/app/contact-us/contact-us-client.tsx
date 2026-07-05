@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, MessageSquare, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 export default function ContactUsClient() {
   const [formData, setFormData] = useState({
@@ -24,11 +25,15 @@ export default function ContactUsClient() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.category) {
+      setError("Choose a category so your message reaches the right place.");
+      return;
+    }
     setIsSubmitting(true);
-    
+
     try {
       setError(null);
-      
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -43,11 +48,11 @@ export default function ContactUsClient() {
         throw new Error(result.error || 'Failed to send message');
       }
 
-      console.log('Contact form sent successfully:', result);
-      
+      track("contact_form_submitted", { category: formData.category });
+
       setIsSubmitting(false);
       setIsSubmitted(true);
-      
+
       // Reset form after showing success
       setTimeout(() => {
         setIsSubmitted(false);
@@ -58,9 +63,8 @@ export default function ContactUsClient() {
           category: "",
           message: ""
         });
-      }, 3000);
+      }, 5000);
     } catch (error) {
-      console.error('Error sending contact form:', error);
       setIsSubmitting(false);
       setError(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
     }
@@ -72,18 +76,18 @@ export default function ContactUsClient() {
 
   if (isSubmitted) {
     return (
-      <PageLayout>
+      <PageLayout showHeader>
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-2xl mx-auto text-center">
             <Card>
               <CardContent className="pt-12 pb-12">
-                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+                <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Message received</h2>
                 <p className="text-muted-foreground mb-4">
-                  Your message has been received. We&apos;ll get back to you within 24-48 hours.
+                  Thanks for writing. We&apos;ll get back to you within 24&ndash;48 hours.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Redirecting you back to the form...
+                  Taking you back to the form&hellip;
                 </p>
               </CardContent>
             </Card>
@@ -94,7 +98,7 @@ export default function ContactUsClient() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout showHeader>
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -116,18 +120,19 @@ export default function ContactUsClient() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <h4 className="font-semibold">General Inquiries</h4>
-                    <p className="text-muted-foreground text-sm">anjumanraj2@gmail.com</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Bug Reports</h4>
-                    <p className="text-muted-foreground text-sm">anjumanraj2@gmail.com</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Feature Requests</h4>
-                    <p className="text-muted-foreground text-sm">anjumanraj2@gmail.com</p>
+                    <h4 className="font-semibold">Email</h4>
+                    <p className="text-sm">
+                      <a
+                        href="mailto:anjumanraj2@gmail.com"
+                        className="text-primary underline underline-offset-4"
+                      >
+                        anjumanraj2@gmail.com
+                      </a>
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      Questions, bugs, and feature requests all land in the
+                      same inbox — the form on this page goes there too.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -139,19 +144,11 @@ export default function ContactUsClient() {
                     Response Times
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm">General Support</span>
-                    <span className="text-sm text-muted-foreground">24-48 hours</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Bug Reports</span>
-                    <span className="text-sm text-muted-foreground">12-24 hours</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Critical Issues</span>
-                    <span className="text-sm text-muted-foreground">2-6 hours</span>
-                  </div>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm">
+                    Most messages get a reply within 24&ndash;48 hours. Bug
+                    reports that break your debugging get looked at first.
+                  </p>
                 </CardContent>
               </Card>
 
@@ -169,11 +166,11 @@ export default function ContactUsClient() {
                 </CardHeader>
                 <CardContent>
                   {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div className="mb-6 p-4 rounded-md border border-destructive/40 bg-destructive/10 flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="font-medium text-red-800">Error sending message</h4>
-                        <p className="text-red-600 text-sm mt-1">{error}</p>
+                        <h4 className="font-medium text-destructive">Message not sent</h4>
+                        <p className="text-destructive/90 text-sm mt-1">{error}</p>
                       </div>
                     </div>
                   )}
@@ -203,7 +200,7 @@ export default function ContactUsClient() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
+                      <Label htmlFor="category">Category *</Label>
                       <Select value={formData.category} onValueChange={(value) => handleChange("category", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -284,28 +281,35 @@ export default function ContactUsClient() {
                   <div className="space-y-3">
                     <h4 className="font-semibold">How do I create a webhook endpoint?</h4>
                     <p className="text-muted-foreground text-sm">
-                      Simply visit our dashboard and click &quot;Create Endpoint&quot;. You&apos;ll get an instant URL to test with.
+                      Open the console and create an endpoint — no account
+                      needed. Your URL is live immediately and starts catching
+                      the moment something calls it.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h4 className="font-semibold">Is the service really free?</h4>
                     <p className="text-muted-foreground text-sm">
-                      Yes! Basic webhook testing is completely free. Premium features like AI analysis are coming soon.
+                      Yes. Catching, inspecting, forwarding, replay, export,
+                      the REST API, and the MCP server are all free. There is
+                      no paid tier.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h4 className="font-semibold">How long is webhook data stored?</h4>
                     <p className="text-muted-foreground text-sm">
-                      Webhook data is automatically deleted after 30 days for privacy and security.
+                      Requests are deleted automatically after 30 days. Pin a
+                      request and it&apos;s kept until you unpin it.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h4 className="font-semibold">Can I integrate with my existing tools?</h4>
                     <p className="text-muted-foreground text-sm">
-                      We&apos;re working on platform integrations as part of our premium features coming soon!
+                      Yes — forward captures to any URL (including localhost),
+                      query them over the REST API, or connect your AI agent
+                      through the built-in MCP server.
                     </p>
                   </div>
                 </div>

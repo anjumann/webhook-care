@@ -10,6 +10,7 @@ import {
   type PlaygroundKind,
   type PlaygroundRequest,
 } from "./playground";
+import { track } from "@/lib/analytics";
 
 /**
  * Simulated playground — visitors fire sample webhooks and watch them land in
@@ -36,6 +37,7 @@ export function DemoPlayground() {
     seq.current += 1;
     setCaught((prev) => [req, ...prev].slice(0, MAX_ROWS));
     setSelectedId(req.id);
+    track("playground_sample_fired", { provider: kind });
   };
 
   const selected =
@@ -76,7 +78,7 @@ export function DemoPlayground() {
           <div className="flex min-h-[22rem] flex-col">
             <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
               <span className="font-mono text-[12px] text-mid">
-                wcat.dev<span className="text-primary">/u/you</span>
+                webhook.projext.in<span className="text-primary">/…/you</span>
               </span>
               <span className="flex items-center gap-1.5 font-mono text-[11px] text-dim">
                 <span className="live-pulse" />

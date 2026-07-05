@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     );
     if (!result) return fail("This link is invalid or has expired.", 400);
 
-    return ok({ ok: true, userId: result.userId });
+    return ok({ ok: true, userId: result.userId, email: result.email });
   } catch (error) {
     return failFromError(error, "Error verifying magic link:");
   }

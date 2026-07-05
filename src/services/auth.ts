@@ -180,7 +180,7 @@ export async function createMagicLink(
 export async function verifyMagicLink(
   rawToken: string,
   userAgent?: string
-): Promise<{ userId: string } | null> {
+): Promise<{ userId: string; email: string } | null> {
   const link = await prisma.magicLink.findUnique({
     where: { tokenHash: sha256(rawToken) },
   });
@@ -216,5 +216,5 @@ export async function verifyMagicLink(
   }
 
   await createVerifiedSession(targetUserId, userAgent);
-  return { userId: targetUserId };
+  return { userId: targetUserId, email };
 }

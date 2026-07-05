@@ -9,7 +9,7 @@ import { useEndpoints } from "@/endpoints/api/endpoints";
 /**
  * Console sidebar nav. Only routes that exist today are shown (Endpoints,
  * Settings); Requests / Forwarding / Playground light up as those features
- * land (see docs/UI redesign/02-screen-redesigns.md §0). Active state is
+ * land (see docs/archive/UI-redesign/02-screen-redesigns.md §0). Active state is
  * derived from the pathname.
  */
 export function SidebarNav({

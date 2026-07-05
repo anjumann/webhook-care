@@ -1,6 +1,6 @@
 /**
  * HTTP status-code → semantic tone, mirroring the Emerald Console reference
- * (`codeTone` / `StatusPill`). See docs/UI redesign/00-design-language.md §8.
+ * (`codeTone` / `StatusPill`). See docs/archive/UI-redesign/00-design-language.md §8.
  *
  *   < 300  → ok       (2xx success)
  *   < 400  → neutral  (3xx redirects)

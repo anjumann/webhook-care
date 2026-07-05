@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { useUser } from "@/hooks/useUser";
+import { identifyUser } from "@/lib/analytics";
 
 interface SessionContextValue {
   /** True once an anonymous session has been established (or there's nothing to do). */
@@ -54,6 +55,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       })
       .finally(() => setReady(true));
   }, [id, loading]);
+
+  // Promote this browser's anonymous ULID to an identified person profile so
+  // funnels/retention work (person_profiles: 'identified_only'). Landing-page
+  // visitors without a ULID stay anonymous. See docs/specs/16-analytics-posthog.md §5.
+  useEffect(() => {
+    if (id) identifyUser(id);
+  }, [id]);
 
   return (
     <SessionContext.Provider value={{ ready, userId: id }}>

@@ -95,7 +95,7 @@ export default function ProfilePage() {
           header="Profile Settings"
           description="Update your profile information and avatar."
           routeList={[
-            { label: "Webhook Care", href: "/" },
+            { label: "Webhook Catcher", href: "/" },
             { label: "Dashboard", href: "/dashboard" },
             { label: "Profile", href: "/dashboard/setting/profile" },
           ]}

@@ -59,6 +59,7 @@ const limiters = {
   token: make(120, "1 m", "token"),
   export: make(10, "1 h", "export"),
   apiClient: make(60, "1 m", "apiclient"),
+  replay: make(60, "1 m", "replay"),
 };
 
 export type LimiterName = keyof typeof limiters;

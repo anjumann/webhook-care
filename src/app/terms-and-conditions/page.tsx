@@ -1,3 +1,4 @@
+import Link from "next/link";
 import PageLayout from "@/components/page-layout";
 import { APP_NAME } from "@/constant/app-constant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +10,13 @@ export const metadata = {
 
 export default function TermsAndConditionsPage() {
   return (
-    <PageLayout>
+    <PageLayout showHeader>
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Terms and Conditions</h1>
             <p className="text-muted-foreground text-lg">
-              Last updated: {new Date().toLocaleDateString()}
+              Last updated: July 4, 2026
             </p>
           </div>
 
@@ -45,7 +46,8 @@ export default function TermsAndConditionsPage() {
                   <li>Create temporary and permanent webhook endpoints</li>
                   <li>Inspect and analyze webhook payloads</li>
                   <li>Forward webhooks to multiple destinations</li>
-                  <li>Access AI-based analysis and platform integrations (premium features)</li>
+                  <li>Query captures over a token-scoped REST API and a built-in MCP server (for AI agents and tools)</li>
+                  <li>Export request history (JSON/CSV/ZIP)</li>
                 </ul>
               </CardContent>
             </Card>
@@ -76,29 +78,22 @@ export default function TermsAndConditionsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Subscription Plans and Billing</CardTitle>
+                <CardTitle>Free Service</CardTitle>
               </CardHeader>
               <CardContent className="prose dark:prose-invert max-w-none">
-                <h4>Free Tier</h4>
-                <ul>
-                  <li>Basic webhook endpoint creation and inspection</li>
-                  <li>Limited request history and storage</li>
-                  <li>Community support</li>
-                </ul>
-                
-                <h4>Premium Plans</h4>
-                <ul>
-                  <li>Monthly Plan: ₹99 per month</li>
-                  <li>Annual Plan: ₹990 per year (₹82.5 per month)</li>
-                  <li>AI-based analysis features</li>
-                  <li>Platform integrations</li>
-                  <li>Priority support</li>
-                </ul>
-                
-                <h4>Beta Testing Notice</h4>
                 <p>
-                  Premium features are currently in beta testing. Subscriptions will be processed 
-                  through a waitlist system during the beta period.
+                  {APP_NAME} is currently free. Every feature — catching, inspecting, and
+                  forwarding webhooks, replay, the REST API, and the MCP server — is available
+                  at no cost. We do not collect any billing details.
+                </p>
+                <p>
+                  Free comes with a fair-use expectation: rate limits may apply to abusive or
+                  excessive traffic to keep the service reliable for everyone.
+                </p>
+                <p>
+                  If we ever introduce paid plans, these terms and the{" "}
+                  <Link href="/refund-policy">refund policy</Link> will be updated first, and
+                  no one will be charged silently.
                 </p>
               </CardContent>
             </Card>
@@ -171,7 +166,7 @@ export default function TermsAndConditionsPage() {
                   <li>Either party may terminate the agreement at any time</li>
                   <li>We may suspend accounts for violations of these terms</li>
                   <li>Upon termination, your data will be deleted according to our retention policy</li>
-                  <li>Refunds will be processed according to our refund policy</li>
+                  <li>Refunds will be processed according to our <Link href="/refund-policy">refund policy</Link></li>
                 </ul>
               </CardContent>
             </Card>
@@ -196,7 +191,15 @@ export default function TermsAndConditionsPage() {
               <CardContent className="prose dark:prose-invert max-w-none">
                 <p>For questions about these Terms and Conditions:</p>
                 <ul>
-                  <li>Email: anjumanraj2@gmail.com</li>
+                  <li>
+                    Email:{" "}
+                    <a
+                      href="mailto:anjumanraj2@gmail.com"
+                      className="text-primary underline underline-offset-4"
+                    >
+                      anjumanraj2@gmail.com
+                    </a>
+                  </li>
                 </ul>
               </CardContent>
             </Card>

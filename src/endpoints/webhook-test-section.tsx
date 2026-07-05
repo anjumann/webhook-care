@@ -10,19 +10,36 @@ import {
     SelectItem,
     SelectValue,
 } from '@/components/ui/select';
-import { CircleX, Plus, Sparkles, Trash2Icon } from 'lucide-react';
+import { CircleX, Plus, Sparkles, Trash2Icon, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+    buildSampleRequest,
+    PLAYGROUND_KINDS,
+    REDACTED,
+    type PlaygroundKind,
+} from '@/components/home/playground';
+import { track } from '@/lib/analytics';
 
 
 const HTTP_METHODS = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH'];
 
+// Human labels for the provider quick-sample buttons.
+const SAMPLE_LABELS: Record<PlaygroundKind, string> = {
+    stripe: 'Stripe',
+    github: 'GitHub',
+    shopify: 'Shopify',
+    custom: 'Custom',
+};
+
 const WebhookTestSection = (
-    { initialPayload, url, isTesting = false }: {
+    { initialPayload, url, isTesting = false, onSent }: {
         url: string,
         initialPayload: string,
-        isTesting: boolean
+        isTesting: boolean,
+        /** Called after a request successfully lands, so the parent can refresh. */
+        onSent?: () => void,
     }
 ) => {
     const [method, setMethod] = useState('POST');
@@ -50,11 +67,44 @@ const WebhookTestSection = (
     const addHeader = () => setHeaders([...headers, { key: '', value: '' }]);
     const removeHeader = (idx: number) => setHeaders(headers.filter((_, i) => i !== idx));
 
-    const handleSend = async () => {
+    // Shared POST + response handling for both the manual "Send" and the
+    // one-click provider samples. `body` is undefined for GET.
+    const runSend = async (
+        sendMethod: string,
+        headerObj: Record<string, string>,
+        body: string | undefined,
+    ) => {
         setLoading(true);
         setError(null);
         setResponse(null);
-        let body: any = undefined;
+        try {
+            const res = await fetch(url, {
+                method: sendMethod,
+                headers: headerObj,
+                body: sendMethod !== 'GET' ? body : undefined,
+            });
+            const text = await res.text();
+            let parsed;
+            try {
+                parsed = JSON.parse(text);
+            } catch {
+                parsed = text;
+            }
+            setResponse({
+                status: res.status,
+                statusText: res.statusText,
+                body: parsed,
+            });
+            onSent?.();
+        } catch (err: any) {
+            setError(err.message || 'Request failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSend = async () => {
+        let body: string | undefined = undefined;
         let contentTypeSet = false;
         const headerObj: Record<string, string> = {};
         headers.forEach(({ key, value }) => {
@@ -69,33 +119,37 @@ const WebhookTestSection = (
                 if (!contentTypeSet) headerObj['Content-Type'] = 'application/json';
             } catch (e) {
                 setError('Invalid JSON payload' + e);
-                setLoading(false);
                 return;
             }
         }
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: headerObj,
-                body: method !== 'GET' ? body : undefined,
-            });
-            const text = await res.text();
-            let parsed;
-            try {
-                parsed = JSON.parse(text);
-            } catch {
-                parsed = text;
-            }
-            setResponse({
-                status: res.status,
-                statusText: res.statusText,
-                body: parsed,
-            });
-        } catch (err: any) {
-            setError(err.message || 'Request failed');
-        } finally {
-            setLoading(false);
+        await runSend(method, headerObj, body);
+    };
+
+    // Load a realistic provider fixture into the form and POST it immediately so
+    // a real request lands on the endpoint. The demo signature placeholder
+    // (`REDACTED`) is non-ASCII, which `fetch` rejects as a header value — drop
+    // those pseudo-headers when sending.
+    const sendSample = async (kind: PlaygroundKind) => {
+        const sample = buildSampleRequest(kind, 1);
+        const headerObj: Record<string, string> = {};
+        const uiHeaders: { key: string; value: string }[] = [];
+        for (const [key, value] of sample.headers) {
+            uiHeaders.push({ key, value });
+            if (value !== REDACTED) headerObj[key] = value;
         }
+        // Reflect the sample in the form so the user can tweak & resend.
+        setMethod(sample.method);
+        setHeaders(uiHeaders.length ? uiHeaders : [{ key: '', value: '' }]);
+        setPayload(sample.body);
+
+        let body: string | undefined;
+        try {
+            body = JSON.stringify(JSON.parse(sample.body));
+        } catch {
+            body = sample.body;
+        }
+        track('provider_sample_sent', { provider: kind });
+        await runSend(sample.method, headerObj, body);
     };
 
     const handleBeautify = () => {
@@ -120,6 +174,25 @@ const WebhookTestSection = (
                             <CardTitle>Webhook Playground</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="mr-1 text-sm font-medium text-muted-foreground">
+                                    Send a sample:
+                                </span>
+                                {PLAYGROUND_KINDS.map((kind) => (
+                                    <Button
+                                        key={kind}
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5"
+                                        disabled={loading}
+                                        onClick={() => sendSample(kind)}
+                                    >
+                                        <Zap className="h-3.5 w-3.5" />
+                                        {SAMPLE_LABELS[kind]}
+                                    </Button>
+                                ))}
+                            </div>
                             <div className="flex gap-2 items-center">
 
                                 <label className="font-medium">Method:</label>

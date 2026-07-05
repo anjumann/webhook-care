@@ -33,6 +33,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { track } from "@/lib/analytics";
 import { cn, formatRelative } from "@/lib/utils";
 import { Panel, PanelHead } from "@/components/console/panel";
 import { useApiClientStore } from "@/components/console/api-client-db";
@@ -197,6 +198,7 @@ export function ApiClient({ userId }: { userId: string }) {
         return;
       }
       setRes(data as ProxyResponse);
+      track("api_client_request_sent");
       store.pushHistory({
         method,
         url: url.trim(),

@@ -13,12 +13,18 @@
  *   claude mcp add --transport http webhook-catcher https://APP/api/mcp \
  *     --header "Authorization: Bearer wcat_xxx"
  */
+import { after } from "next/server";
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { z } from "zod";
 import * as mcp from "@/services/mcp";
 import { resolveToken, touchToken, SCOPE_REQUESTS_READ } from "@/lib/api-token";
 import { rateLimit } from "@/lib/ratelimit";
+import { captureServer, shouldSample } from "@/lib/analytics-server";
+
+// MCP clients poll (list/read) frequently, so sample the differentiator-use
+// signal hard — a light per-user cadence is enough to prove adoption.
+const MCP_SAMPLE_RATE = 0.15;
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -113,6 +119,19 @@ const authed = withMcpAuth(
       throw new Response("Rate limit exceeded for this token", { status: 429 });
     }
     touchToken(token.id);
+
+    // Differentiator-use signal (spec §6). Off the response path, sampled,
+    // no payload. Best-effort — guarded so it never blocks/rejects the tool call.
+    try {
+      if (shouldSample(`${token.userId}:${Date.now()}`, MCP_SAMPLE_RATE)) {
+        after(() =>
+          captureServer({ distinctId: token.userId, event: "mcp_connected" }),
+        );
+      }
+    } catch {
+      /* analytics is best-effort */
+    }
+
     return {
       token: bearer ?? "",
       clientId: token.id,
