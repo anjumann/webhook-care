@@ -84,21 +84,29 @@ export function FeatureCards() {
           <div className="glass flex flex-col items-start gap-5 rounded-2xl p-7 md:flex-row md:items-center md:justify-between">
             <div className="max-w-md">
               <h3 className="text-xl font-bold tracking-tight">
-                Queryable from code — and from your agent
+                Ask your AI why the webhook failed
               </h3>
               <p className="mt-2 text-sm text-mid">
-                Every capture is reachable over a token-scoped REST API and a
-                built-in MCP server. Your AI agent can read the webhook that
-                just failed and tell you why.
+                Every capture is readable over a token-scoped REST API and a
+                built-in MCP server. Plug it into Claude Code or Cursor and
+                your agent pulls the exact request that broke — no pasting
+                payloads into chat.
               </p>
             </div>
-            <div className="glass-inset w-full max-w-sm rounded-xl px-4 py-3 font-mono text-[12.5px] text-mid">
-              <span className="text-dim">$ </span>curl -H{" "}
-              <span className="text-accent2">&quot;Authorization: Bearer wcat_…&quot;</span>
-              {" \\"}
+            <div className="glass-inset w-full max-w-sm rounded-xl px-4 py-3 font-mono text-[12px] text-mid">
+              <span className="text-dim">$ </span>claude mcp add --transport
+              http \
               <br />
               <span className="pl-4 text-primary">
-                https://wcat.dev/api/v1/requests
+                webhooks https://webhook.projext.in/api/mcp
+              </span>{" "}
+              \
+              <br />
+              <span className="pl-4">
+                --header{" "}
+                <span className="text-accent2">
+                  &quot;Authorization: Bearer wcat_…&quot;
+                </span>
               </span>
             </div>
           </div>
@@ -173,9 +181,9 @@ function ForwardGraphic() {
         <animateMotion dur="1.8s" repeatCount="indefinite" path={path} />
       </circle>
 
-      <rect x="14" y="42" width="112" height="32" rx="10" fill="var(--inset)" stroke="var(--border2)" />
-      <text x="70" y="62" textAnchor="middle" fontSize="11" fontFamily="var(--font-mono)" fill="var(--mid)">
-        wcat.dev/u/…
+      <rect x="6" y="42" width="128" height="32" rx="10" fill="var(--inset)" stroke="var(--border2)" />
+      <text x="70" y="62" textAnchor="middle" fontSize="10" fontFamily="var(--font-mono)" fill="var(--mid)">
+        webhook.projext.in
       </text>
 
       <rect x="334" y="42" width="112" height="32" rx="10" fill="var(--inset)" stroke="var(--accent-line)" />

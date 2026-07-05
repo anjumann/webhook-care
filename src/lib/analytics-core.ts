@@ -10,6 +10,10 @@
 
 /** The curated event vocabulary. Extend deliberately, not ad hoc. */
 export type AnalyticsEvent =
+  // Marketing funnel (landing + contact pages) — spec §6a.
+  | "landing_cta_clicked"
+  | "playground_sample_fired"
+  | "contact_form_submitted"
   | "endpoint_created"
   | "first_webhook_received"
   | "onboarding_completed"

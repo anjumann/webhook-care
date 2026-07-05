@@ -21,13 +21,13 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: APP_NAME,
-  description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
+  title: `${APP_NAME} — catch, inspect & replay webhooks`,
+  description: "Catch, inspect, replay, and forward webhooks — free forever, no sign-up, 30-day history. Built-in MCP server and REST API so your AI agent can debug with you.",
   metadataBase: new URL('https://webhook.projext.in/'),
   manifest: '/site.webmanifest',
   openGraph: {
-    title: APP_NAME,
-    description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
+    title: `${APP_NAME} — catch, inspect & replay webhooks`,
+    description: "Catch, inspect, replay, and forward webhooks — free forever, no sign-up, 30-day history. Built-in MCP server and REST API so your AI agent can debug with you.",
     url: 'https://webhook.projext.in/',
     siteName: APP_NAME,
     images: [
@@ -43,10 +43,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: APP_NAME,
-    description: "A modern webhook testing and debugging platform. Create endpoints, inspect requests, and forward webhooks to multiple destinations.",
+    title: `${APP_NAME} — catch, inspect & replay webhooks`,
+    description: "Catch, inspect, replay, and forward webhooks — free forever, no sign-up, 30-day history. Built-in MCP server and REST API so your AI agent can debug with you.",
     images: ['/android-chrome-512x512.png'],
-    creator: '@your_twitter_handle',
   },
   icons: {
     icon: '/favicon.ico',

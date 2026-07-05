@@ -68,7 +68,7 @@ const Header: React.FC = () => {
                         />
                     </a>
 
-                    <GetStartedBtn>
+                    <GetStartedBtn cta="header">
                         <Button size="sm">Open Dashboard</Button>
                     </GetStartedBtn>
 

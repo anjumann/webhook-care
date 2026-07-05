@@ -136,6 +136,17 @@ Curated, low-volume, high-signal. Names `snake_case`, props minimal.
 | `forwarding_url_added` | create/edit | — | **validates parked integrations** |
 | `account_claimed` | verify | — | identity conversion |
 
+### 6a. Marketing funnel (landing + contact) — added 2026-07
+
+| Event | Where | Props | Answers |
+|---|---|---|---|
+| `landing_cta_clicked` | `GetStartedBtn` (all call sites) | `cta` (`header`/`hero`/`final`/`about`) | which CTA converts visitors |
+| `playground_sample_fired` | landing demo playground | `provider` (`stripe`/`github`/`shopify`/`custom`) | does the playground drive activation? |
+| `contact_form_submitted` | contact page (on success) | `category` | support/feedback mix |
+
+Combined with the auto `$pageview` these give the visitor → playground → dashboard →
+`endpoint_created` → `first_webhook_received` funnel without autocapture.
+
 Person props (identified): `is_claimed`, `endpoint_count`, `created_at`, `email?`.
 
 ## 7. Insights to build in PostHog (so the data is actually used)

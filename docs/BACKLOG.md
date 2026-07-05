@@ -49,6 +49,19 @@ Full spec: [`specs/16`](./specs/16-analytics-posthog.md).
   users, no replay/autocapture). **Remaining:** build the activation funnel +
   feature-adoption breakdown + retention insight in the PostHog UI (keys are set
   in `.env`; this is a dashboard task, not code).
+- [x] **P0d — Marketing funnel events + landing/legal audit (2026-07-05)** — DONE.
+  Three curated marketing events (spec §6a): `landing_cta_clicked` (`cta` prop on
+  `GetStartedBtn` — header/hero/final/about), `playground_sample_fired`
+  (`provider`), `contact_form_submitted` (`category`). Landing detail pass:
+  fictional `wcat.dev` → real `webhook.projext.in` in all mocks; MCP strip
+  rewritten around a real `claude mcp add` command (AI-agent ICP); hero checklist
+  says "MCP for your AI agent"; SEO title/description sharpened; placeholder
+  Twitter handle removed. Sub-pages made honest: About no longer claims team
+  collaboration / AI payload analysis / open source; Terms + Refund stripped of
+  fictional ₹99/₹990 plans (product is free — refund page now says so); Privacy
+  drops payment-data claims; static "last updated" dates; header nav on all
+  marketing/legal pages; dashboard "Webhook Care" strings unified to "Webhook
+  Catcher". ICP/positioning doc for marketing skills: `.agents/product-marketing.md`.
 - **Decisions RESOLVED (2026-07-04):** region **US** · email-as-person-property
   **attach for claimed users** · **privacy-line-only** consent. See
   [`specs/16` §8](./specs/16-analytics-posthog.md).

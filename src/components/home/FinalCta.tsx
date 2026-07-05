@@ -35,7 +35,7 @@ export function FinalCta() {
             days of history.
           </p>
           <div className="mt-8 flex justify-center">
-            <GetStartedBtn>
+            <GetStartedBtn cta="final">
               <Button size="lg" className="group">
                 Catch it live
                 <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-0.5" />

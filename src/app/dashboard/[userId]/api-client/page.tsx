@@ -9,7 +9,7 @@ export default async function ApiClientPage({ params }: ApiClientPageProps) {
   const { userId } = await params;
 
   const routeList = [
-    { label: "Webhook Care", href: `/` },
+    { label: "Webhook Catcher", href: `/` },
     { label: "Dashboard", href: `/dashboard/${userId}` },
     { label: "API Client", href: `/dashboard/${userId}/api-client` },
   ];
@@ -18,7 +18,7 @@ export default async function ApiClientPage({ params }: ApiClientPageProps) {
     <div className="mx-auto max-w-[1180px] py-6">
       <CustomBreadcrumb
         header="API Client"
-        description="Make quick API calls without leaving Webhook Care — pick a method, enter any URL, add headers and a body, and inspect the full response."
+        description="Make quick API calls without leaving Webhook Catcher — pick a method, enter any URL, add headers and a body, and inspect the full response."
         routeList={routeList}
       />
       <div className="mt-8">

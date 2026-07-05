@@ -141,6 +141,11 @@ event taxonomy: [`specs/16`](./specs/16-analytics-posthog.md).
   payload/secret/email content through), `sanitizePersonProps` (person **allowlist**
   — email permitted only here, for claimed users), and the builders
   `buildClaimIdentity` / `buildExportProps` / `normalizeRestRoute`.
+- **Marketing funnel** (spec §6a) — three curated landing/contact events:
+  `landing_cta_clicked` (`cta` prop threaded through `GetStartedBtn` call sites),
+  `playground_sample_fired` (`provider`, landing demo), `contact_form_submitted`
+  (`category`). With auto `$pageview` these complete the visitor → playground →
+  `endpoint_created` → `first_webhook_received` funnel without autocapture.
 - **Privacy invariants:** never send webhook content; email only on the claimed
   person profile, never on an event; the **ingest hot path is never instrumented**;
   no-op without `NEXT_PUBLIC_POSTHOG_KEY` (CI/builds stay clean).

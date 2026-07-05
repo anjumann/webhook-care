@@ -9,13 +9,13 @@ export const metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <PageLayout>
+    <PageLayout showHeader>
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
             <p className="text-muted-foreground text-lg">
-              Last updated: {new Date().toLocaleDateString()}
+              Last updated: July 4, 2026
             </p>
           </div>
 
@@ -42,7 +42,6 @@ export default function PrivacyPolicyPage() {
                 <ul>
                   <li>Email address and account information</li>
                   <li>Profile information (username, avatar)</li>
-                  <li>Payment information (processed securely through third-party providers)</li>
                 </ul>
                 
                 <h4>Technical Information</h4>
@@ -63,7 +62,6 @@ export default function PrivacyPolicyPage() {
                 <p>We use the collected information for:</p>
                 <ul>
                   <li>Providing and maintaining our webhook testing services</li>
-                  <li>Processing payments and managing subscriptions</li>
                   <li>Improving our platform and developing new features</li>
                   <li>Providing customer support and responding to inquiries</li>
                   <li>Sending important service updates and security notifications</li>
@@ -170,7 +168,15 @@ export default function PrivacyPolicyPage() {
                   If you have questions about this Privacy Policy, please contact us:
                 </p>
                 <ul>
-                  <li>Email: anjumanraj2@gmail.com</li>
+                  <li>
+                    Email:{" "}
+                    <a
+                      href="mailto:anjumanraj2@gmail.com"
+                      className="text-primary underline underline-offset-4"
+                    >
+                      anjumanraj2@gmail.com
+                    </a>
+                  </li>
                 </ul>
               </CardContent>
             </Card>

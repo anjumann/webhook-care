@@ -134,7 +134,7 @@ claude mcp add --transport http webhook-catcher ${origin}/api/mcp \\
   }
 
   const routeList = [
-    { label: "Webhook Care", href: `/` },
+    { label: "Webhook Catcher", href: `/` },
     { label: "Dashboard", href: `/dashboard/${id}` },
     { label: "API Tokens", href: `/dashboard/${id}/setting/tokens` },
   ];

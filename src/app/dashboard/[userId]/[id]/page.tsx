@@ -224,7 +224,7 @@ export default function EndpointDetailsPage({ params }: EndpointDetailsPageProps
     endpoints?.lastActivity ? formatRelative(new Date(endpoints.lastActivity)) : "Never";
 
   const routeList = [
-    { label: "Webhook Care", href: `/` },
+    { label: "Webhook Catcher", href: `/` },
     { label: "Dashboard", href: `/dashboard/${param?.userId}` },
     {
       label: endpoints?.name || param?.id || "",

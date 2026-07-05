@@ -212,7 +212,7 @@ export default function EndpointEditForm({ id }: { id?: string }) {
 
     const routeList = [
         {
-            label: "Webhook Care",
+            label: "Webhook Catcher",
             href: `/`,
         },
         {
