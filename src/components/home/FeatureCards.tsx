@@ -4,8 +4,8 @@ import { SectionHeading } from "./SectionHeading";
 
 /**
  * Feature story — Clause-style composition: one full-width glass card for the
- * core feature (the inspector), a 2-up row (forward-to-localhost with an
- * animated SVG path; replay/history), and a slim REST+MCP strip. Mocks are
+ * core feature (the inspector), a 2-up row (the `wcat` relay to localhost with
+ * an animated SVG path; replay/history), and a slim REST+MCP strip. Mocks are
  * static markup with light CSS/SMIL motion so the section stays a Server
  * Component.
  */
@@ -56,10 +56,15 @@ export function FeatureCards() {
                 A bridge from the internet to :3000
               </h3>
               <p className="mt-2.5 text-sm text-mid">
-                Add a forwarding URL and every capture is relayed to your
-                machine as it lands — webhooks from production services, hitting
-                the code in your editor.
+                Run the <code className="font-mono text-[13px] text-primary">wcat</code> CLI
+                and it holds an outbound connection to your catcher — nothing to
+                expose, no ports to open, no tunnel to configure. Each capture is
+                replayed to your local server the moment it lands.
               </p>
+              <div className="glass-inset mt-4 rounded-lg px-3.5 py-2.5 font-mono text-[12px] text-mid">
+                <span className="text-dim">$ </span>wcat listen{" "}
+                <span className="text-accent2">--forward localhost:3000</span>
+              </div>
               <ForwardGraphic />
             </div>
           </Reveal>
@@ -161,33 +166,54 @@ function InspectorMock() {
   );
 }
 
-/** Animated SVG: endpoint → travelling pulse → localhost. */
+/**
+ * Animated SVG of the actual relay path: the public catcher on the left, and
+ * `localhost:3000` living *inside* your machine — reached by the `wcat` client,
+ * not pushed to by the server. The pulse is the captured request streaming down
+ * the connection your machine opened, so there's no "server → naked localhost"
+ * ambiguity.
+ */
 function ForwardGraphic() {
-  const path = "M 70 56 C 170 12, 290 12, 390 56";
+  const wire = "M 140 66 C 200 42, 236 42, 288 58";
   return (
-    <svg viewBox="0 0 460 110" className="mt-auto w-full pt-6" aria-hidden>
-      <path d={path} fill="none" stroke="var(--border2)" strokeWidth="1" />
-      <path
-        d={path}
-        fill="none"
-        stroke="var(--accent-line)"
-        strokeWidth="1.5"
-        className="dash-flow"
-      />
-      <circle r="6" fill="var(--accent2)" opacity="0.25">
-        <animateMotion dur="1.8s" repeatCount="indefinite" path={path} />
-      </circle>
-      <circle r="3" fill="var(--accent2)">
-        <animateMotion dur="1.8s" repeatCount="indefinite" path={path} />
-      </circle>
+    <svg
+      viewBox="0 0 460 132"
+      className="mt-auto w-full pt-6"
+      role="img"
+      aria-label="A captured webhook streams from the public catcher, down the outbound connection your machine opened, into the wcat CLI, which replays it to localhost:3000."
+    >
+      {/* the connection your machine dials out; captures stream back down it */}
+      <path d={wire} fill="none" stroke="var(--border2)" strokeWidth="1" />
+      <path d={wire} fill="none" stroke="var(--accent-line)" strokeWidth="1.5" className="dash-flow" />
+      {/* one travelling packet (soft halo + bright lead) — CSS motion-path, so
+          it stops under prefers-reduced-motion; the arrowhead keeps direction
+          legible when it does. */}
+      <circle r="6" fill="var(--accent2)" opacity="0.22" className="packet-flow" />
+      <circle r="3" fill="var(--accent2)" className="packet-flow" />
+      <path d="M 279 54 L 288 58 L 279 62 Z" fill="var(--accent-line)" />
+      <text x="206" y="34" textAnchor="middle" fontSize="9" fontFamily="var(--font-mono)" fill="var(--faint)">
+        outbound · no ports
+      </text>
 
-      <rect x="6" y="42" width="128" height="32" rx="10" fill="var(--inset)" stroke="var(--border2)" />
-      <text x="70" y="62" textAnchor="middle" fontSize="10" fontFamily="var(--font-mono)" fill="var(--mid)">
+      {/* public catcher (the internet side) */}
+      <rect x="6" y="50" width="132" height="32" rx="10" fill="var(--inset)" stroke="var(--border2)" />
+      <text x="72" y="70" textAnchor="middle" fontSize="10" fontFamily="var(--font-mono)" fill="var(--mid)">
         webhook.projext.in
       </text>
 
-      <rect x="334" y="42" width="112" height="32" rx="10" fill="var(--inset)" stroke="var(--accent-line)" />
-      <text x="390" y="62" textAnchor="middle" fontSize="11" fontFamily="var(--font-mono)" fill="var(--accent2)">
+      {/* your machine: wcat pulls the stream and replays it to localhost */}
+      <rect x="286" y="16" width="168" height="104" rx="14" fill="var(--inset)" stroke="var(--accent-line)" className="node-glow-soft" />
+      <text x="370" y="33" textAnchor="middle" fontSize="9" fontFamily="var(--font-mono)" fill="var(--dim)">
+        your machine
+      </text>
+      <rect x="302" y="42" width="136" height="28" rx="9" fill="var(--card)" stroke="var(--border2)" />
+      <text x="370" y="60" textAnchor="middle" fontSize="10.5" fontFamily="var(--font-mono)" fill="var(--mid)">
+        wcat listen
+      </text>
+      <path d="M 370 72 L 370 82" stroke="var(--border2)" strokeWidth="1.2" />
+      <path d="M 366 80 L 370 86 L 374 80 Z" fill="var(--border2)" />
+      <rect x="302" y="86" width="136" height="28" rx="9" fill="var(--card)" stroke="var(--accent-line)" className="node-glow" />
+      <text x="370" y="104" textAnchor="middle" fontSize="11" fontFamily="var(--font-mono)" fill="var(--accent2)">
         localhost:3000
       </text>
     </svg>

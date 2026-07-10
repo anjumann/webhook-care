@@ -435,10 +435,34 @@ body, * {
   animation: dash-flow 1.1s linear infinite;
 }
 
+/* Travelling packet along the relay wire. CSS motion-path (not SMIL
+   animateMotion) so it honours prefers-reduced-motion via the block below —
+   SMIL ignores that query and would keep looping. Path must match the wire
+   drawn in <ForwardGraphic />. */
+@keyframes packet-travel {
+  from { offset-distance: 0%; }
+  to   { offset-distance: 100%; }
+}
+.packet-flow {
+  offset-path: path("M 140 66 C 200 42, 236 42, 288 58");
+  offset-rotate: 0deg;
+  animation: packet-travel 1.8s linear infinite;
+}
+
+/* Minimal OLED-style glow to pull the eye to the payoff node (and softly light
+   "your machine"). Static — unaffected by reduced motion. */
+.node-glow {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent2) 42%, transparent));
+}
+.node-glow-soft {
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent2) 13%, transparent));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marquee-track,
   .float-slow,
-  .dash-flow {
+  .dash-flow,
+  .packet-flow {
     animation: none;
   }
 }
